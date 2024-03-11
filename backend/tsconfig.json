@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "target": "ES6",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "dist",
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "resolveJsonModule": true,
+        "noImplicitAny": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"]
+        },
+        "typeRoots": ["./src/types/index.d.ts", "./node_modules/@types"]
+    },
+    "include": [
+        "src/types/*.ts",
+        "_static/types/**/*.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        "./src"
+    ],
+    "exclude": ["node_modules"],
+}
