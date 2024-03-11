@@ -1,0 +1,14 @@
+services:
+  app:
+    image: chat-app-frontend-dev
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./:/usr/src/app
+    container_name: chat-app-frontend-dev
+    environment:
+      REACT_APP_BACKEND_URL: http://localhost:8080/api
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: true
+      WDS_SOCKET_PORT: 0
