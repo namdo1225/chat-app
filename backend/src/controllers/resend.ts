@@ -3,12 +3,12 @@ import { Router } from "express";
 import { supabase } from "@/supabase";
 import { ResendPathSchema } from "@/types/zod";
 import { logError } from "@/utils/logger";
+import { REDIRECT_URL } from "@/utils/config";
+import { hcaptchaVerifier } from "@/utils/middleware";
 
 const router = Router();
 
-router.post("/", async (request, response) => {
-    if (!supabase) return response.status(500).json({error: 500});
-
+router.post("/", hcaptchaVerifier, async (request, response) => {
     const { email, action } = ResendPathSchema.parse(request.body);
 
     if (action === "CONFIRMATION") {
@@ -16,7 +16,7 @@ router.post("/", async (request, response) => {
             type: 'signup',
             email,
             options: {
-                emailRedirectTo: 'https://localhost:3000'
+                emailRedirectTo: REDIRECT_URL
             }
         });
 
@@ -29,8 +29,10 @@ router.post("/", async (request, response) => {
     } else if (action === "RESET PASSWORD") {
         const { data, error } =
         await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'https://localhost:3000'
+            redirectTo: `${REDIRECT_URL}/resetpassword`
         });
+
+        console.log(data);
 
         if (error) {
             logError(error);

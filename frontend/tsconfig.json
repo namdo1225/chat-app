@@ -22,11 +22,13 @@
         "noImplicitReturns": true,
         "noImplicitAny": true,
 
-        "typeRoots": ["./src/types/index.d.ts", "./node_modules/@types"]
-    },
-    "paths": {
-        "@/*": ["./src/*"]
+        "typeRoots": ["./src/types/index.d.ts", "./node_modules/@types"],
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"]
+        },
     },
     "include": ["src", "_static/types/**/*.ts", "**/*.ts", "**/*.tsx"],
-    "references": [{ "path": "./tsconfig.node.json" }]
+    "references": [{ "path": "./tsconfig.node.json" }],
+    "exclude": ["node_modules"],
 }

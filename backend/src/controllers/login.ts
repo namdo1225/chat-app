@@ -1,13 +1,12 @@
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
-import { UserLoginSchema } from "@/types/zod";
+import { UserLoginSchema } from "@/types/user";
 import { logError } from "@/utils/logger";
 
 const router = Router();
 
 router.post("/", async (request, response) => {
-    if (!supabase) return response.status(500).json({error: 500});
     const { email, password } = UserLoginSchema.parse(
         request.body
     );

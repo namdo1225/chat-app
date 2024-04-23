@@ -1,130 +1,224 @@
 import "express-async-errors";
 import { Router } from "express";
-import { supabase } from "@/supabase";
-import { UserRegisterSchema, UserChangeSchema } from "@/types/zod";
-import { logError } from "@/utils/logger";
-import { z } from "zod";
+import {
+    supabase,
+    PROFILE_IMAGE_BUCKET,
+    DEFAULT_PROFILE_URL,
+} from "@/supabase";
+import { UserRegisterSchema, UserChangeSchema } from "@/types/user";
+import { ProfilesSchema } from "@/types/profile";
+import {
+    imageParser,
+    tokenExtractor,
+    userExtractor,
+    hcaptchaVerifier,
+    profileImgEditor,
+} from "@/utils/middleware";
+import { cacheData } from "@/utils/cache";
 
 const router = Router();
 
 router.get("/", async (_request, response) => {
-    if (!supabase) return response.status(500);
-
     const { data: profiles } = await supabase.from("profiles").select("*");
     return response.json(profiles);
 });
 
-router.post("/", async (request, response) => {
-    if (!supabase) return response.status(500);
-    const { first_name, last_name, email, password } =
-        UserRegisterSchema.parse(request.body);
+router.get("/:id", async (request, response) => {
+    const data = await cacheData("OWN_PROFILE", async () =>
+        supabase.from("profiles").select("*").eq("user_id", request.params.id)
+    );
 
-    const { data: newUser } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-            data: {
-                first_name,
-                last_name,
-            },
-        },
-    });
-
-    const { data: newProfile, error } = await supabase
-        .from("profiles")
-        .insert([{ first_name, last_name, user_id: newUser.user?.id }])
-        .select();
-
-    if (error) {
-        logError(error);
-        return response.status(404).json(error);
-    }
-
-    return response.status(201).json(newProfile);
+    const profiles = ProfilesSchema.parse(data?.data);
+    if (profiles && profiles.length === 1) return response.json(profiles[0]);
+    return response.status(404).json({ error: "No user found." });
 });
 
-router.put("/", async (request, response) => {
-    if (!supabase) return response.status(500);
-
-    const authorization = z.string().parse(request.headers.authorization);
-    if (!authorization.startsWith("Bearer "))
-        return response
-            .status(404)
-            .json({ error: "No bearer access token provided" });
-    const access_token = authorization.split(" ")[1];
-    const { data: foundUser } = await supabase.auth.getUser(access_token);
-
-    if (foundUser?.user?.id) {
+router.post(
+    "/",
+    hcaptchaVerifier,
+    imageParser,
+    profileImgEditor,
+    async (request, response) => {
         const { first_name, last_name, email, password } =
-            UserChangeSchema.parse(request.body);
+            UserRegisterSchema.parse(request.body);
 
-        const editedData: { first_name?: string; last_name?: string } = {};
+        const foundUser = (
+            await supabase.auth.admin.listUsers()
+        ).data.users.filter((user) => user.email === email);
 
-        if (first_name) editedData.first_name = first_name;
-        if (last_name) editedData.last_name = last_name;
+        const { data: newUser, error: newUserError } =
+            await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        first_name,
+                        last_name,
+                    },
+                },
+            });
 
-        const editedUser: {
-            email?: string;
-            password?: string;
-            data?: object;
-        } = {};
+        if (newUserError || !newUser.user)
+            return response.status(404).json(newUserError);
 
-        if (email) editedUser.email = email;
-        if (password) editedUser.password = password;
-        if (editedData) editedUser.data = editedData;
+        const userData: {
+            first_name: string;
+            last_name: string;
+            user_id: string;
+            profile_photo?: string;
+        } = { first_name, last_name, user_id: newUser.user?.id };
 
-        const { error: updateUserError } =
-            await supabase.auth.updateUser(editedUser);
+        if (request.file && userData.user_id && foundUser.length === 0) {
+            const photoData = request.fileData;
+            const extension = request.fileExtension;
+            const bucketPath = `${userData.user_id}.${extension}`;
+            const { error } = await supabase.storage
+                .from(PROFILE_IMAGE_BUCKET)
+                .upload(bucketPath, photoData, {
+                    contentType: "image/*",
+                    upsert: true,
+                    duplex: "half",
+                });
 
-        if (updateUserError) {
-            logError(updateUserError);
-            return response.status(404).json(updateUserError);
+            if (error) return response.status(400).json(error);
+            else {
+                const { data } = supabase.storage
+                    .from(PROFILE_IMAGE_BUCKET)
+                    .getPublicUrl(bucketPath);
+
+                userData.profile_photo = data.publicUrl;
+            }
         }
 
-        const { data: newProfile, error } = await supabase
-            .from("profiles")
-            .update(editedData)
-            .eq("user_id", foundUser.user.id)
-            .select();
+        if (foundUser.length === 0) {
+            const { data: newProfile, error } = await supabase
+                .from("profiles")
+                .insert([userData])
+                .select();
 
-        if (error) {
-            logError(error);
-            return response.status(404).json(error);
+            if (error) return response.status(404).json(error);
+            return response.status(201).json(newProfile);
         }
-
-        return response.status(201).json(newProfile);
+        return response.status(201).json({ test: "hi" });
     }
+);
 
-    return response.status(404).json({ error: "user id not found" });
-});
+router.put(
+    "/:id",
+    tokenExtractor,
+    userExtractor,
+    imageParser,
+    profileImgEditor,
+    async (request, response) => {
+        if (request.user.id === request.params.id) {
+            const { first_name, last_name, email, password } =
+                UserChangeSchema.parse(request.body);
+            const editedData: {
+                first_name?: string;
+                last_name?: string;
+                profile_photo?: string;
+            } = {};
 
-router.delete("/", async (request, response) => {
-    if (!supabase) return response.status(500);
+            if (first_name) editedData.first_name = first_name;
+            if (last_name) editedData.last_name = last_name;
 
-    const authorization = z.string().parse(request.headers.authorization);
-    if (!authorization.startsWith("Bearer "))
-        return response
-            .status(404)
-            .json({ error: "No bearer access token provided" });
+            const editedUser: {
+                email?: string;
+                password?: string;
+                user_metadata?: object;
+            } = {};
 
-    const access_token = authorization.split(" ")[1];
+            if (email) editedUser.email = email;
+            if (password) editedUser.password = password;
+            if (Object.keys(editedData).length !== 0)
+                editedUser.user_metadata = editedData;
 
-    const { data: foundUser } = await supabase.auth.getUser(access_token);
+            if (email) {
+                return response.status(404).json({
+                    error: "You should not use this API to change your email.",
+                });
+            } else {
+                const { error: updateUserError } =
+                    await supabase.auth.admin.updateUserById(
+                        request.user.id,
+                        editedUser
+                    );
 
-    if (foundUser?.user?.id) {
-        const { data, error } = await supabase.auth.admin.deleteUser(
-            foundUser.user?.id
-        );
+                if (updateUserError)
+                    return response.status(404).json(updateUserError);
+            }
 
-        if (error) {
-            logError(error);
-            return response.status(404).json(error);
+            if (request.file) {
+                const bucketPath = `${request.user.id}.${request.fileExtension}`;
+                const { error } = await supabase.storage
+                    .from(PROFILE_IMAGE_BUCKET)
+                    .upload(bucketPath, request.fileData, {
+                        contentType: "image/*",
+                        upsert: true,
+                        duplex: "half",
+                    });
+
+                if (error) return response.status(404).json(error);
+                else {
+                    const { data } = supabase.storage
+                        .from(PROFILE_IMAGE_BUCKET)
+                        .getPublicUrl(bucketPath);
+
+                    editedData.profile_photo = data.publicUrl;
+                }
+            }
+
+            const { data: newProfile, error } = await supabase
+                .from("profiles")
+                .update(editedData)
+                .eq("user_id", request.user.id)
+                .select();
+
+            if (error) return response.status(404).json(error);
+
+            return response.status(201).json(newProfile);
         }
 
-        return response.status(200).json(data);
+        return response.status(404).json({ error: "user id not found" });
     }
+);
 
-    return response.status(404).json({ error: "user id not found" });
-});
+router.delete(
+    "/:id",
+    tokenExtractor,
+    userExtractor,
+    async (request, response) => {
+        if (request.user.id === request.params.id) {
+            const { data: profiles } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("user_id", request.user.id);
+
+            const parsedProfiles = ProfilesSchema.parse(profiles);
+            console.log(profiles);
+            if (
+                parsedProfiles.length === 1 &&
+                parsedProfiles[0].profile_photo !== DEFAULT_PROFILE_URL
+            ) {
+                console.log(
+                    "HERE: ",
+                    `${PROFILE_IMAGE_BUCKET}/${request.user.id}.jpg`
+                );
+                const { error } = await supabase.storage
+                    .from(PROFILE_IMAGE_BUCKET)
+                    .remove([`${request.user.id}.jpg`]);
+                if (error) return response.status(404).json(error);
+            }
+
+            const { data, error } = await supabase.auth.admin.deleteUser(
+                request.user.id
+            );
+
+            if (error) return response.status(404).json(error);
+            return response.status(200).json(data);
+        }
+        return response.status(404).json({ error: "user id not found" });
+    }
+);
 
 export default router;

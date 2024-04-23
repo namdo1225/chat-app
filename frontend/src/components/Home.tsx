@@ -1,0 +1,59 @@
+import { Box, Typography, TextField, Button } from "@mui/material";
+import Chat from "@/components/chat/Chat";
+import { useRef, useState } from "react";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+import Captcha from "./Captcha";
+
+const Home = () => {
+    const [tempChatter, setTempChatter] = useState("");
+    const [chatter, setChatter] = useState("");
+    const [captcha, setCaptchaToken] = useState("");
+    const captchaRef = useRef<HCaptcha>(null);
+
+    return (
+        <Box
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                my: 5,
+            }}
+        >
+            <Typography textAlign="center" variant="h1" fontSize={32}>
+                Welcome to CaChat
+            </Typography>
+            <Typography textAlign="center">
+                This is a simple chat application to demonstrate my programming
+                abilities.
+            </Typography>
+            {chatter && captcha ? (
+                <Chat chatter={chatter} />
+            ) : (
+                <Box sx={{ m: 2 }}>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Enter a name"
+                        variant="outlined"
+                        value={tempChatter}
+                        onChange={({ target }) => setTempChatter(target.value)}
+                    />
+                    <Captcha
+                        captcha={captchaRef}
+                        setCaptchaToken={setCaptchaToken}
+                    />
+                    <Button
+                        disabled={!captcha || !tempChatter}
+                        color="primary"
+                        variant="contained"
+                        onClick={() => setChatter(tempChatter)}
+                    >
+                        Set
+                    </Button>
+                </Box>
+            )}
+        </Box>
+    );
+};
+
+export default Home;

@@ -1,6 +1,6 @@
 include:
-  - todo-backend/docker-compose.yml
-  - todo-frontend/docker-compose.yml
+  - backend/docker-compose.yml
+  - frontend/docker-compose.yml
 
 services:
   nginx:
@@ -9,7 +9,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - 8080:80
-    container_name: reverse-proxy
+    container_name: reverse-proxy-prod
     depends_on:
       - server
       - app

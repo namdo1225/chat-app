@@ -5,10 +5,26 @@ services:
       context: .
       dockerfile: dev.Dockerfile
     volumes:
-      - ./:/usr/src/app
+      - ./src:/usr/src/app/src
+      - ./public:/usr/src/app/public
+      - ./.eslintignore:/usr/src/app/.eslintignore
+      - ./.eslintrc.cjs:/usr/src/app/.eslintrc.cjs
+      - ./index.html:/usr/src/app/index.html
+      - ./nginx.conf:/usr/src/app/nginx.conf
+      - ./package.json:/usr/src/app/package.json
+      - ./package-lock.json:/usr/src/app/package-lock.json
+      - ./postcss.config.js:/usr/src/app/postcss.config.js
+      - ./tailwind.config.js:/usr/src/app/tailwind.config.js
+      - ./tsconfig.json:/usr/src/app/tsconfig.json
+      - ./tsconfig.node.json:/usr/src/app/tsconfig.node.json
+      - ./vite.config.ts:/usr/src/app/vite.config.ts
     container_name: chat-app-frontend-dev
+    env_file:
+      - .env
     environment:
       REACT_APP_BACKEND_URL: http://localhost:8080/api
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: true
       WDS_SOCKET_PORT: 0
+    expose:
+      - 5173

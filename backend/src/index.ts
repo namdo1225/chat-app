@@ -1,7 +1,7 @@
-import app from "./app";
 import { PORT } from "./utils/config";
 import { info } from "./utils/logger";
+import { server } from "./ws";
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     info(`Server running on port ${PORT}`);
 });
