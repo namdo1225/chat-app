@@ -31,7 +31,14 @@ const Home = () => {
             {chatter && captcha ? (
                 <Chat chatter={chatter} />
             ) : (
-                <Box sx={{ m: 2 }}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        m: 2,
+                    }}
+                >
                     <TextField
                         fullWidth
                         size="small"
