@@ -16,7 +16,7 @@ const Captcha = ({
     return (
         <>
             <Box
-                sx={{ mx: "auto", display: { xs: "none", hcaptcha: "block" } }}
+                sx={{ mx: "auto", display: { xs: "none", hcaptcha: "block" }, my: 2 }}
             >
                 <HCaptcha
                     sitekey={CAPTCHA_SITE_KEY}

@@ -22,7 +22,7 @@ import axios from "axios";
 import AvatarEditor from "react-avatar-editor";
 import Dropzone from "react-dropzone";
 import Logo from "@/components/branding/Logo";
-import ChatAvatarEditor from "../ChatAvatarEditor";
+import ChatAvatarEditor from "../../ChatAvatarEditor";
 
 const fields = [
     {

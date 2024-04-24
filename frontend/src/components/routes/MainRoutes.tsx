@@ -6,9 +6,9 @@ import NonUserRoutes from "@/components/routes/NonUserRoutes";
 
 import Navbar from "@/components/navigations/Navbar";
 import Footer from "@/components/navigations/Footer";
-import ResetPassword from "@/components/authentication/ResetPassword";
+import ResetPassword from "@/components/pages/authentication/ResetPassword";
 import { useAuth } from "@/context/AuthProvider";
-import Home from "@/components/Home";
+import Home from "@/components/pages/Home";
 
 const MainRoutes = () => {
     const { user } = useAuth();

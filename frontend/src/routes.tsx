@@ -1,11 +1,11 @@
 import Page from "./Page";
-import Login from "@/components/authentication/Login";
-import Register from "@/components/authentication/Register";
-import Forget from "@/components/authentication/Forget";
-import ContactUs from "@/components/ContactUs";
-import Account from "@/components/account/Account";
-import Profile from "@/components/account/Profile";
-import About from "@/components/About";
+import Login from "@/components/pages/authentication/Login";
+import Register from "@/components/pages/authentication/Register";
+import Forget from "@/components/pages/authentication/Forget";
+import ContactUs from "@/components/pages/ContactUs";
+import Account from "@/components/pages/account/Account";
+import Profile from "@/components/pages/account/Profile";
+import About from "@/components/pages/About";
 
 interface WebsiteRoute {
     name: string;

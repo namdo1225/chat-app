@@ -2,7 +2,7 @@ import { Box, Typography, TextField, Button } from "@mui/material";
 import Chat from "@/components/chat/Chat";
 import { useRef, useState } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
-import Captcha from "./Captcha";
+import Captcha from "../Captcha";
 
 const Home = () => {
     const [tempChatter, setTempChatter] = useState("");
@@ -22,9 +22,11 @@ const Home = () => {
             <Typography textAlign="center" variant="h1" fontSize={32}>
                 Welcome to CaChat
             </Typography>
-            <Typography textAlign="center">
+            <Typography textAlign="center" sx={{ m: 2 }}>
                 This is a simple chat application to demonstrate my programming
-                abilities.
+                abilities. We have a demo setup here that demonstrates the user
+                interface, but you need to sign up in order to use the actual
+                chat application.
             </Typography>
             {chatter && captcha ? (
                 <Chat chatter={chatter} />

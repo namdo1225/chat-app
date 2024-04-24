@@ -3,6 +3,13 @@ import { routes, socialRoutes, supportRoutes } from "@/routes";
 import { Link } from "@mui/material";
 
 const Footer = () => {
+    const style = {
+        sx: {
+            color: "grey.50",
+        },
+        underline: "hover" as "hover",
+    };
+
     return (
         <Box sx={{ bgcolor: "footer.main", p: 2 }}>
             <Box className="flex justify-evenly flex-wrap gap-10">
@@ -20,53 +27,35 @@ const Footer = () => {
                 </Link>
                 <Box>
                     {routes.map(({ path, name }) => (
-                        <Typography key={name} textAlign="center">
-                            {path && (
-                                <Link
-                                    sx={{ color: "grey.50" }}
-                                    underline="hover"
-                                    href={path}
-                                >
-                                    {name}
-                                </Link>
-                            )}
+                        <Typography key={name}>
+                            <Link {...style} href={path ?? "/"}>
+                                {name}
+                            </Link>
                         </Typography>
                     ))}
                 </Box>
                 <Box>
                     {supportRoutes.map(({ path, name, link }) => (
-                        <Typography key={name} textAlign="center">
-                            {
-                                <Link
-                                    sx={{ color: "grey.50" }}
-                                    underline="hover"
-                                    href={path ?? link}
-                                >
-                                    {name}
-                                </Link>
-                            }
+                        <Typography key={name}>
+                            <Link {...style} href={path ?? link}>
+                                {name}
+                            </Link>
                         </Typography>
                     ))}
                 </Box>
                 <Box>
                     {socialRoutes.map(({ name, link }) => (
                         <Typography key={name}>
-                            {link && (
-                                <Link
-                                    sx={{ color: "grey.50" }}
-                                    underline="hover"
-                                    href={link}
-                                >
-                                    {name}
-                                </Link>
-                            )}
+                            <Link {...style} href={link ?? "/"}>
+                                {name}
+                            </Link>
                         </Typography>
                     ))}
                 </Box>
             </Box>
             <Divider sx={{ my: 2 }} />
             <Container>
-                <Typography sx={{ color: "grey.50" }} align="center">
+                <Typography {...style.sx} align="center">
                     Made by namdo1225
                 </Typography>
             </Container>

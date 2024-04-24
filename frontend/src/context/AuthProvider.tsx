@@ -6,7 +6,11 @@ import { logout } from "@/services/users";
 import { ProfileType } from "@/types/profile";
 import { useOwnProfile } from "@/hooks/useUser";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
-import { THEME_VALUES, LIGHT_THEME_COLORS, DARK_THEME_COLORS } from "@/types/theme";
+import {
+    THEME_VALUES,
+    LIGHT_THEME_COLORS,
+    DARK_THEME_COLORS,
+} from "@/types/theme";
 
 const AuthContext = createContext<{
     session: Session | null | undefined;
@@ -46,9 +50,15 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
     const [user, setUser] = useState<User | null>();
     const [session, setSession] = useState<Session | null>();
     const { data: profile } = useOwnProfile(user);
-    const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
+    const [themeMode, setThemeMode] = useState<"light" | "dark">(() => {
+        const theme = localStorage.getItem("theme");
+        return theme === "light" || theme === "dark" ? theme : "light";
+    });
 
-    const color = themeMode === "light" ? LIGHT_THEME_COLORS.palette : DARK_THEME_COLORS.palette;
+    const color =
+        themeMode === "light"
+            ? LIGHT_THEME_COLORS.palette
+            : DARK_THEME_COLORS.palette;
 
     const theme = useMemo(
         () =>
@@ -56,7 +66,7 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
                 ...THEME_VALUES,
                 palette: {
                     mode: themeMode,
-                    ...color
+                    ...color,
                 },
             }),
         [themeMode]

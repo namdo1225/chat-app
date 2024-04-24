@@ -48,6 +48,12 @@ const Navbar = () => {
         setUserOpen(false);
     };
 
+    const changeTheme = () => {
+        const newTheme = themeMode === "light" ? "dark" : "light";
+        setThemeMode(newTheme);
+        localStorage.setItem("theme", newTheme);
+    };
+
     useEffect(() => {
         setUserOpen(false);
     }, [user]);
@@ -55,7 +61,7 @@ const Navbar = () => {
     return (
         <>
             <AppBar position="sticky">
-                <Container maxWidth="xl" sx={{px: smScreen ? 1 : null}}>
+                <Container maxWidth="xl" sx={{ px: smScreen ? 1 : null }}>
                     <Toolbar
                         sx={{
                             display: "flex",
@@ -72,8 +78,8 @@ const Navbar = () => {
                         <Typography
                             variant="h6"
                             noWrap
-                            component="a"
-                            href="/"
+                            component={Link}
+                            to="/"
                             sx={{
                                 display: { xs: "none", md: "block" },
                                 fontFamily: "monospace",
@@ -113,6 +119,7 @@ const Navbar = () => {
                             {anchorNav.current && (
                                 <Box>
                                     <Menu
+                                        disableScrollLock={true}
                                         id="menu-appbar"
                                         anchorEl={() =>
                                             anchorNav.current as HTMLButtonElement
@@ -135,30 +142,30 @@ const Navbar = () => {
                                             },
                                         }}
                                     >
-                                        {routes.map(
-                                            ({ path, name }) =>
-                                                path && (
-                                                    <Link to={path} key={path}>
-                                                        <MenuItem>
-                                                            <Typography textAlign="center">
-                                                                {name}
-                                                            </Typography>
-                                                        </MenuItem>
-                                                    </Link>
-                                                )
-                                        )}
+                                        <MenuItem to="/" component={Link}>
+                                            Home
+                                        </MenuItem>
+                                        {routes.map(({ path, name }) => (
+                                            <MenuItem
+                                                to={path ?? "/"}
+                                                key={path ?? name}
+                                                component={Link}
+                                            >
+                                                {name}
+                                            </MenuItem>
+                                        ))}
+                                        <MenuItem onClick={changeTheme}>
+                                            Theme
+                                        </MenuItem>
                                     </Menu>
                                 </Box>
                             )}
                         </Box>
                         <Switch
-                            size= {smScreen ? "small" : "medium"}
+                            sx={{ display: { xs: "none", md: "flex" } }}
+                            size={smScreen ? "small" : "medium"}
                             value={themeMode === "dark"}
-                            onChange={() => {
-                                setThemeMode(
-                                    themeMode === "light" ? "dark" : "light"
-                                );
-                            }}
+                            onChange={changeTheme}
                         />
                         <Logo
                             onNav={true}
@@ -167,9 +174,8 @@ const Navbar = () => {
                         />
                         <Typography
                             variant="h5"
-                            noWrap
-                            component="a"
-                            href="/"
+                            component={Link}
+                            to="/"
                             sx={{
                                 mr: 2,
                                 display: {
@@ -181,8 +187,6 @@ const Navbar = () => {
                                 fontFamily: "monospace",
                                 fontWeight: 700,
                                 letterSpacing: ".1rem",
-                                color: "inherit",
-                                textDecoration: "none",
                             }}
                         >
                             CACHAT
@@ -196,6 +200,8 @@ const Navbar = () => {
                             {routes.map(({ path, name }) => (
                                 <Button
                                     key={path}
+                                    component={Link}
+                                    to={path ?? "/"}
                                     onClick={handleCloseNavMenu}
                                     sx={{
                                         my: 2,
@@ -203,14 +209,7 @@ const Navbar = () => {
                                         display: "block",
                                     }}
                                 >
-                                    {path && (
-                                        <Link
-                                            to={path}
-                                            className="no-underline text-white"
-                                        >
-                                            {name}
-                                        </Link>
-                                    )}
+                                    {name}
                                 </Button>
                             ))}
                         </Box>
@@ -239,12 +238,16 @@ const Navbar = () => {
                                         <Avatar
                                             alt="User Avatar"
                                             src={profile?.profile_photo}
-                                            sx={{ width: smScreen ? 18 : 24, height: smScreen ? 18 : 24 }}
+                                            sx={{
+                                                width: smScreen ? 18 : 24,
+                                                height: smScreen ? 18 : 24,
+                                            }}
                                         />
                                     </IconButton>
                                 </Tooltip>
                                 {anchorUser.current && (
                                     <Menu
+                                        disableScrollLock={true}
                                         sx={{
                                             display: {
                                                 xs: "block",
@@ -266,31 +269,28 @@ const Navbar = () => {
                                         open={userOpen}
                                         onClose={handleCloseUserMenu}
                                     >
-                                        {profileRoutes.map(
-                                            ({ path, name }) =>
-                                                path && (
-                                                    <Link key={name} to={path}>
-                                                        <MenuItem>
-                                                            <Typography textAlign="center">
-                                                                {name}
-                                                            </Typography>
-                                                        </MenuItem>
-                                                    </Link>
-                                                )
-                                        )}
+                                        {profileRoutes.map(({ path, name }) => (
+                                            <MenuItem
+                                                component={Link}
+                                                key={name}
+                                                to={path ?? "/"}
+                                            >
+                                                {name}
+                                            </MenuItem>
+                                        ))}
                                         <MenuItem onClick={signOut}>
-                                            <Typography textAlign="center">
-                                                Logout
-                                            </Typography>
+                                            Logout
                                         </MenuItem>
                                     </Menu>
                                 )}
                             </Box>
                         ) : (
-                            <MenuItem onClick={handleCloseNavMenu}>
-                                <Typography textAlign="center">
-                                    <Link to="/login">Login</Link>
-                                </Typography>
+                            <MenuItem
+                                component={Link}
+                                to="/login"
+                                onClick={handleCloseNavMenu}
+                            >
+                                Login
                             </MenuItem>
                         )}
                     </Toolbar>
