@@ -11,54 +11,62 @@ const Footer = () => {
     };
 
     return (
-        <Box sx={{ bgcolor: "footer.main", p: 2 }}>
-            <Box className="flex justify-evenly flex-wrap gap-10">
-                <Link href="/">
-                    <Box
-                        component="img"
-                        sx={{
-                            width: 80,
-                            height: 80,
-                            mr: 1,
-                        }}
-                        alt="CA Logo"
-                        src="./logo.png"
-                    />
-                </Link>
-                <Box>
-                    {routes.map(({ path, name }) => (
-                        <Typography key={name}>
-                            <Link {...style} href={path ?? "/"}>
-                                {name}
-                            </Link>
-                        </Typography>
-                    ))}
+        <Box
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: "100vh",
+            }}
+        >
+            <Box component="footer" sx={{ marginTop: "auto", bgcolor: "footer.main", p: 2 }}>
+                <Box className="flex justify-evenly flex-wrap gap-10">
+                    <Link href="/">
+                        <Box
+                            component="img"
+                            sx={{
+                                width: 80,
+                                height: 80,
+                                mr: 1,
+                            }}
+                            alt="CA Logo"
+                            src="./logo.png"
+                        />
+                    </Link>
+                    <Box>
+                        {routes.map(({ path, name }) => (
+                            <Typography key={name}>
+                                <Link {...style} href={path ?? "/"}>
+                                    {name}
+                                </Link>
+                            </Typography>
+                        ))}
+                    </Box>
+                    <Box>
+                        {supportRoutes.map(({ path, name, link }) => (
+                            <Typography key={name}>
+                                <Link {...style} href={path ?? link}>
+                                    {name}
+                                </Link>
+                            </Typography>
+                        ))}
+                    </Box>
+                    <Box>
+                        {socialRoutes.map(({ name, link }) => (
+                            <Typography key={name}>
+                                <Link {...style} href={link ?? "/"}>
+                                    {name}
+                                </Link>
+                            </Typography>
+                        ))}
+                    </Box>
                 </Box>
-                <Box>
-                    {supportRoutes.map(({ path, name, link }) => (
-                        <Typography key={name}>
-                            <Link {...style} href={path ?? link}>
-                                {name}
-                            </Link>
-                        </Typography>
-                    ))}
-                </Box>
-                <Box>
-                    {socialRoutes.map(({ name, link }) => (
-                        <Typography key={name}>
-                            <Link {...style} href={link ?? "/"}>
-                                {name}
-                            </Link>
-                        </Typography>
-                    ))}
-                </Box>
+                <Divider sx={{ my: 2 }} />
+                <Container>
+                    <Typography {...style.sx} align="center">
+                        Made by namdo1225
+                    </Typography>
+                </Container>
             </Box>
-            <Divider sx={{ my: 2 }} />
-            <Container>
-                <Typography {...style.sx} align="center">
-                    Made by namdo1225
-                </Typography>
-            </Container>
         </Box>
     );
 };
