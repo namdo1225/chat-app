@@ -2,6 +2,7 @@ import { RegistrationType } from "@/types/yup";
 import {
     EditProfileType,
     ProfileSchema,
+    ProfilesSchema,
 } from "@/types/profile";
 import { createCaptchaHeader, createAuthHeader } from "./common";
 import apiClient from "@/config/apiClient";
@@ -10,13 +11,11 @@ const api = "users";
 const resendApi = "resend";
 const logoutApi = "logout";
 
-/*const getUsers = async () => {
-    const config = {
-        headers: { Authorization: token },
-    };
-    const request = await axios.get(`${BACKEND_URL}/${api}`, config);
-    return request.data;
-};*/
+const getUsers = async () => {
+    const request = await apiClient.get(`/${api}`);
+    const profiles = await ProfilesSchema.validate(request.data);
+    return profiles;
+};
 
 const getUser = async (id: string) => {
     const request = await apiClient.get(`/${api}/${id}`);
@@ -63,6 +62,7 @@ const editProfile = async (
 
     if (newProfile.email) form.append("email", newProfile.email);
     if (newProfile.password) form.append("password", newProfile.password);
+    if (newProfile.publicProfile) form.append("publicProfile", String(newProfile.publicProfile));
 
     const request = await apiClient.put(
         `/${api}/${id}`,
@@ -115,4 +115,5 @@ export {
     logout,
     editProfile,
     getUser,
+    getUsers
 };

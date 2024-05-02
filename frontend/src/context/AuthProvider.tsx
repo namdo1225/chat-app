@@ -3,7 +3,7 @@ import { AuthError, Session, User } from "@supabase/supabase-js";
 import { createContext, useContext } from "react";
 import { supabase } from "@/config/supabase";
 import { logout } from "@/services/users";
-import { ProfileType } from "@/types/profile";
+import { Profile } from "@/types/profile";
 import { useOwnProfile } from "@/hooks/useUser";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import {
@@ -15,7 +15,7 @@ import {
 const AuthContext = createContext<{
     session: Session | null | undefined;
     user: User | null | undefined;
-    profile: ProfileType | null | undefined;
+    profile: Profile | null | undefined;
     signInWithPassword: (
         email: string,
         password: string

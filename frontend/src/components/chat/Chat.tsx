@@ -34,7 +34,7 @@ const Chat = ({ chatter }: { chatter: string }) => {
             if (lastMessage) {
                 const msg = await HomeMsgSchema.validate(JSON.parse(lastMessage.data));
                 setMessages(
-                    messages.concat(msg)
+                    messages.concat(msg).slice(0, 300)
                 );
             }
         }

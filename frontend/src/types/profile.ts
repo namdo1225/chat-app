@@ -5,7 +5,8 @@ import * as y from "yup";
 export const EditProfileSchema = RegistrationSchema.shape({
     email: optionalStr,
     password: optionalStr,
-    passwordConfirm: optionalStr
+    passwordConfirm: optionalStr,
+    public_profile: y.bool().optional(),
 });
 
 export type EditProfileType = InferType<typeof EditProfileSchema>;
@@ -17,8 +18,9 @@ export const ProfileSchema = y.object().shape({
     last_name: requiredStr,
     profile_photo: requiredStr,
     user_id: requiredStr,
+    public_profile: y.bool().required(),
 })
 
 export const ProfilesSchema = y.array().of(ProfileSchema);
 
-export type ProfileType = InferType<typeof ProfileSchema>;
+export type Profile = InferType<typeof ProfileSchema>;

@@ -5,6 +5,9 @@ import {
     FormLabel,
     Paper,
     Box,
+    FormControlLabel,
+    Checkbox,
+    Typography,
 } from "@mui/material";
 import ImageIcon from "@mui/icons-material/Image";
 import { useFormik } from "formik";
@@ -49,8 +52,10 @@ const Profile = () => {
             firstName: String(curFirstName) ?? "",
             lastName: String(curLastName) ?? "",
             files: undefined,
+            publicProfile: !!profile?.public_profile,
         },
         validationSchema: EditProfileSchema,
+        enableReinitialize: true,
         onSubmit: async (values) => {
             try {
                 if (!session?.access_token || !user?.id)
@@ -132,34 +137,48 @@ const Profile = () => {
                         src={profile?.profile_photo}
                     />
                     <FormControl>
-                        {fields.map(({ name, label }) => (
-                            <TextField
-                                required
-                                sx={{ my: 2 }}
-                                color="secondary"
-                                key={name}
-                                name={name}
-                                label={label}
-                                type="text"
-                                value={
-                                    formik.values[
-                                        name as keyof typeof formik.values
-                                    ]
-                                }
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                error={Boolean(
-                                    formik.errors[
-                                        name as keyof typeof formik.errors
-                                    ]
-                                )}
-                                helperText={
-                                    formik.errors[
-                                        name as keyof typeof formik.errors
-                                    ]
-                                }
-                            />
-                        ))}
+                        {fields.map(
+                            ({ name, label }) =>
+                                label !== "publicProfile" && (
+                                    <TextField
+                                        required
+                                        sx={{ my: 2 }}
+                                        color="secondary"
+                                        key={name}
+                                        name={name}
+                                        label={label}
+                                        type="text"
+                                        value={
+                                            formik.values[
+                                                name as keyof typeof formik.values
+                                            ]
+                                        }
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        error={Boolean(
+                                            formik.errors[
+                                                name as keyof typeof formik.errors
+                                            ]
+                                        )}
+                                        helperText={
+                                            formik.errors[
+                                                name as keyof typeof formik.errors
+                                            ]
+                                        }
+                                    />
+                                )
+                        )}
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={formik.values.publicProfile}
+                                />
+                            }
+                            onChange={formik.handleChange}
+                            label="Make your profile discoverable"
+                            name="publicProfile"
+                        />
+                        <Typography>User ID: {user?.id}</Typography>
                         <Dropzone onDrop={handleDrop}>
                             {({ getRootProps, getInputProps }) => (
                                 <Button
@@ -211,6 +230,8 @@ const Profile = () => {
                         )}
                         <Button
                             disabled={
+                                profile?.public_profile ===
+                                    formik.values.publicProfile &&
                                 curFirstName === formik.values.firstName &&
                                 curLastName === formik.values.lastName &&
                                 !formik.values.files

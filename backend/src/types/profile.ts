@@ -7,6 +7,7 @@ export const ProfileSchema = z.object({
     profile_photo: setRequiredStr(),
     user_id: setRequiredStr(),
     created_at: setRequiredStr(),
+    public_profile: z.boolean(),
 });
 
 export const ProfilesSchema = ProfileSchema.array();

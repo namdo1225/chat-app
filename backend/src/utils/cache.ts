@@ -2,7 +2,8 @@ import redisClient from "./redis";
 
 const cacheData = async <T>(
     key: string,
-    fetcher: () => Promise<T>
+    fetcher: () => Promise<T>,
+    expiration: number = 3600,
 ): Promise<T | null> => {
     try {
         const cacheResults = await redisClient.get(key);
@@ -12,7 +13,7 @@ const cacheData = async <T>(
             const results = await fetcher();
             if (results)
                 await redisClient.set(key, JSON.stringify(results), {
-                    EX: 3600,
+                    EX: expiration,
                 });
 
             return results;

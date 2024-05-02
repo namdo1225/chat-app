@@ -6,6 +6,7 @@ import ContactUs from "@/components/pages/ContactUs";
 import Account from "@/components/pages/account/Account";
 import Profile from "@/components/pages/account/Profile";
 import About from "@/components/pages/About";
+import Friend from "@/components/pages/Friend";
 
 interface WebsiteRoute {
     name: string;
@@ -17,7 +18,7 @@ interface WebsiteRoute {
 
 export const routes: WebsiteRoute[] = [
     { name: "Chats", path: "/chats", component: <Page /> },
-    { name: "Friends", path: "/friends", component: <Page /> },
+    { name: "Friends", path: "/friends", component: <Friend /> },
     { name: "Discover", path: "/discover", component: <Page /> },
 ];
 

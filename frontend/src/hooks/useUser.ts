@@ -1,13 +1,14 @@
-import { getUser } from "@/services/users";
+import { getUser, getUsers } from "@/services/users";
 import { useQuery } from "@tanstack/react-query";
-import { ProfileType } from "@/types/profile";
+import { Profile } from "@/types/profile";
 import { User } from "@supabase/supabase-js";
 
-const QUERY_KEY = ["OWN_PROFILE"];
+const OWN = ["OWN_PROFILE"];
+const ALL = ["ALL_PROFILEs"];
 
 export const useOwnProfile = (user: User | null | undefined) => {
-    return useQuery<ProfileType | null>({
-        queryKey: QUERY_KEY,
+    return useQuery<Profile | null>({
+        queryKey: OWN,
         queryFn: () => {
             if (user && user.id) return getUser(user.id);
             return null;
@@ -16,5 +17,16 @@ export const useOwnProfile = (user: User | null | undefined) => {
             return false;
         },
         enabled: !!user && !!user.id,
+    });
+};
+
+export const useProfiles = (enabled: boolean = true) => {
+    return useQuery<Profile[] | undefined>({
+        queryKey: ALL,
+        queryFn: () => getUsers(),
+        refetchOnWindowFocus(_query) {
+            return false;
+        },
+        enabled
     });
 };

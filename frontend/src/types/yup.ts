@@ -3,7 +3,7 @@ import * as y from "yup";
 import { InferType } from "yup";
 
 export const email = y.string().email().required("An email is required");
-export const setRequiredStr = (msg: string) => y.string().required(msg);
+export const setRequiredStr = (msg: string = "This field is required") => y.string().required(msg);
 export const optionalStr = y.string().optional();
 export const requiredStr = y.string().required();
 

@@ -15,16 +15,26 @@ import {
     profileImgEditor,
 } from "@/utils/middleware";
 import { cacheData } from "@/utils/cache";
+import redisClient from "@/utils/redis";
 
 const router = Router();
 
 router.get("/", async (_request, response) => {
-    const { data: profiles } = await supabase.from("profiles").select("*");
+    const data = await cacheData(
+        "ALL_PROFILES",
+        async () =>
+            await supabase
+                .from("profiles")
+                .select("*")
+                .is("public_profile", true),
+        1800
+    );
+    const profiles = ProfilesSchema.parse(data?.data);
     return response.json(profiles);
 });
 
 router.get("/:id", async (request, response) => {
-    const data = await cacheData("OWN_PROFILE", async () =>
+    const data = await cacheData(request.params.id, async () =>
         supabase.from("profiles").select("*").eq("user_id", request.params.id)
     );
 
@@ -111,12 +121,13 @@ router.put(
     profileImgEditor,
     async (request, response) => {
         if (request.user.id === request.params.id) {
-            const { first_name, last_name, email, password } =
+            const { first_name, last_name, email, password, public_profile } =
                 UserChangeSchema.parse(request.body);
             const editedData: {
                 first_name?: string;
                 last_name?: string;
                 profile_photo?: string;
+                public_profile?: boolean;
             } = {};
 
             if (first_name) editedData.first_name = first_name;
@@ -168,11 +179,15 @@ router.put(
                 }
             }
 
+            if (public_profile) editedData.public_profile = public_profile;
+
             const { data: newProfile, error } = await supabase
                 .from("profiles")
                 .update(editedData)
                 .eq("user_id", request.user.id)
                 .select();
+
+            await redisClient.del(request.user.id);
 
             if (error) return response.status(404).json(error);
 

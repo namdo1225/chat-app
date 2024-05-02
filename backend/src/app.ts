@@ -12,6 +12,7 @@ import logoutRouter from "./controllers/logout";
 import resendRouter from "./controllers/resend";
 import chatsRouter from "./controllers/chats";
 import contactRouter from "./controllers/contact";
+import friendsRouter from "./controllers/friends";
 
 import { slowDown } from "express-slow-down";
 import { rateLimit } from 'express-rate-limit';
@@ -42,6 +43,7 @@ app.use("/resend", slow, resendRouter);
 app.use("/users", usersRouter);
 app.use("/chats", chatsRouter);
 app.use("/contact", rateLimiter, contactRouter);
+app.use("/friends", friendsRouter);
 
 app.use(unknownEndpoint);
 app.use(errorHandler);
