@@ -16,7 +16,7 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
         .select(
             "*,profiles!friends_requestee_fkey(first_name, last_name, profile_photo, user_id, created_at, public_profile)"
         )
-        .or(`requester.eq.${id},requestee.eq.${id}`);
+        .eq('requestee', id);
 
     if (requesteeError)
         return response.status(400).json({ error: requesteeError });
@@ -26,7 +26,7 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
         .select(
             "*,profiles!friends_requester_fkey(first_name, last_name, profile_photo, user_id, created_at, public_profile)"
         )
-        .or(`requester.eq.${id},requestee.eq.${id}`);
+        .eq('requester', id);
 
     if (requestorError)
         return response.status(400).json({ error: requestorError });
