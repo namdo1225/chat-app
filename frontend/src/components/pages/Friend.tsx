@@ -23,14 +23,12 @@ import {
     useAddFriend,
     useFriends,
     useRemoveFriend,
-    useTestFriends,
     useVerifyFriend,
 } from "@/hooks/useFriend";
 import { useAuth } from "@/context/AuthProvider";
 import { Session, User } from "@supabase/supabase-js";
 import { Friend as Friendtype } from "@/types/friend";
 import { Profile } from "@/types/profile";
-import { InfiniteData } from "@tanstack/react-query";
 
 const UserList = ({
     user,
@@ -108,7 +106,9 @@ const FriendList = ({
 }) => {
     const { mutate: mutateRemove } = useRemoveFriend();
     const { mutate: mutateVerify } = useVerifyFriend();
-    const { fetchNextPage, hasNextPage } = useTestFriends();
+    const { fetchNextPage, hasNextPage } = useFriends(
+        session?.access_token as string
+    );
 
     const handleRemoveFriend = async (id: string) => {
         if (user && session) mutateRemove({ id, token: session.access_token });
@@ -120,11 +120,17 @@ const FriendList = ({
 
     return (
         <InfiniteScroll
-            dataLength={friends.map(page => page.length).reduce((sum, a) => sum + a, 0)}
+            dataLength={friends
+                .map((page) => page.length)
+                .reduce((sum, a) => sum + a, 0)}
             hasMore={hasNextPage}
             next={fetchNextPage}
             loader={<Loading />}
-            endMessage={<Typography>End of list</Typography>}
+            endMessage={
+                <Typography sx={{ textAlign: "center", marginY: 10 }}>
+                    End of friend list
+                </Typography>
+            }
             height={500}
         >
             <Table sx={{ overflow: "auto", maxHeight: 300 }} stickyHeader>
@@ -142,7 +148,9 @@ const FriendList = ({
                                     ((profile.user_id !== user?.id &&
                                         pending) ||
                                         !profile.pending) && (
-                                        <TableRow key={`${profile.user_id}-${i}`}>
+                                        <TableRow
+                                            key={`${profile.user_id}-${i}`}
+                                        >
                                             <TableCell>
                                                 {profile.first_name}{" "}
                                                 {profile.last_name}
@@ -196,7 +204,9 @@ const Friend = () => {
     /*const { data: friends, isLoading: loadingFriend } = useFriends(
         session?.access_token
     );*/
-    const { data: friends, isLoading: loadingFriend, fetchNextPage } = useTestFriends();
+    const { data: friends, isLoading: loadingFriend } = useFriends(
+        session?.access_token as string
+    );
 
     const { data: profiles, isLoading } = useProfiles(searchPublic);
     const { mutate: mutateAdd } = useAddFriend();
@@ -205,7 +215,13 @@ const Friend = () => {
         if (user && session) mutateAdd({ id, token: session.access_token });
     };
 
-    if ((!profiles && searchPublic) || !friends || isLoading || loadingFriend)
+    if (
+        (!profiles && searchPublic) ||
+        !friends ||
+        isLoading ||
+        loadingFriend ||
+        !friends.pages
+    )
         return <Loading />;
 
     return (

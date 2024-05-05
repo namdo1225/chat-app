@@ -1,7 +1,8 @@
 import { getUser, getUsers } from "@/services/users";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Profile } from "@/types/profile";
 import { User } from "@supabase/supabase-js";
+import * as y from "yup";
 
 const OWN = ["OWN_PROFILE"];
 const ALL = ["ALL_PROFILEs"];
@@ -20,6 +21,8 @@ export const useOwnProfile = (user: User | null | undefined) => {
     });
 };
 
+/*
+NON-PAGINATION VERSION
 export const useProfiles = (enabled: boolean = true) => {
     return useQuery<Profile[] | undefined>({
         queryKey: ALL,
@@ -28,5 +31,24 @@ export const useProfiles = (enabled: boolean = true) => {
             return false;
         },
         enabled
+    });
+};
+*/
+
+export const useProfiles = (enabled: boolean = true, limit: number = 1) => {
+    return useInfiniteQuery<Profile[], Error>({
+        queryKey: ALL,
+        initialPageParam: 0,
+        queryFn: ({ pageParam }) => {
+            const page = y.number().required().validateSync(pageParam);
+            return getUsers(page, page + limit);
+        },
+        getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+            const page = y.number().required().validateSync(lastPageParam);
+            if (lastPage && lastPage.length > 0 && lastPage.length >= limit)
+                return page + limit + 1;
+            return null;
+        },
+        enabled: !!enabled,
     });
 };

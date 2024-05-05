@@ -4,8 +4,11 @@ import { FriendsSchema } from "@/types/friend";
 
 const api = "friends";
 
-const getFriends = async (token: string) => {
-    const request = await apiClient.get(`/${api}`, createAuthHeader(token));
+const getFriends = async (token: string, begin: number, end: number) => {
+    const request = await apiClient.get(
+        `/${api}?begin=${begin}&end=${end}`,
+        createAuthHeader(token)
+    );
     return FriendsSchema.validate(request.data);
 };
 

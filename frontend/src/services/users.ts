@@ -11,8 +11,8 @@ const api = "users";
 const resendApi = "resend";
 const logoutApi = "logout";
 
-const getUsers = async () => {
-    const request = await apiClient.get(`/${api}`);
+const getUsers = async (begin: number, end: number) => {
+    const request = await apiClient.get(`/${api}?begin=${begin}&end=${end}`);
     const profiles = await ProfilesSchema.validate(request.data);
     return profiles;
 };

@@ -7,10 +7,12 @@ import {
 } from "@/services/friends";
 import { Friend } from "@/types/friend";
 import queryClient from "@/config/queryClient";
+import * as y from "yup";
 
 const FRIENDS = ["FRIENDS"];
-const TEST = ["TEST"];
 
+/*
+const TEST = ["TEST"];
 const test_friends: Friend[] = [
     {
         created_at: new Date().toDateString(),
@@ -183,6 +185,7 @@ export const useTestFriends = () => {
     });
 };
 
+
 export const useFriends = (token: string | undefined | null) => {
     return useQuery<Friend[] | null | undefined>({
         queryKey: FRIENDS,
@@ -191,6 +194,25 @@ export const useFriends = (token: string | undefined | null) => {
         },
         refetchOnWindowFocus(_query) {
             return false;
+        },
+        enabled: !!token,
+    });
+};
+*/
+
+export const useFriends = (token: string, limit: number = 1) => {
+    return useInfiniteQuery<Friend[], Error>({
+        queryKey: FRIENDS,
+        initialPageParam: 0,
+        queryFn: ({ pageParam }) => {
+            const page = y.number().required().validateSync(pageParam);
+            return getFriends(token, page, page + limit);
+        },
+        getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+            const page = y.number().required().validateSync(lastPageParam);
+            if (lastPage && lastPage.length > 0 && lastPage.length >= limit)
+                return page + limit + 1;
+            return null;
         },
         enabled: !!token,
     });

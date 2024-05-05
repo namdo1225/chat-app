@@ -14,10 +14,6 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
     const begin = z.coerce.number().parse(request.query.begin);
     const end = z.coerce.number().parse(request.query.end);
 
-    if (!begin || !end)
-        return response.status(400).json({ error: "You must specify a begin and end query parameter for this route." });
-
-
     const { data: requestee, error: requesteeError } = await supabase
         .from(FRIENDS)
         .select(
