@@ -6,8 +6,15 @@ import { tokenExtractor } from "@/utils/middleware";
 const router = Router();
 
 router.post("/", tokenExtractor, async (request, response) => {
-    await supabase.auth.admin.signOut(request.token as string);
-    response.status(200).json("");
+    const { error } = await supabase.auth.admin.signOut(
+        request.token as string
+    );
+    if (error)
+        return response
+            .status(500)
+            .json({ error: "Cannot invalidate session token" });
+
+    return response.status(200).json("");
 });
 
 export default router;

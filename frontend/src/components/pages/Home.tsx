@@ -1,5 +1,5 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
-import Chat from "@/components/chat/Chat";
+import Chat from "@/components/pages/chat/Chat";
 import { useRef, useState } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import Captcha from "../Captcha";

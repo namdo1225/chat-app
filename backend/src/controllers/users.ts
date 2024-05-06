@@ -16,20 +16,37 @@ import {
 } from "@/utils/middleware";
 import { cacheData } from "@/utils/cache";
 import redisClient from "@/utils/redis";
+import z from "zod";
 
 const router = Router();
 
-router.get("/", async (_request, response) => {
-    const data = await cacheData(
+router.get("/", async (request, response) => {
+    const begin = z.coerce.number().parse(request.query.begin);
+    const end = z.coerce.number().parse(request.query.end);
+
+    /*const data = await cacheData(
         "ALL_PROFILES",
         async () =>
             await supabase
                 .from("profiles")
                 .select("*")
-                .is("public_profile", true),
+                .is("public_profile", true)
+                .order('last_name')
+                .range(begin, end),
         1800
-    );
-    const profiles = ProfilesSchema.parse(data?.data);
+    );*/
+
+    const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .is("public_profile", true)
+        .order("last_name")
+        .range(begin, end);
+
+    if (error)
+        return response.json({error: "Error retrieving users."});
+
+    const profiles = ProfilesSchema.parse(data);
     return response.json(profiles);
 });
 
@@ -210,15 +227,11 @@ router.delete(
                 .eq("user_id", request.user.id);
 
             const parsedProfiles = ProfilesSchema.parse(profiles);
-            console.log(profiles);
+
             if (
                 parsedProfiles.length === 1 &&
                 parsedProfiles[0].profile_photo !== DEFAULT_PROFILE_URL
             ) {
-                console.log(
-                    "HERE: ",
-                    `${PROFILE_IMAGE_BUCKET}/${request.user.id}.jpg`
-                );
                 const { error } = await supabase.storage
                     .from(PROFILE_IMAGE_BUCKET)
                     .remove([`${request.user.id}.jpg`]);

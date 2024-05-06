@@ -10,6 +10,6 @@ export const FriendSchema = ProfileSchema.shape({
     pending: y.bool().required(),
 })
 
-export const FriendsSchema = y.array().of(FriendSchema);
+export const FriendsSchema = y.array().of(FriendSchema).required();
 
 export type Friend = InferType<typeof FriendSchema>;
