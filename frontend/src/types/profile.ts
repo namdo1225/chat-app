@@ -6,7 +6,7 @@ export const EditProfileSchema = RegistrationSchema.shape({
     email: optionalStr,
     password: optionalStr,
     passwordConfirm: optionalStr,
-    public_profile: y.bool().optional(),
+    publicProfile: y.bool().optional(),
 });
 
 export type EditProfileType = InferType<typeof EditProfileSchema>;

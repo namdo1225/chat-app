@@ -13,7 +13,7 @@ import {
     TableCell,
     Tooltip,
 } from "@mui/material";
-import { Fragment, useState } from "react";
+import { useEffect, useState } from "react";
 import { useProfiles } from "@/hooks/useUser";
 import Loading from "@/components/Loading";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
@@ -38,23 +38,29 @@ const UserList = ({
 }: {
     user: User | undefined | null;
     session: Session | null | undefined;
-    friends: Friendtype[][];
+    friends: Friendtype[];
     profiles: Profile[];
 }) => {
     const { mutate: mutateAdd } = useAddFriend();
     const handleAddFriend = async (id: string) => {
         if (user && session) mutateAdd({ id, token: session.access_token });
     };
+    const { fetchNextPage, hasNextPage } = useProfiles();
 
     return (
         <InfiniteScroll
             dataLength={profiles.length}
-            hasMore={true}
-            next={() => {}}
+            hasMore={hasNextPage}
+            next={fetchNextPage}
             loader={<Loading />}
-            endMessage={<Typography>End of list</Typography>}
+            endMessage={
+                <Typography sx={{ textAlign: "center", my: 10 }}>
+                    End of user list
+                </Typography>
+            }
+            scrollThreshold={0.5}
         >
-            <Table sx={{ overflow: "auto", maxHeight: 300 }} stickyHeader>
+            <Table sx={{ overflow: "auto", my: 2 }} stickyHeader>
                 <TableHead>
                     <TableRow>
                         <TableCell>Name</TableCell>
@@ -62,7 +68,7 @@ const UserList = ({
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {/*profiles.map(
+                    {profiles.map(
                         (profile) =>
                             profile.user_id !== user?.id &&
                             !friends.some(
@@ -86,7 +92,7 @@ const UserList = ({
                                     </TableCell>
                                 </TableRow>
                             )
-                    )*/}
+                    )}
                 </TableBody>
             </Table>
         </InfiniteScroll>
@@ -101,7 +107,7 @@ const FriendList = ({
 }: {
     user: User | undefined | null;
     session: Session | null | undefined;
-    friends: Friendtype[][];
+    friends: Friendtype[];
     pending: boolean;
 }) => {
     const { mutate: mutateRemove } = useRemoveFriend();
@@ -120,20 +126,18 @@ const FriendList = ({
 
     return (
         <InfiniteScroll
-            dataLength={friends
-                .map((page) => page.length)
-                .reduce((sum, a) => sum + a, 0)}
+            dataLength={friends.length}
             hasMore={hasNextPage}
             next={fetchNextPage}
             loader={<Loading />}
             endMessage={
-                <Typography sx={{ textAlign: "center", marginY: 10 }}>
+                <Typography sx={{ textAlign: "center", my: 10 }}>
                     End of friend list
                 </Typography>
             }
-            height={500}
+            scrollThreshold={0.5}
         >
-            <Table sx={{ overflow: "auto", maxHeight: 300 }} stickyHeader>
+            <Table sx={{ overflow: "auto", m: 2 }} stickyHeader>
                 <TableHead>
                     <TableRow>
                         <TableCell>Name</TableCell>
@@ -141,55 +145,46 @@ const FriendList = ({
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {friends.map((group, i) => (
-                        <Fragment key={`page-${i}`}>
-                            {group.map(
-                                (profile) =>
-                                    ((profile.user_id !== user?.id &&
-                                        pending) ||
-                                        !profile.pending) && (
-                                        <TableRow
-                                            key={`${profile.user_id}-${i}`}
-                                        >
+                    {friends.map(
+                        (profile) =>
+                            ((profile.user_id !== user?.id && pending) ||
+                                !profile.pending) && (
+                                <TableRow key={profile.user_id}>
+                                    <TableCell>
+                                        {profile.first_name} {profile.last_name}
+                                    </TableCell>
+                                    {profile.pending &&
+                                        profile.requestee === user?.id && (
                                             <TableCell>
-                                                {profile.first_name}{" "}
-                                                {profile.last_name}
-                                            </TableCell>
-                                            {profile.pending &&
-                                                profile.requestee ===
-                                                    user?.id && (
-                                                    <Tooltip title="Accept friend request">
-                                                        <IconButton
-                                                            onClick={() =>
-                                                                void handleVerifyFriend(
-                                                                    profile.id
-                                                                )
-                                                            }
-                                                            children={
-                                                                <PersonAddIcon />
-                                                            }
-                                                        />
-                                                    </Tooltip>
-                                                )}
-                                            <TableCell>
-                                                <Tooltip title="Remove friend">
+                                                <Tooltip title="Accept friend request">
                                                     <IconButton
                                                         onClick={() =>
-                                                            void handleRemoveFriend(
+                                                            void handleVerifyFriend(
                                                                 profile.id
                                                             )
                                                         }
                                                         children={
-                                                            <PersonRemoveIcon />
+                                                            <PersonAddIcon />
                                                         }
                                                     />
                                                 </Tooltip>
                                             </TableCell>
-                                        </TableRow>
-                                    )
-                            )}
-                        </Fragment>
-                    ))}
+                                        )}
+                                    <TableCell>
+                                        <Tooltip title="Remove friend">
+                                            <IconButton
+                                                onClick={() =>
+                                                    void handleRemoveFriend(
+                                                        profile.id
+                                                    )
+                                                }
+                                                children={<PersonRemoveIcon />}
+                                            />
+                                        </Tooltip>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                    )}
                 </TableBody>
             </Table>
         </InfiniteScroll>
@@ -201,9 +196,7 @@ const Friend = () => {
     const [searchPublic, setSearchPublic] = useState(false);
     const [pending, setPending] = useState(false);
     const [searchStr, setSearchStr] = useState("");
-    /*const { data: friends, isLoading: loadingFriend } = useFriends(
-        session?.access_token
-    );*/
+
     const { data: friends, isLoading: loadingFriend } = useFriends(
         session?.access_token as string
     );
@@ -220,13 +213,31 @@ const Friend = () => {
         !friends ||
         isLoading ||
         loadingFriend ||
-        !friends.pages
+        !friends
     )
         return <Loading />;
 
+    const filteredFriends =
+        searchStr && !searchPublic
+            ? friends.filter(
+                  (friend) =>
+                      friend.first_name.includes(searchStr) ||
+                      friend.last_name.includes(searchStr)
+              )
+            : friends;
+
+    const filteredProfiles =
+        searchStr && searchPublic && profiles
+            ? profiles.filter(
+                  (profile) =>
+                      profile.first_name.includes(searchStr) ||
+                      profile.last_name.includes(searchStr)
+              )
+            : profiles ?? [];
+
     return (
         <Box>
-            <Typography variant="h4">Friends</Typography>
+            <Typography textAlign="center" variant="h4" m={2}>Friends</Typography>
             <Paper sx={{ m: 2, p: 2 }}>
                 <Box display="flex" flexWrap="wrap">
                     <Typography>Searching for new people?</Typography>
@@ -267,7 +278,7 @@ const Friend = () => {
                             user={user}
                             session={session}
                             pending={pending}
-                            friends={friends.pages}
+                            friends={filteredFriends}
                         />
                     </>
                 )}
@@ -278,14 +289,14 @@ const Friend = () => {
                             profile is not public, you can add them as friends
                             if you have their user ID.
                         </Typography>
-                        {profiles && (
+                        {
                             <UserList
                                 user={user}
                                 session={session}
-                                profiles={profiles}
-                                friends={friends.pages}
+                                profiles={filteredProfiles}
+                                friends={filteredFriends}
                             />
-                        )}
+                        }
                     </>
                 )}
             </Paper>

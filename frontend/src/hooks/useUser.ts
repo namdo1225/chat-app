@@ -35,20 +35,29 @@ export const useProfiles = (enabled: boolean = true) => {
 };
 */
 
-export const useProfiles = (enabled: boolean = true, limit: number = 1) => {
-    return useInfiniteQuery<Profile[], Error>({
+export const useProfiles = (
+    enabled: boolean = true,
+    inclusiveLimit: number = 1
+) => {
+    const infiniteProfiles = useInfiniteQuery<Profile[], Error>({
         queryKey: ALL,
         initialPageParam: 0,
         queryFn: ({ pageParam }) => {
             const page = y.number().required().validateSync(pageParam);
-            return getUsers(page, page + limit);
+            return getUsers(page, page + inclusiveLimit);
         },
         getNextPageParam: (lastPage, _allPages, lastPageParam) => {
             const page = y.number().required().validateSync(lastPageParam);
-            if (lastPage && lastPage.length > 0 && lastPage.length >= limit)
-                return page + limit + 1;
+            if (
+                lastPage &&
+                lastPage.length > 0 &&
+                lastPage.length >= inclusiveLimit
+            )
+                return page + inclusiveLimit + 1;
             return null;
         },
         enabled: !!enabled,
     });
+
+    return { ...infiniteProfiles, data: infiniteProfiles.data?.pages.flat() };
 };

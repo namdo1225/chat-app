@@ -19,24 +19,24 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
         .select(
             "*,profiles!friends_requestee_fkey(first_name, last_name, profile_photo, user_id, created_at, public_profile)"
         )
-        .eq('requestee', id)
-        .order('last_name', { referencedTable: 'profiles', ascending: true })
+        .eq("requester", id)
+        .order("last_name", { referencedTable: "profiles", ascending: true })
         .range(begin, end);
 
     if (requesteeError)
         return response.status(400).json({ error: requesteeError });
 
-    const { data: requestor, error: requestorError } = await supabase
+    const { data: requestor, error: requesterError } = await supabase
         .from(FRIENDS)
         .select(
             "*,profiles!friends_requester_fkey(first_name, last_name, profile_photo, user_id, created_at, public_profile)"
         )
-        .eq('requester', id)
-        .order('last_name', { referencedTable: 'profiles', ascending: true })
+        .eq("requestee", id)
+        .order("last_name", { referencedTable: "profiles", ascending: true })
         .range(begin, end);
 
-    if (requestorError)
-        return response.status(400).json({ error: requestorError });
+    if (requesterError)
+        return response.status(400).json({ error: requesterError });
 
     const allRequests = FriendsSchema.parse(requestee.concat(requestor));
     const formattedRequests = allRequests.map((data) => {
@@ -48,7 +48,6 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
             ...data.profiles,
         };
     });
-
     return response.json(formattedRequests);
 });
 

@@ -62,7 +62,11 @@ const editProfile = async (
 
     if (newProfile.email) form.append("email", newProfile.email);
     if (newProfile.password) form.append("password", newProfile.password);
-    if (newProfile.publicProfile) form.append("publicProfile", String(newProfile.publicProfile));
+    if (
+        newProfile.publicProfile === false ||
+        newProfile.publicProfile === true
+    )
+        form.append("public_profile", String(newProfile.publicProfile));
 
     const request = await apiClient.put(
         `/${api}/${id}`,
@@ -115,5 +119,5 @@ export {
     logout,
     editProfile,
     getUser,
-    getUsers
+    getUsers,
 };

@@ -200,22 +200,28 @@ export const useFriends = (token: string | undefined | null) => {
 };
 */
 
-export const useFriends = (token: string, limit: number = 1) => {
-    return useInfiniteQuery<Friend[], Error>({
+export const useFriends = (token: string, inclusiveLimit: number = 1) => {
+    const infiniteFriends = useInfiniteQuery<Friend[], Error>({
         queryKey: FRIENDS,
         initialPageParam: 0,
         queryFn: ({ pageParam }) => {
             const page = y.number().required().validateSync(pageParam);
-            return getFriends(token, page, page + limit);
+            return getFriends(token, page, page + inclusiveLimit);
         },
         getNextPageParam: (lastPage, _allPages, lastPageParam) => {
             const page = y.number().required().validateSync(lastPageParam);
-            if (lastPage && lastPage.length > 0 && lastPage.length >= limit)
-                return page + limit + 1;
+            if (
+                lastPage &&
+                lastPage.length > 0 &&
+                lastPage.length >= inclusiveLimit
+            )
+                return page + inclusiveLimit + 1;
             return null;
         },
         enabled: !!token,
     });
+
+    return { ...infiniteFriends, data: infiniteFriends.data?.pages.flat() };
 };
 
 export const useAddFriend = () => {
