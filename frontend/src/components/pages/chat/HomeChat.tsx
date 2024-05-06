@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 /**
  * Code from: https://frontendshape.com/post/create-a-chat-ui-in-react-with-mui-5
  */
-const Chat = ({ chatter }: { chatter: string }) => {
+const HomeChat = ({ chatter }: { chatter: string }) => {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<HomeMsg[]>([]);
     const [socketUrl, setSocketUrl] = useState("ws://localhost:8080/homechat");
@@ -151,4 +151,4 @@ const Chat = ({ chatter }: { chatter: string }) => {
     );
 };
 
-export default Chat;
+export default HomeChat;

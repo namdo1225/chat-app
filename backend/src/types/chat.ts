@@ -1,6 +1,15 @@
 import { setRequiredStr } from "./zod";
 import z from "zod";
 
+export const ChatSchema = z.object({
+    id: setRequiredStr(),
+    created_at: setRequiredStr(),
+    owner_id: setRequiredStr(),
+    name: setRequiredStr(),
+    description: setRequiredStr(),
+    public: z.boolean(),
+});
+
 export const BaseMsgSchema = z.object({
     id: setRequiredStr(),
     sent_at: setRequiredStr(),
@@ -24,8 +33,8 @@ export const ChatCreateSchema = z.object({
     owner_id: setRequiredStr(),
 });
 
-export const ChatsSchema = ChatCreateSchema.array();
+export const ChatsSchema = ChatSchema.array();
 
-export type ChatCreateType = z.infer<typeof ChatCreateSchema>;
+export type ChatCreateType = z.infer<typeof ChatSchema>;
 
-export type ChatsType = z.infer<typeof ChatsSchema>;
+export type Chat = z.infer<typeof ChatSchema>;
