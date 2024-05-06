@@ -74,25 +74,30 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
     return response.status(201).json(newCreatedChat);
 });
 
-/*
-router.put("/:id", tokenExtractor, userExtractor, async (request, response) => {
+router.put("/:id", tokenExtractor, userExtractor, chatExtractor, async (request, response) => {
+    if (request.chat.owner_id !== request.user.id)
+        return response.status(400).json({error: "You do not have authorization to make this request."); 
+        
     const { name, description, owner_id } = ChatCreateSchema.parse(
         request.body
     );
 
+    // also ensures new owner is a chat member if owner_id !== request.chat.owner_id
+    
     const editedData: {
         name?: string;
         description?: string;
         owner_id?: string;
     } = {};
 
-    if (owner_id) editedData.owner_id = owner_id;
+    if (owner_id && owner_id !== request.chat.owner_id) editedData.owner_id = owner_id;
     if (name) editedData.name = name;
-    if (description) editedData.description = description;
-    const { data: newProfile, error } = await supabase
-        .from("profiles")
+    if (description) editedData.description = description
+        
+    const { data: editedChat, error } = await supabase
+        .from("chats")
         .update(editedData)
-        .eq("user_id", foundUser.user.id)
+        .eq("id", request.chat.id)
         .select();
 
     if (error) {
@@ -100,9 +105,7 @@ router.put("/:id", tokenExtractor, userExtractor, async (request, response) => {
         return response.status(404).json(error);
     }
 
-    return response.status(201).json(newProfile);
-
-    return response.status(404).json({ error: "user id not found" });
+    return response.status(201).json(editedChat);
 });
 
 router.delete("/", async (request, response) => {
@@ -131,5 +134,5 @@ router.delete("/", async (request, response) => {
 
     return response.status(404).json({ error: "user id not found" });
 });
-*/
+
 export default router;
