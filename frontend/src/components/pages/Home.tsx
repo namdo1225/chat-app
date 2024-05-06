@@ -1,5 +1,5 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
-import Chat from "@/components/pages/chat/Chat";
+import HomeChat from "@/components/pages/chat/HomeChat";
 import { useRef, useState } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import Captcha from "../Captcha";
@@ -29,7 +29,7 @@ const Home = () => {
                 chat application.
             </Typography>
             {chatter && captcha ? (
-                <Chat chatter={chatter} />
+                <HomeChat chatter={chatter} />
             ) : (
                 <Box
                     sx={{

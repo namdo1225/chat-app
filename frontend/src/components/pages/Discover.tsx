@@ -12,32 +12,25 @@ import { useProfiles } from "@/hooks/useUser";
 import Loading from "@/components/Loading";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useAddFriend, useFriends } from "@/hooks/useFriend";
 import { useAuth } from "@/context/AuthProvider";
 import { Session, User } from "@supabase/supabase-js";
-import { Friend as Friendtype } from "@/types/friend";
-import { Profile } from "@/types/profile";
+import { useChats } from "@/hooks/useChat";
+import { Chat } from "@/types/chat";
 
 const GroupGrid = ({
     user,
     session,
-    friends,
-    profiles,
+    chats,
 }: {
-    user: User | undefined | null;
-    session: Session | null | undefined;
-    friends: Friendtype[];
-    profiles: Profile[];
+    user: User;
+    session: Session;
+    chats: Chat[];
 }) => {
-    const { mutate: mutateAdd } = useAddFriend();
-    const handleAddFriend = async (id: string) => {
-        if (user && session) mutateAdd({ id, token: session.access_token });
-    };
-    const { fetchNextPage, hasNextPage } = useProfiles();
+    const { fetchNextPage, hasNextPage } = useChats(session.access_token);
 
     return (
         <InfiniteScroll
-            dataLength={profiles.length}
+            dataLength={chats.length}
             hasMore={hasNextPage}
             next={fetchNextPage}
             loader={<Loading />}
@@ -49,26 +42,20 @@ const GroupGrid = ({
             scrollThreshold={0.5}
         >
             <Grid container p={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-                {profiles.map(
-                    (profile) =>
-                        profile.user_id !== user?.id &&
-                        !friends.some((f) => f.user_id === profile.user_id) && (
-                            <Grid item key={profile.user_id}>
-                                <Box>
-                                    {profile.first_name} {profile.last_name}
-                                </Box>
-                                <Box>
-                                    <Tooltip title="Send friend request">
+                {chats.map(
+                    (chat) =>
+                        chat.owner_id !== user?.id && (
+                            <Grid item key={chat.id}>
+                                <Paper sx={{ p: 2 }}>
+                                    <Typography>{chat.name}</Typography>
+                                    <Typography>{chat.description}</Typography>
+                                    <Tooltip title="Join group">
                                         <IconButton
-                                            onClick={() =>
-                                                void handleAddFriend(
-                                                    profile.user_id
-                                                )
-                                            }
+                                            onClick={() => {}}
                                             children={<PersonAddIcon />}
                                         />
                                     </Tooltip>
-                                </Box>
+                                </Paper>
                             </Grid>
                         )
                 )}
@@ -81,31 +68,17 @@ const Discover = () => {
     const { user, session } = useAuth();
     const [searchStr, setSearchStr] = useState("");
 
-    const { data: friends, isLoading: loadingFriend } = useFriends(
+    const { data: chats, isLoading: loadingChat } = useChats(
         session?.access_token as string
     );
 
     const { data: profiles, isLoading } = useProfiles(true);
 
-    if (!profiles || !friends || isLoading || loadingFriend || !friends)
-        return <Loading />;
+    if (!profiles || !chats || isLoading || loadingChat) return <Loading />;
 
-    const filteredFriends = searchStr
-        ? friends.filter(
-              (friend) =>
-                  friend.first_name.includes(searchStr) ||
-                  friend.last_name.includes(searchStr)
-          )
-        : friends;
-
-    const filteredProfiles =
-        searchStr && profiles
-            ? profiles.filter(
-                  (profile) =>
-                      profile.first_name.includes(searchStr) ||
-                      profile.last_name.includes(searchStr)
-              )
-            : profiles ?? [];
+    const filteredChats = searchStr
+        ? chats.filter((chat) => chat.name.includes(searchStr))
+        : chats;
 
     return (
         <Box>
@@ -120,12 +93,13 @@ const Discover = () => {
                         onChange={({ target }) => setSearchStr(target.value)}
                     />
                 </Box>
-                <GroupGrid
-                    user={user}
-                    session={session}
-                    profiles={filteredProfiles}
-                    friends={filteredFriends}
-                />
+                {user && session && filteredChats && (
+                    <GroupGrid
+                        user={user}
+                        session={session}
+                        chats={filteredChats}
+                    />
+                )}
             </Paper>
         </Box>
     );

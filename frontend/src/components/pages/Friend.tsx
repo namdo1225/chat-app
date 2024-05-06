@@ -36,8 +36,8 @@ const UserList = ({
     friends,
     profiles,
 }: {
-    user: User | undefined | null;
-    session: Session | null | undefined;
+    user: User;
+    session: Session;
     friends: Friendtype[];
     profiles: Profile[];
 }) => {
@@ -105,8 +105,8 @@ const FriendList = ({
     friends,
     pending,
 }: {
-    user: User | undefined | null;
-    session: Session | null | undefined;
+    user: User;
+    session: Session;
     friends: Friendtype[];
     pending: boolean;
 }) => {
@@ -208,13 +208,7 @@ const Friend = () => {
         if (user && session) mutateAdd({ id, token: session.access_token });
     };
 
-    if (
-        (!profiles && searchPublic) ||
-        !friends ||
-        isLoading ||
-        loadingFriend ||
-        !friends
-    )
+    if ((!profiles && searchPublic) || !friends || isLoading || loadingFriend)
         return <Loading />;
 
     const filteredFriends =
@@ -237,7 +231,9 @@ const Friend = () => {
 
     return (
         <Box>
-            <Typography textAlign="center" variant="h4" m={2}>Friends</Typography>
+            <Typography textAlign="center" variant="h4" m={2}>
+                Friends
+            </Typography>
             <Paper sx={{ m: 2, p: 2 }}>
                 <Box display="flex" flexWrap="wrap">
                     <Typography>Searching for new people?</Typography>
@@ -274,12 +270,14 @@ const Friend = () => {
                                 onChange={() => setPending(!pending)}
                             />
                         </Box>
-                        <FriendList
-                            user={user}
-                            session={session}
-                            pending={pending}
-                            friends={filteredFriends}
-                        />
+                        {session && user && (
+                            <FriendList
+                                user={user}
+                                session={session}
+                                pending={pending}
+                                friends={filteredFriends}
+                            />
+                        )}
                     </>
                 )}
                 {searchPublic && (
@@ -289,14 +287,14 @@ const Friend = () => {
                             profile is not public, you can add them as friends
                             if you have their user ID.
                         </Typography>
-                        {
+                        {session && user && (
                             <UserList
                                 user={user}
                                 session={session}
                                 profiles={filteredProfiles}
                                 friends={filteredFriends}
                             />
-                        }
+                        )}
                     </>
                 )}
             </Paper>

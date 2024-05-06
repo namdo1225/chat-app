@@ -1,11 +1,9 @@
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
-import { ChatCreateSchema } from "@/types/chat";
+import { ChatCreateSchema, ChatsSchema } from "@/types/chat";
 import { logError } from "@/utils/logger";
-//import multer from "multer";
-//import { unlink } from "fs";
-//import { fileResultHandler } from "@/utils/handler";
+import z from "zod";
 import {
     tokenExtractor,
     userExtractor,
@@ -13,15 +11,27 @@ import {
 } from "@/utils/middleware";
 
 const router = Router();
-//const upload = multer({ dest: "uploads/" });
 
 router.get("/", tokenExtractor, userExtractor, async (request, response) => {
-    const { data: chats } = await supabase
-        .from("chat_members")
-        .select("chats(id, owner_id, name, description)")
-        .eq("user_id", request.user.id);
+    const getAllPublic = z.coerce.boolean().parse(request.query.getAllPublic);
+    const begin = z.coerce.number().parse(request.query.begin);
+    const end = z.coerce.number().parse(request.query.end);
 
-    return response.json(chats);
+    const { data: chats } = getAllPublic
+        ? await supabase
+            .from("chats")
+            .select("*")
+            .eq("public", true)
+            .order("name", { ascending: true })
+            .range(begin, end)
+        : await supabase
+            .from("chat_members")
+            .select("chats(*)")
+            .eq("user_id", request.user.id)
+            .order("name", { referencedTable: "chats",  ascending: true })
+            .range(begin, end);
+
+    return response.json(ChatsSchema.parse(chats));
 });
 
 router.get(
@@ -34,8 +44,6 @@ router.get(
     }
 );
 
-// Assuming 'photo' is the name of our profile picture field in the form
-// upload.single("photo")
 router.post("/", tokenExtractor, userExtractor, async (request, response) => {
     const { name, description } = ChatCreateSchema.parse(request.body);
 

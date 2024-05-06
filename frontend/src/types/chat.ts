@@ -2,6 +2,19 @@ import { InferType } from "yup";
 import { requiredStr } from "./yup";
 import * as y from "yup";
 
+export const ChatSchema = y.object().shape({
+    id: requiredStr,
+    created_at: requiredStr,
+    owner_id: requiredStr,
+    name: requiredStr,
+    description: requiredStr,
+    public: y.boolean().required(),
+})
+
+export const ChatsSchema = y.array().of(ChatSchema).required();
+
+export type Chat = InferType<typeof ChatSchema>;
+
 export const BaseMsgSchema = y.object().shape({
     id: requiredStr,
     sent_at: requiredStr,
