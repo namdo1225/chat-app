@@ -28,7 +28,7 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
             .from("chat_members")
             .select("chats(*)")
             .eq("user_id", request.user.id)
-            .order("name", { referencedTable: "chats",  ascending: true })
+            .order("name", { referencedTable: "chats", ascending: true })
             .range(begin, end);
 
     return response.json(ChatsSchema.parse(chats));
@@ -74,39 +74,50 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
     return response.status(201).json(newCreatedChat);
 });
 
-router.put("/:id", tokenExtractor, userExtractor, chatExtractor, async (request, response) => {
-    if (request.chat.owner_id !== request.user.id)
-        return response.status(400).json({error: "You do not have authorization to make this request."); 
-        
-    const { name, description, owner_id } = ChatCreateSchema.parse(
-        request.body
-    );
+router.put(
+    "/:id",
+    tokenExtractor,
+    userExtractor,
+    chatExtractor,
+    async (request, response) => {
+        if (request.chat.owner_id !== request.user.id)
+            return response
+                .status(400)
+                .json({
+                    error: "You do not have authorization to make this request.",
+                });
 
-    // also ensures new owner is a chat member if owner_id !== request.chat.owner_id
-    
-    const editedData: {
-        name?: string;
-        description?: string;
-        owner_id?: string;
-    } = {};
+        const { name, description, owner_id } = ChatCreateSchema.parse(
+            request.body
+        );
 
-    if (owner_id && owner_id !== request.chat.owner_id) editedData.owner_id = owner_id;
-    if (name) editedData.name = name;
-    if (description) editedData.description = description
-        
-    const { data: editedChat, error } = await supabase
-        .from("chats")
-        .update(editedData)
-        .eq("id", request.chat.id)
-        .select();
+        // also ensures new owner is a chat member if owner_id !== request.chat.owner_id
 
-    if (error) {
-        logError(error);
-        return response.status(404).json(error);
+        const editedData: {
+            name?: string;
+            description?: string;
+            owner_id?: string;
+        } = {};
+
+        if (owner_id && owner_id !== request.chat.owner_id)
+            editedData.owner_id = owner_id;
+        if (name) editedData.name = name;
+        if (description) editedData.description = description;
+
+        const { data: editedChat, error } = await supabase
+            .from("chats")
+            .update(editedData)
+            .eq("id", request.chat.id)
+            .select();
+
+        if (error) {
+            logError(error);
+            return response.status(404).json(error);
+        }
+
+        return response.status(201).json(editedChat);
     }
-
-    return response.status(201).json(editedChat);
-});
+);
 
 router.delete("/", async (request, response) => {
     const authorization = z.string().parse(request.headers.authorization);
