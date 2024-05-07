@@ -40,6 +40,11 @@ router.get(
     userExtractor,
     chatExtractor,
     (request, response) => {
+        if (request.chat.owner_id !== request.user.id)
+            response.status(400).json({
+                error: "You do not have authorization to make this request.",
+            });
+
         return response.json(request.chat);
     }
 );
@@ -81,18 +86,16 @@ router.put(
     chatExtractor,
     async (request, response) => {
         if (request.chat.owner_id !== request.user.id)
-            return response
-                .status(400)
-                .json({
-                    error: "You do not have authorization to make this request.",
-                });
+            return response.status(400).json({
+                error: "You do not have authorization to make this request.",
+            });
 
         const { name, description, owner_id } = ChatCreateSchema.parse(
             request.body
         );
 
-        // also ensures new owner is a chat member if owner_id !== request.chat.owner_id
-
+        // also ensures new owner is a chat member if
+        // owner_id !== request.chat.owner_id
         const editedData: {
             name?: string;
             description?: string;
@@ -119,31 +122,27 @@ router.put(
     }
 );
 
-router.delete("/", async (request, response) => {
-    const authorization = z.string().parse(request.headers.authorization);
-    if (!authorization.startsWith("Bearer "))
-        return response
-            .status(404)
-            .json({ error: "No bearer access token provided" });
+router.delete(
+    "/:id",
+    tokenExtractor,
+    userExtractor,
+    chatExtractor,
+    async (request, response) => {
+        if (request.chat.owner_id !== request.user.id)
+            return response.status(400).json({
+                error: "You do not have authorization to make this request.",
+            });
 
-    const access_token = authorization.split(" ")[1];
+        const { error: deleteError } = await supabase
+            .from("chats")
+            .delete()
+            .eq("id", request.chat.id);
 
-    const { data: foundUser } = await supabase.auth.getUser(access_token);
+        if (deleteError)
+            return response.status(400).json({ error: deleteError });
 
-    if (foundUser?.user?.id) {
-        const { data, error } = await supabase.auth.admin.deleteUser(
-            foundUser.user?.id
-        );
-
-        if (error) {
-            logError(error);
-            return response.status(404).json(error);
-        }
-
-        return response.status(200).json(data);
+        return response.status(200).json({});
     }
-
-    return response.status(404).json({ error: "user id not found" });
-});
+);
 
 export default router;

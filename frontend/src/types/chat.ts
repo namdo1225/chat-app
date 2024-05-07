@@ -1,17 +1,31 @@
 import { InferType } from "yup";
-import { requiredStr } from "./yup";
+import { optionalStr, requiredStr } from "./yup";
 import * as y from "yup";
 
-export const ChatSchema = y.object().shape({
-    id: requiredStr,
-    created_at: requiredStr,
-    owner_id: requiredStr,
+export const CreateChatSchema = y.object().shape({
     name: requiredStr,
-    description: requiredStr,
+    description: optionalStr,
     public: y.boolean().required(),
 })
 
+export type CreateChat = InferType<typeof CreateChatSchema>;
+
+export const ChatSchema = CreateChatSchema.shape({
+    id: requiredStr,
+    created_at: requiredStr,
+    owner_id: requiredStr,
+})
+
 export const ChatsSchema = y.array().of(ChatSchema).required();
+
+export const EditChatSchema = y.object().shape({
+    name: optionalStr,
+    description: optionalStr,
+    owner_id: optionalStr,
+    public: y.boolean().optional(),
+});
+
+export type EditChat = InferType<typeof EditChatSchema>;
 
 export type Chat = InferType<typeof ChatSchema>;
 

@@ -1,6 +1,6 @@
 import { createAuthHeader } from "./common";
 import apiClient from "@/config/apiClient";
-import { ChatsSchema } from "@/types/chat";
+import { ChatsSchema, CreateChat, ChatSchema } from "@/types/chat";
 
 const api = "chats";
 
@@ -13,4 +13,13 @@ const getChats = async (token: string, begin: number, end: number, getAllPublic:
     return ChatsSchema.validate(request.data);
 };
 
-export { getChats };
+const createChat = async (chat: CreateChat, token: string) => {
+    const request = await apiClient.post(
+        `/${api}`,
+        chat,
+        createAuthHeader(token)
+    );
+    return ChatSchema.validate(request.data);
+};
+
+export { getChats, createChat };
