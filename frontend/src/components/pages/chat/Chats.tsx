@@ -21,18 +21,14 @@ import { createChat } from "@/services/chat";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Session } from "@supabase/supabase-js";
-
-export interface CreateChatDialogProps {
-    open: boolean;
-    onClose: () => void;
-    session: Session;
-}
+import { DialogProps } from "@/types/prop";
+import { EditChatSchema, Chat } from "@/types/chat";
 
 const CreateChatDialog = ({
     onClose,
     open,
     session,
-}: CreateChatDialogProps) => {
+}: DialogProps) => {
     const formik = useFormik({
         initialValues: {
             name: "",
@@ -113,9 +109,107 @@ const CreateChatDialog = ({
     );
 };
 
+interface EditChatDialogProps extends DialogProps {
+    chat: Chat
+}
+
+const EditChatDialog = ({
+    onClose,
+    open,
+    session,
+    chat
+}: EditChatDialogProps) => {
+    const formik = useFormik({
+        initialValues: {
+            name: chat.name,
+            description: chat.description,
+            public: chat.public,
+        },
+        validationSchema: EditChatSchema,
+        enableReinitialize: true,
+        onSubmit: async (values) => {
+            try {
+                if (!session?.access_token)
+                    throw Error("No access token defined.");
+
+                const response = await createChat(values, session.access_token);
+
+                if (response) toast.success("Chat created successfully.");
+            } catch (e) {
+                if (axios.isAxiosError(e))
+                    toast.error(
+                        e.response?.data.error ?? "An unknown error occured."
+                    );
+                console.error(e);
+            }
+        },
+    });
+
+    const handleClose = () => {
+        formik.resetForm();
+        onClose();
+    };
+
+    return (
+        <Dialog onClose={onClose} open={open}>
+            <Box sx={{ p: 3, display: "flex", flexDirection: "column" }}>
+                <DialogTitle textAlign="center">Create a chat:</DialogTitle>
+                <TextField
+                    color="secondary"
+                    sx={{ my: 2 }}
+                    label="Chat name"
+                    type="name"
+                    name="name"
+                    value={formik.values.name}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={!!formik.errors.name}
+                    helperText={formik.errors.name}
+                />
+                <TextField
+                    color="secondary"
+                    sx={{ my: 2 }}
+                    label="Chat description"
+                    name="description"
+                    value={formik.values.description}
+                    multiline
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={!!formik.errors.description}
+                    helperText={formik.errors.description}
+                />
+                <FormControlLabel
+                    control={<Checkbox checked={formik.values.public} />}
+                    onChange={formik.handleChange}
+                    label="Make your chat discoverable"
+                    name="public"
+                />
+                <Typography>Add friends to chat:</Typography>
+                <Button
+                    onClick={handleClose}
+                    variant="contained"
+                    color="info"
+                    sx={{ my: 2 }}
+                >
+                    Cancel
+                <Button
+                    onClick={handleDelete}
+                    variant="contained"
+                    color="error"
+                    sx={{ my: 2 }}
+                >
+                    Delete Chat
+                </Button>
+                </Button>
+            </Box>
+        </Dialog>
+    );
+};
+
 const Chats = () => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [openCreateChat, setOpenCreateChat] = useState(false);
+    const [openEditChat, setOpenEditChat] = useState(false);
     const { session } = useAuth();
 
     return (
@@ -166,6 +260,14 @@ const Chats = () => {
                     open={openCreateChat}
                     onClose={() => setOpenCreateChat(false)}
                     session={session}
+                />
+            )}
+            {session && (
+                <EditChatDialog
+                    open={openEditChat}
+                    onClose={() => setOpenEditChat(false)}
+                    session={session}
+                    chat={/*Put chat info here*/}
                 />
             )}
         </Box>
