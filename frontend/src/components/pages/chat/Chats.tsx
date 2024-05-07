@@ -48,8 +48,7 @@ const CreateChatDialog = ({
 
                 const response = await createChat(values, session.access_token);
 
-                if (response)
-                    toast.success("Chat created successfully.");
+                if (response) toast.success("Chat created successfully.");
             } catch (e) {
                 if (axios.isAxiosError(e))
                     toast.error(
@@ -94,13 +93,13 @@ const CreateChatDialog = ({
                     error={!!formik.errors.description}
                     helperText={formik.errors.description}
                 />
-                <Typography>Add friends to chat:</Typography>
                 <FormControlLabel
                     control={<Checkbox checked={formik.values.public} />}
                     onChange={formik.handleChange}
                     label="Make your chat discoverable"
                     name="public"
                 />
+                <Typography>Add friends to chat:</Typography>
                 <Button
                     onClick={handleClose}
                     variant="contained"
@@ -162,11 +161,13 @@ const Chats = () => {
                 <Button onClick={() => setOpenDrawer(true)}>Open drawer</Button>
                 <Typography>Open the sidebar to select a chat</Typography>
             </Paper>
-            {session && <CreateChatDialog
-                open={openCreateChat}
-                onClose={() => setOpenCreateChat(false)}
-                session={session}
-            />}
+            {session && (
+                <CreateChatDialog
+                    open={openCreateChat}
+                    onClose={() => setOpenCreateChat(false)}
+                    session={session}
+                />
+            )}
         </Box>
     );
 };
