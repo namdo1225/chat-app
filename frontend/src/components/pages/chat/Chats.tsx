@@ -17,7 +17,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "@/context/AuthProvider";
 import { useFormik } from "formik";
 import { CreateChatSchema } from "@/types/chat";
-import { createChat } from "@/services/chat";
+import { createChat, deleteChat, editChat } from "@/services/chat";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Session } from "@supabase/supabase-js";
@@ -129,16 +129,13 @@ const EditChatDialog = ({
         enableReinitialize: true,
         onSubmit: async (values) => {
             try {
-                if (!session?.access_token)
-                    throw Error("No access token defined.");
+                const response = await editChat(chat.id, values, session.access_token);
 
-                const response = await createChat(values, session.access_token);
-
-                if (response) toast.success("Chat created successfully.");
+                if (response) toast.success("Chat edited successfully.");
             } catch (e) {
                 if (axios.isAxiosError(e))
                     toast.error(
-                        e.response?.data.error ?? "An unknown error occured."
+                        e.response?.data.error ?? "An unknown error occured while editing chat."
                     );
                 console.error(e);
             }
@@ -147,6 +144,16 @@ const EditChatDialog = ({
 
     const handleClose = () => {
         formik.resetForm();
+        onClose();
+    };
+
+    const handleDelete = async () => {
+        try {
+            await deleteChat(chat.id, session.access_token);
+            toast.success("Chat deleted successfully.");
+        } catch (error) {
+            toast.error("Error occurred while deleting chat. Was not able to delete chat.");
+        }
         onClose();
     };
 
@@ -193,7 +200,7 @@ const EditChatDialog = ({
                 >
                     Cancel
                 <Button
-                    onClick={handleDelete}
+                    onClick={() => void handleDelete()}
                     variant="contained"
                     color="error"
                     sx={{ my: 2 }}
