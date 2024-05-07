@@ -1,7 +1,7 @@
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
-import { ChatCreateSchema, ChatsSchema } from "@/types/chat";
+import { ChatCreateSchema, ChatEditSchema, ChatsSchema } from "@/types/chat";
 import { logError } from "@/utils/logger";
 import z from "zod";
 import {
@@ -50,14 +50,23 @@ router.get(
 );
 
 router.post("/", tokenExtractor, userExtractor, async (request, response) => {
-    const { name, description } = ChatCreateSchema.parse(request.body);
+    const {
+        name,
+        description,
+        public: publicChat,
+    } = ChatCreateSchema.parse(request.body);
 
-    const newChat: { name?: string; description?: string; owner_id?: string } =
-        {
-            owner_id: request.user.id,
-            name,
-            description,
-        };
+    const newChat: {
+        name: string;
+        description?: string;
+        owner_id: string;
+        public: boolean;
+    } = {
+        name,
+        description,
+        owner_id: request.user.id,
+        public: publicChat,
+    };
 
     if (!name)
         return response
@@ -90,9 +99,12 @@ router.put(
                 error: "You do not have authorization to make this request.",
             });
 
-        const { name, description, owner_id } = ChatCreateSchema.parse(
-            request.body
-        );
+        const {
+            name,
+            description,
+            public: publicChat,
+            owner_id
+        } = ChatEditSchema.parse(request.body);
 
         // also ensures new owner is a chat member if
         // owner_id !== request.chat.owner_id
@@ -100,12 +112,14 @@ router.put(
             name?: string;
             description?: string;
             owner_id?: string;
+            public?: boolean
         } = {};
 
         if (owner_id && owner_id !== request.chat.owner_id)
             editedData.owner_id = owner_id;
         if (name) editedData.name = name;
         if (description) editedData.description = description;
+        if (publicChat) editedData.public = publicChat;
 
         const { data: editedChat, error } = await supabase
             .from("chats")
