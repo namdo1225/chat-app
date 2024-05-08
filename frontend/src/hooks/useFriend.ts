@@ -221,7 +221,7 @@ export const useFriends = (token: string, inclusiveLimit: number = 1) => {
         enabled: !!token,
     });
 
-    return { ...infiniteFriends, data: infiniteFriends.data?.pages.flat() };
+    return { ...infiniteFriends, data: infiniteFriends.data?.pages.flat() ?? [] };
 };
 
 export const useAddFriend = () => {

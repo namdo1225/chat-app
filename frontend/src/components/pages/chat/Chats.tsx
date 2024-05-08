@@ -14,6 +14,12 @@ import {
     ListItem,
     ListItemText,
     IconButton,
+    Table,
+    TableHead,
+    TableCell,
+    TableRow,
+    TableBody,
+    Tooltip,
 } from "@mui/material";
 import { useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
@@ -32,9 +38,16 @@ import Loading from "@/components/Loading";
 import { Session } from "@supabase/supabase-js";
 import ReadMoreIcon from "@mui/icons-material/ReadMore";
 import EditIcon from "@mui/icons-material/Edit";
+import { useFriends } from "@/hooks/useFriend";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 
 const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
     const { mutate } = useCreateChat();
+    const [members, setMembers] = useState<string[]>([]);
+    const { data: friends, fetchNextPage, hasNextPage } = useFriends(
+        session.access_token
+    );
 
     const formik = useFormik({
         initialValues: {
@@ -46,7 +59,7 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
         enableReinitialize: true,
         onSubmit: async (values) => {
             try {
-                mutate({chat: values, token: session.access_token});
+                mutate({ chat: values, token: session.access_token });
                 toast.success("Chat created successfully.");
                 handleClose();
             } catch (e) {
@@ -62,6 +75,16 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
     const handleClose = () => {
         formik.resetForm();
         onClose();
+    };
+
+    const addMember = (friendID: string) => {
+        if (!members.includes(friendID))
+            setMembers(members.concat(friendID));
+    };
+
+    const removeMember = (friendID: string) => {
+        if (members.includes(friendID))
+            setMembers(members.filter(id => id !== friendID));
     };
 
     return (
@@ -100,7 +123,63 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
                         label="Make your chat discoverable"
                         name="public"
                     />
-                    <Typography>Add friends to chat:</Typography>
+                    <Typography>Add friends (non-pending ONLY) to chat:</Typography>
+                    <InfiniteScroll
+                        dataLength={friends.length}
+                        hasMore={hasNextPage}
+                        next={fetchNextPage}
+                        loader={<Loading />}
+                        endMessage={
+                            <Typography sx={{ textAlign: "center", my: 10 }}>
+                                End of friend list
+                            </Typography>
+                        }
+                        scrollThreshold={0.5}
+                        height={200}
+                    >
+                        <Table sx={{ overflow: "auto", m: 2 }} stickyHeader>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Name</TableCell>
+                                    <TableCell>Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {friends.map(
+                                    (profile) =>
+                                        !profile.pending && (
+                                            <TableRow key={profile.user_id}>
+                                                <TableCell>
+                                                    {`${profile.first_name} ${profile.last_name}`}
+                                                </TableCell>
+                                                {(
+                                                        <TableCell>
+                                                            <Tooltip title="Add friend to group">
+                                                                <IconButton
+                                                                    onClick={() => addMember(profile.id)}
+                                                                    children={
+                                                                        <PersonAddIcon />
+                                                                    }
+                                                                />
+                                                            </Tooltip>
+                                                        </TableCell>
+                                                    )}
+                                                <TableCell>
+                                                    <Tooltip title="Remove friend from group">
+                                                        <IconButton
+                                                            onClick={() => removeMember(profile.id)}
+                                                            children={
+                                                                <PersonRemoveIcon />
+                                                            }
+                                                        />
+                                                    </Tooltip>
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                )}
+                            </TableBody>
+                        </Table>
+                    </InfiniteScroll>
                     <Button
                         type="submit"
                         variant="contained"
