@@ -134,7 +134,9 @@ router.put(
             name,
             description,
             public: publicChat,
-            owner_id
+            owner_id,
+            removeMembers,
+            addMembers
         } = ChatEditSchema.parse(request.body);
 
         // also ensures new owner is a chat member if
@@ -152,6 +154,51 @@ router.put(
         if (description) editedData.description = description;
         if (publicChat) editedData.public = publicChat;
 
+        // add members:
+        if (addMembers && addMembers.length !== 0) {
+            const memberStr = members.toString();
+            const { data: friends, error: friendError } = await supabase
+                .from("friends")
+                .select()
+                .or(`and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requesters.eq.${request.user.id},requestee.in.(${memberStr}))`)
+        
+            if (friendError) {
+                logError(friendError);
+                return response.status(400).json(friendError);
+            }
+
+            if (friends.length !== addMembers.length)
+                return response.status(400).json({error: "You can only add non-pending friends to private chats."});
+
+            const membersData = members.map((addMembers) => ({
+                user_id: member,
+                chat_id: newChat.id
+            }));
+        
+            const { data: newMembers, error: memberError } = await supabase
+                .from("chats_members")
+                .insert([...membersData, {user_id: request.user.id, chat_id: newChat.id}])
+                .select();
+        
+            if (memberError) {
+                logError(memberError);
+                return response.status(400).json(memberError);
+            }
+        }
+
+        // remove members:
+        if (removeMembers && removeMembers.length !== 0) {
+            const { error: deleteError } = await supabase
+                .from("chat_members")
+                .delete()
+                .in("user_id", removeMembers);
+
+            if (deleteError) {
+                logError(memberError);
+                return response.status(400).json(memberError);
+            }
+        }
+        
         const { data: editedChat, error } = await supabase
             .from("chats")
             .update(editedData)
@@ -181,6 +228,14 @@ router.delete(
         if (deleteError)
             return response.status(400).json({ error: deleteError });
 
+        const { error: deleteMemberError } = await supabase
+            .from("chat_members")
+            .delete()
+            .eq("chat_id", request.chat.id);
+
+        if (deleteError)
+            return response.status(400).json({ error: deleteMemberError });
+        
         return response.status(200).json({});
     }
 );
