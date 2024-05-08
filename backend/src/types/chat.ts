@@ -5,6 +5,7 @@ export const ChatCreateSchema = z.object({
     name: setRequiredStr(),
     description: setRequiredStr(),
     public: z.boolean(),
+    members: z.string().array(),
 });
 
 export const ChatEditSchema = z.object({
@@ -12,9 +13,11 @@ export const ChatEditSchema = z.object({
     description: z.string().optional(),
     owner_id: z.string().optional(),
     public: z.boolean().optional(),
+    removeMembers: z.string().array().optional(),
+    addMembers: z.string().array().optional(),
 });
 
-export const ChatSchema = ChatCreateSchema.extend({
+export const ChatSchema = ChatCreateSchema.omit({members: true}).extend({
     id: setRequiredStr(),
     created_at: setRequiredStr(),
     owner_id: setRequiredStr(),

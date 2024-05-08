@@ -59,7 +59,7 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
         enableReinitialize: true,
         onSubmit: async (values) => {
             try {
-                mutate({ chat: values, token: session.access_token });
+                mutate({ chat: {...values, members}, token: session.access_token });
                 toast.success("Chat created successfully.");
                 handleClose();
             } catch (e) {
