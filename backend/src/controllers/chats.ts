@@ -49,6 +49,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         name,
         description,
         public: publicChat,
+        members
     } = ChatCreateSchema.parse(request.body);
 
     const newChat: {
@@ -70,17 +71,57 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
 
     if (!description) delete newChat.description;
 
+    if (members.length !== 0) {
+        const memberStr = members.toString();
+        const { data: friends, error: friendError } = await supabase
+            .from("friends")
+            .select()
+            .or(`and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requesters.eq.${request.user.id},requestee.in.(${memberStr}))`)
+        
+        if (friendError) {
+            logError(friendError);
+            return response.status(400).json(friendError);
+        }
+
+        if (friends.length !== members.length)
+            return response.status(400).json({error: "You can only add non-pending friends to private chats."});
+    }
+    
     const { data: newCreatedChat, error } = await supabase
         .from("chats")
         .insert([newChat])
         .select();
-
+    
     if (error) {
         logError(error);
-        return response.status(404).json(error);
+        return response.status(400).json(error);
     }
 
-    return response.status(201).json(ChatSchema.parse(newCreatedChat[0]));
+    const newChat = ChatSchema.parse(newCreatedChat[0]);
+    
+    if (members.length !== 0) {
+        const membersData = members.map((member) => ({
+            user_id: member,
+            chat_id: newChat.id
+        }));
+        
+        const { data: newMembers, error: memberError } = await supabase
+            .from("chats_members")
+            .insert([...membersData, {user_id: request.user.id, chat_id: newChat.id}])
+            .select();
+        
+        if (memberError) {
+            logError(memberError);
+            return response.status(400).json(memberError);
+        }
+    } else {
+        const { data: memberSelf, error: memberSelfError } = await supabase
+            .from("chats_members")
+            .insert([{user_id: request.user.id, chat_id: newChat.id}])
+            .select();
+    }
+    
+    return response.status(201).json(newChat);
 });
 
 router.put(
