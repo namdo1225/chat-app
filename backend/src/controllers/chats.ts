@@ -1,7 +1,7 @@
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
-import { ChatCreateSchema, ChatEditSchema, ChatsSchema } from "@/types/chat";
+import { ChatCreateSchema, ChatEditSchema, ChatSchema, ChatsSchema } from "@/types/chat";
 import { logError } from "@/utils/logger";
 import z from "zod";
 import {
@@ -13,7 +13,7 @@ import {
 const router = Router();
 
 router.get("/", tokenExtractor, userExtractor, async (request, response) => {
-    const getAllPublic = z.coerce.boolean().parse(request.query.getAllPublic);
+    const getAllPublic = request.query.getAllPublic === "true";
     const begin = z.coerce.number().parse(request.query.begin);
     const end = z.coerce.number().parse(request.query.end);
 
@@ -40,11 +40,6 @@ router.get(
     userExtractor,
     chatExtractor,
     (request, response) => {
-        if (request.chat.owner_id !== request.user.id)
-            response.status(400).json({
-                error: "You do not have authorization to make this request.",
-            });
-
         return response.json(request.chat);
     }
 );
@@ -85,7 +80,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         return response.status(404).json(error);
     }
 
-    return response.status(201).json(newCreatedChat);
+    return response.status(201).json(ChatSchema.parse(newCreatedChat[0]));
 });
 
 router.put(
@@ -94,11 +89,6 @@ router.put(
     userExtractor,
     chatExtractor,
     async (request, response) => {
-        if (request.chat.owner_id !== request.user.id)
-            return response.status(400).json({
-                error: "You do not have authorization to make this request.",
-            });
-
         const {
             name,
             description,
@@ -142,11 +132,6 @@ router.delete(
     userExtractor,
     chatExtractor,
     async (request, response) => {
-        if (request.chat.owner_id !== request.user.id)
-            return response.status(400).json({
-                error: "You do not have authorization to make this request.",
-            });
-
         const { error: deleteError } = await supabase
             .from("chats")
             .delete()

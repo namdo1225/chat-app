@@ -10,6 +10,10 @@ import {
     TextField,
     FormControlLabel,
     Checkbox,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
 } from "@mui/material";
 import { useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
@@ -17,18 +21,21 @@ import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "@/context/AuthProvider";
 import { useFormik } from "formik";
 import { CreateChatSchema } from "@/types/chat";
-import { createChat, deleteChat, editChat } from "@/services/chat";
+import { editChat } from "@/services/chat";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Session } from "@supabase/supabase-js";
 import { DialogProps } from "@/types/prop";
 import { EditChatSchema, Chat } from "@/types/chat";
+import InfiniteScroll from "react-infinite-scroll-component";
+import { useChats, useCreateChat, useDeleteChat } from "@/hooks/useChat";
+import Loading from "@/components/Loading";
+import { Session } from "@supabase/supabase-js";
+import ReadMoreIcon from "@mui/icons-material/ReadMore";
+import EditIcon from "@mui/icons-material/Edit";
 
-const CreateChatDialog = ({
-    onClose,
-    open,
-    session,
-}: DialogProps) => {
+const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
+    const { mutate } = useCreateChat();
+
     const formik = useFormik({
         initialValues: {
             name: "",
@@ -39,12 +46,9 @@ const CreateChatDialog = ({
         enableReinitialize: true,
         onSubmit: async (values) => {
             try {
-                if (!session?.access_token)
-                    throw Error("No access token defined.");
-
-                const response = await createChat(values, session.access_token);
-
-                if (response) toast.success("Chat created successfully.");
+                mutate({chat: values, token: session.access_token});
+                toast.success("Chat created successfully.");
+                handleClose();
             } catch (e) {
                 if (axios.isAxiosError(e))
                     toast.error(
@@ -61,63 +65,72 @@ const CreateChatDialog = ({
     };
 
     return (
-        <Dialog onClose={onClose} open={open}>
-            <Box sx={{ p: 3, display: "flex", flexDirection: "column" }}>
-                <DialogTitle textAlign="center">Create a chat:</DialogTitle>
-                <TextField
-                    color="secondary"
-                    required
-                    sx={{ my: 2 }}
-                    label="Chat name"
-                    type="name"
-                    name="name"
-                    value={formik.values.name}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={!!formik.errors.name}
-                    helperText={formik.errors.name}
-                />
-                <TextField
-                    color="secondary"
-                    sx={{ my: 2 }}
-                    label="Chat description"
-                    name="description"
-                    value={formik.values.description}
-                    multiline
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={!!formik.errors.description}
-                    helperText={formik.errors.description}
-                />
-                <FormControlLabel
-                    control={<Checkbox checked={formik.values.public} />}
-                    onChange={formik.handleChange}
-                    label="Make your chat discoverable"
-                    name="public"
-                />
-                <Typography>Add friends to chat:</Typography>
-                <Button
-                    onClick={handleClose}
-                    variant="contained"
-                    color="info"
-                    sx={{ my: 2 }}
-                >
-                    Cancel
-                </Button>
-            </Box>
+        <Dialog disableScrollLock={true} onClose={onClose} open={open}>
+            <form onSubmit={formik.handleSubmit}>
+                <Box sx={{ p: 3, display: "flex", flexDirection: "column" }}>
+                    <DialogTitle textAlign="center">Create a chat:</DialogTitle>
+                    <TextField
+                        color="secondary"
+                        required
+                        sx={{ my: 2 }}
+                        label="Chat name"
+                        type="name"
+                        name="name"
+                        value={formik.values.name}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={!!formik.errors.name}
+                        helperText={formik.errors.name}
+                    />
+                    <TextField
+                        color="secondary"
+                        sx={{ my: 2 }}
+                        label="Chat description"
+                        name="description"
+                        value={formik.values.description}
+                        multiline
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={!!formik.errors.description}
+                        helperText={formik.errors.description}
+                    />
+                    <FormControlLabel
+                        control={<Checkbox checked={formik.values.public} />}
+                        onChange={formik.handleChange}
+                        label="Make your chat discoverable"
+                        name="public"
+                    />
+                    <Typography>Add friends to chat:</Typography>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="info"
+                        sx={{ my: 2 }}
+                    >
+                        Create
+                    </Button>
+                    <Button
+                        onClick={handleClose}
+                        variant="contained"
+                        color="info"
+                    >
+                        Cancel
+                    </Button>
+                </Box>
+            </form>
         </Dialog>
     );
 };
 
 interface EditChatDialogProps extends DialogProps {
-    chat: Chat
+    chat: Chat;
 }
 
 const EditChatDialog = ({
     onClose,
     open,
     session,
-    chat
+    chat,
 }: EditChatDialogProps) => {
     const formik = useFormik({
         initialValues: {
@@ -129,18 +142,25 @@ const EditChatDialog = ({
         enableReinitialize: true,
         onSubmit: async (values) => {
             try {
-                const response = await editChat(chat.id, values, session.access_token);
+                const response = await editChat(
+                    chat.id,
+                    values,
+                    session.access_token
+                );
 
                 if (response) toast.success("Chat edited successfully.");
             } catch (e) {
                 if (axios.isAxiosError(e))
                     toast.error(
-                        e.response?.data.error ?? "An unknown error occured while editing chat."
+                        e.response?.data.error ??
+                            "An unknown error occured while editing chat."
                     );
                 console.error(e);
             }
         },
     });
+
+    const { mutate } = useDeleteChat();
 
     const handleClose = () => {
         formik.resetForm();
@@ -149,10 +169,12 @@ const EditChatDialog = ({
 
     const handleDelete = async () => {
         try {
-            await deleteChat(chat.id, session.access_token);
+            mutate({ chatID: chat.id, token: session.access_token });
             toast.success("Chat deleted successfully.");
         } catch (error) {
-            toast.error("Error occurred while deleting chat. Was not able to delete chat.");
+            toast.error(
+                "Error occurred while deleting chat. Was not able to delete chat."
+            );
         }
         onClose();
     };
@@ -199,6 +221,7 @@ const EditChatDialog = ({
                     sx={{ my: 2 }}
                 >
                     Cancel
+                </Button>
                 <Button
                     onClick={() => void handleDelete()}
                     variant="contained"
@@ -207,16 +230,75 @@ const EditChatDialog = ({
                 >
                     Delete Chat
                 </Button>
-                </Button>
             </Box>
         </Dialog>
+    );
+};
+
+const ChatScroll = ({ session }: { session: Session }) => {
+    const [openEditChat, setOpenEditChat] = useState(false);
+    const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+    const {
+        data: chats,
+        isLoading: loadingChat,
+        hasNextPage,
+        fetchNextPage,
+    } = useChats(session.access_token, 1, false);
+
+    if (loadingChat) return <Loading />;
+
+    const closeDialog = () => {
+        setOpenEditChat(false);
+        setSelectedChat(null);
+    };
+
+    const selectDeleteChat = (chat: Chat) => {
+        setSelectedChat(chat);
+        setOpenEditChat(true);
+    };
+
+    return (
+        <>
+            <InfiniteScroll
+                dataLength={chats.length}
+                hasMore={hasNextPage}
+                next={fetchNextPage}
+                loader={<Loading />}
+                height={200}
+            >
+                <List dense={true}>
+                    {chats.map((chat) => (
+                        <ListItem key={chat.id}>
+                            <ListItemText primary={chat.name} />
+                            <IconButton sx={{ mx: 2 }} edge="end">
+                                <ReadMoreIcon />
+                            </IconButton>
+                            <IconButton
+                                sx={{ mx: 2 }}
+                                onClick={() => selectDeleteChat(chat)}
+                                edge="end"
+                            >
+                                <EditIcon />
+                            </IconButton>
+                        </ListItem>
+                    ))}
+                </List>
+            </InfiniteScroll>
+            {session && selectedChat && (
+                <EditChatDialog
+                    open={openEditChat}
+                    onClose={closeDialog}
+                    session={session}
+                    chat={selectedChat}
+                />
+            )}
+        </>
     );
 };
 
 const Chats = () => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [openCreateChat, setOpenCreateChat] = useState(false);
-    const [openEditChat, setOpenEditChat] = useState(false);
     const { session } = useAuth();
 
     return (
@@ -233,7 +315,6 @@ const Chats = () => {
                 anchor="left"
             >
                 <Box
-                    onClick={() => setOpenDrawer(false)}
                     my={10}
                     sx={{
                         p: 2,
@@ -241,14 +322,18 @@ const Chats = () => {
                         flexDirection: "column",
                     }}
                 >
-                    <Divider />
                     {session && (
-                        <Button
-                            onClick={() => setOpenCreateChat(true)}
-                            endIcon={<AddIcon />}
-                        >
-                            Create a chat
-                        </Button>
+                        <>
+                            <Typography>Your chats</Typography>
+                            <ChatScroll session={session} />
+                            <Divider />
+                            <Button
+                                onClick={() => setOpenCreateChat(true)}
+                                endIcon={<AddIcon />}
+                            >
+                                Create a chat
+                            </Button>
+                        </>
                     )}
                     <Button
                         onClick={() => setOpenDrawer(false)}
@@ -267,14 +352,6 @@ const Chats = () => {
                     open={openCreateChat}
                     onClose={() => setOpenCreateChat(false)}
                     session={session}
-                />
-            )}
-            {session && (
-                <EditChatDialog
-                    open={openEditChat}
-                    onClose={() => setOpenEditChat(false)}
-                    session={session}
-                    chat={/*Put chat info here*/}
                 />
             )}
         </Box>
