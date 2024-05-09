@@ -35,6 +35,23 @@ router.get("/:chatID", tokenExtractor, userExtractor, async (request, response) 
     return response.status(400).json({error: "You are not authorized to perform this action".);
 });
 
+router.post("/:chatID", tokenExtractor, userExtractor, async (request, response) => {
+    const chatID = request.params.chatID;
+
+    const { data: chatMembers, error } = await supabase
+        .from("chat_members")
+        .insert([user_id: request.user.id, chat_id: chatID])
+        .eq("chat_id", chatID)
+        .eq("public", true)
+        .select();
+    
+    if (error) return response.status(400).json(error);
+    
+    const formattedChatMembers = ChatMemberSchema.parse(chatMembers);
+
+    return response.status(201).json(formattedChatMembers);
+});
+
 router.delete(
     "/:chatID",
     tokenExtractor,
