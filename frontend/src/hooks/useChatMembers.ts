@@ -26,6 +26,15 @@ export const useChatMembers = (chatID: string, token: string, inclusiveLimit: nu
     });
 };
 
+export const useJoinChatMember = () => {
+    return useMutation({
+        mutationKey: `CHATS`,
+        mutationFn: ({ chatID, token }: { chatID: string; token: string }) =>
+            joinChatMember(chatID, token),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: CHATS }),
+    });
+};
+
 export const useDeleteChatMember = () => {
     return useMutation({
         mutationKey: `CHATS`,
