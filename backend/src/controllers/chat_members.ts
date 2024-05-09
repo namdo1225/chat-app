@@ -17,51 +17,36 @@ import {
 
 const router = Router();
 
-router.get("/", tokenExtractor, userExtractor, async (request, response) => {
-    const getAllPublic = request.query.getAllPublic === "true";
-    const begin = z.coerce.number().parse(request.query.begin);
-    const end = z.coerce.number().parse(request.query.end);
+router.get("/:chatID", tokenExtractor, userExtractor, async (request, response) => {
+    const chatID = request.params.chatID;
 
-    const { data: chatMembers, error } = getAllPublic
-        ? await supabase
-              .from("chats")
-              .select("*")
-              .eq("public", true)
-              .order("name", { ascending: true })
-              .range(begin, end)
-        : await supabase
-              .from("chat_members")
-              .select("*,chats(*)")
-              .eq("user_id", request.user.id)
-              .order("name", { referencedTable: "chats", ascending: true })
-              .range(begin, end);
-
-    const formattedChats = ChatMemberSchema.array().parse(chatMembers);
-    const returnedChats = formattedChats.map(member => member.chats);
-
+    const { data: chatMembers, error } = await supabase
+        .from("chat_members")
+        .select()
+        .eq("chat_id", chatID)
     if (error) return response.status(400).json(error);
+    
+    const formattedChatMembers = ChatMemberSchema.parse(chatMembers);
+    
+    if (formattedChatMembers.find(member => member.user_id === request.user.id)) {
+        return response.status(200).json(formattedChatMembers.filter(member => member.user_id === request.user.id));
+    }
 
-    return response.json(returnedChats);
+    return response.status(400).json({error: "You are not authorized to perform this action".);
 });
 
 router.delete(
-    "/:id",
+    "/:chatID",
     tokenExtractor,
     userExtractor,
-    chatExtractor,
     async (request, response) => {
-        const { error: deleteError } = await supabase
-            .from("chats")
-            .delete()
-            .eq("id", request.chat.id);
-
-        if (deleteError)
-            return response.status(400).json({ error: deleteError });
-
+        const chatID = request.params.chatID;
+        
         const { error: deleteMemberError } = await supabase
             .from("chat_members")
             .delete()
-            .eq("chat_id", request.chat.id);
+            .eq("chat_id", chatID)
+            .eq("user_id", request.user.id);
 
         if (deleteError)
             return response.status(400).json({ error: deleteMemberError });
