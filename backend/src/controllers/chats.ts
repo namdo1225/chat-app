@@ -156,8 +156,27 @@ router.put(
             addMembers,
         } = ChatEditSchema.parse(request.body);
 
-        // also ensures new owner is a chat member if
-        // owner_id !== request.chat.owner_id
+        // ensures new owner is a chat member
+        if (owner_id !== request.chat.owner_id) {
+            const { data: chatMembers, error: chatMemberError } = await supabase
+                .from("chat_members")
+                .select()
+                .eq("chat_id", request.chat.id)
+                .eq("user_id", owner_id);
+
+            if (chatMemberError) {
+                logError(chatMemberError);
+                return response.status(400).json(chatMemberError);
+            }
+
+            if (!chatMembers || chatMembers.length === 0)
+                return response
+                    .status(400)
+                    .json({
+                        error: "New chat owner is not a member of the chat.",
+                    });
+        }
+
         const editedData: {
             name?: string;
             description?: string;
@@ -174,6 +193,27 @@ router.put(
         // add members:
         if (addMembers && addMembers.length !== 0) {
             const memberStr = addMembers.toString();
+
+            // Check if any potential new members are already in the chat
+            const { data: chatMembers, error: chatMemberError } = await supabase
+                .from("chat_members")
+                .select()
+                .eq("chat_id", request.chat.id)
+                .in("user_id", addMembers);
+
+            if (chatMemberError) {
+                logError(chatMemberError);
+                return response.status(400).json(chatMemberError);
+            }
+
+            if (chatMembers.length !== 0)
+                return response
+                    .status(400)
+                    .json({
+                        error: "A user you are trying to add is already in the chat.",
+                    });
+
+            // Ensures new members are friends with the user
             const { data: friends, error: friendError } = await supabase
                 .from("friends")
                 .select()
