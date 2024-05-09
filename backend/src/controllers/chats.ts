@@ -1,7 +1,12 @@
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
-import { ChatCreateSchema, ChatEditSchema, ChatSchema, ChatsSchema } from "@/types/chat";
+import {
+    ChatCreateSchema,
+    ChatEditSchema,
+    ChatSchema,
+    ChatsSchema,
+} from "@/types/chat";
 import { logError } from "@/utils/logger";
 import z from "zod";
 import {
@@ -19,17 +24,17 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
 
     const { data: chats } = getAllPublic
         ? await supabase
-            .from("chats")
-            .select("*")
-            .eq("public", true)
-            .order("name", { ascending: true })
-            .range(begin, end)
+              .from("chats")
+              .select("*")
+              .eq("public", true)
+              .order("name", { ascending: true })
+              .range(begin, end)
         : await supabase
-            .from("chat_members")
-            .select("chats(*)")
-            .eq("user_id", request.user.id)
-            .order("name", { referencedTable: "chats", ascending: true })
-            .range(begin, end);
+              .from("chat_members")
+              .select("chats(*)")
+              .eq("user_id", request.user.id)
+              .order("name", { referencedTable: "chats", ascending: true })
+              .range(begin, end);
 
     return response.json(ChatsSchema.parse(chats));
 });
@@ -49,7 +54,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         name,
         description,
         public: publicChat,
-        members
+        members,
     } = ChatCreateSchema.parse(request.body);
 
     const newChat: {
@@ -76,51 +81,63 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         const { data: friends, error: friendError } = await supabase
             .from("friends")
             .select()
-            .or(`and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requesters.eq.${request.user.id},requestee.in.(${memberStr}))`)
-        
+            .or(
+                `and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requesters.eq.${request.user.id},requestee.in.(${memberStr}))`
+            );
+
         if (friendError) {
             logError(friendError);
             return response.status(400).json(friendError);
         }
 
         if (friends.length !== members.length)
-            return response.status(400).json({error: "You can only add non-pending friends to private chats."});
+            return response.status(400).json({
+                error: "You can only add non-pending friends to private chats.",
+            });
     }
-    
+
     const { data: newCreatedChat, error } = await supabase
         .from("chats")
         .insert([newChat])
         .select();
-    
+
     if (error) {
         logError(error);
         return response.status(400).json(error);
     }
 
-    const newChat = ChatSchema.parse(newCreatedChat[0]);
-    
+    const createdChat = ChatSchema.parse(newCreatedChat[0]);
+
     if (members.length !== 0) {
         const membersData = members.map((member) => ({
             user_id: member,
-            chat_id: newChat.id
+            chat_id: createdChat.id,
         }));
-        
-        const { data: newMembers, error: memberError } = await supabase
+
+        const { error: memberError } = await supabase
             .from("chats_members")
-            .insert([...membersData, {user_id: request.user.id, chat_id: newChat.id}])
+            .insert([
+                ...membersData,
+                { user_id: request.user.id, chat_id: createdChat.id },
+            ])
             .select();
-        
+
         if (memberError) {
             logError(memberError);
             return response.status(400).json(memberError);
         }
     } else {
-        const { data: memberSelf, error: memberSelfError } = await supabase
+        const { error: memberSelfError } = await supabase
             .from("chats_members")
-            .insert([{user_id: request.user.id, chat_id: newChat.id}])
+            .insert([{ user_id: request.user.id, chat_id: createdChat.id }])
             .select();
+
+        if (memberSelfError) {
+            logError(memberSelfError);
+            return response.status(400).json(memberSelfError);
+        }
     }
-    
+
     return response.status(201).json(newChat);
 });
 
@@ -136,7 +153,7 @@ router.put(
             public: publicChat,
             owner_id,
             removeMembers,
-            addMembers
+            addMembers,
         } = ChatEditSchema.parse(request.body);
 
         // also ensures new owner is a chat member if
@@ -145,7 +162,7 @@ router.put(
             name?: string;
             description?: string;
             owner_id?: string;
-            public?: boolean
+            public?: boolean;
         } = {};
 
         if (owner_id && owner_id !== request.chat.owner_id)
@@ -156,30 +173,37 @@ router.put(
 
         // add members:
         if (addMembers && addMembers.length !== 0) {
-            const memberStr = members.toString();
+            const memberStr = addMembers.toString();
             const { data: friends, error: friendError } = await supabase
                 .from("friends")
                 .select()
-                .or(`and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requesters.eq.${request.user.id},requestee.in.(${memberStr}))`)
-        
+                .or(
+                    `and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requesters.eq.${request.user.id},requestee.in.(${memberStr}))`
+                );
+
             if (friendError) {
                 logError(friendError);
                 return response.status(400).json(friendError);
             }
 
             if (friends.length !== addMembers.length)
-                return response.status(400).json({error: "You can only add non-pending friends to private chats."});
+                return response.status(400).json({
+                    error: "You can only add non-pending friends to private chats.",
+                });
 
-            const membersData = members.map((addMembers) => ({
+            const membersData = addMembers.map((member) => ({
                 user_id: member,
-                chat_id: newChat.id
+                chat_id: request.chat.id,
             }));
-        
-            const { data: newMembers, error: memberError } = await supabase
+
+            const { error: memberError } = await supabase
                 .from("chats_members")
-                .insert([...membersData, {user_id: request.user.id, chat_id: newChat.id}])
+                .insert([
+                    ...membersData,
+                    { user_id: request.user.id, chat_id: request.chat.id },
+                ])
                 .select();
-        
+
             if (memberError) {
                 logError(memberError);
                 return response.status(400).json(memberError);
@@ -191,14 +215,15 @@ router.put(
             const { error: deleteError } = await supabase
                 .from("chat_members")
                 .delete()
-                .in("user_id", removeMembers);
+                .in("user_id", removeMembers)
+                .eq("chat_id", request.chat.id);
 
             if (deleteError) {
-                logError(memberError);
-                return response.status(400).json(memberError);
+                logError(deleteError);
+                return response.status(400).json(deleteError);
             }
         }
-        
+
         const { data: editedChat, error } = await supabase
             .from("chats")
             .update(editedData)
@@ -235,7 +260,7 @@ router.delete(
 
         if (deleteError)
             return response.status(400).json({ error: deleteMemberError });
-        
+
         return response.status(200).json({});
     }
 );
