@@ -4,6 +4,7 @@ import { supabase } from "@/supabase";
 import {
     ChatCreateSchema,
     ChatEditSchema,
+    ChatMemberSchema,
     ChatSchema,
     ChatsSchema,
 } from "@/types/chat";
@@ -22,7 +23,7 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
     const begin = z.coerce.number().parse(request.query.begin);
     const end = z.coerce.number().parse(request.query.end);
 
-    const { data: chats } = getAllPublic
+    const { data: chatMembers, error } = getAllPublic
         ? await supabase
               .from("chats")
               .select("*")
@@ -31,12 +32,17 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
               .range(begin, end)
         : await supabase
               .from("chat_members")
-              .select("chats(*)")
+              .select("*,chats(*)")
               .eq("user_id", request.user.id)
               .order("name", { referencedTable: "chats", ascending: true })
               .range(begin, end);
 
-    return response.json(ChatsSchema.parse(chats));
+    const formattedChats = ChatMemberSchema.array().parse(chatMembers);
+    const returnedChats = formattedChats.map(member => member.chats);
+
+    if (error) return response.status(400).json(error);
+
+    return response.json(returnedChats);
 });
 
 router.get(
@@ -71,7 +77,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
 
     if (!name)
         return response
-            .status(404)
+            .status(400)
             .json({ error: "A chat name must be included." });
 
     if (!description) delete newChat.description;
@@ -81,8 +87,9 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         const { data: friends, error: friendError } = await supabase
             .from("friends")
             .select()
+            .eq("pending", false)
             .or(
-                `and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requesters.eq.${request.user.id},requestee.in.(${memberStr}))`
+                `and(requestee.eq.${request.user.id},requester.in.(${memberStr})),and(requester.eq.${request.user.id},requestee.in.(${memberStr}))`
             );
 
         if (friendError) {
@@ -115,7 +122,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         }));
 
         const { error: memberError } = await supabase
-            .from("chats_members")
+            .from("chat_members")
             .insert([
                 ...membersData,
                 { user_id: request.user.id, chat_id: createdChat.id },
@@ -170,11 +177,9 @@ router.put(
             }
 
             if (!chatMembers || chatMembers.length === 0)
-                return response
-                    .status(400)
-                    .json({
-                        error: "New chat owner is not a member of the chat.",
-                    });
+                return response.status(400).json({
+                    error: "New chat owner is not a member of the chat.",
+                });
         }
 
         const editedData: {
@@ -207,18 +212,16 @@ router.put(
             }
 
             if (chatMembers.length !== 0)
-                return response
-                    .status(400)
-                    .json({
-                        error: "A user you are trying to add is already in the chat.",
-                    });
+                return response.status(400).json({
+                    error: "A user you are trying to add is already in the chat.",
+                });
 
             // Ensures new members are friends with the user
             const { data: friends, error: friendError } = await supabase
                 .from("friends")
                 .select()
                 .or(
-                    `and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requesters.eq.${request.user.id},requestee.in.(${memberStr}))`
+                    `and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requester.eq.${request.user.id},requestee.in.(${memberStr}))`
                 );
 
             if (friendError) {

@@ -1,6 +1,6 @@
 import { createAuthHeader } from "./common";
 import apiClient from "@/config/apiClient";
-import { ChatsSchema, CreateChat, ChatSchema, EditChatSchema, EditChat } from "@/types/chat";
+import { ChatsSchema, CreateChat, ChatSchema, EditChat } from "@/types/chat";
 
 const api = "chats";
 

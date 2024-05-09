@@ -32,6 +32,7 @@ const removeFriend = async (friendRequestID: string, token: string) => {
 const verifyFriend = async (friendRequestID: string, token: string) => {
     const request = await apiClient.put(
         `/${api}/${friendRequestID}`,
+        {},
         createAuthHeader(token)
     );
     return request;

@@ -150,9 +150,10 @@ const FriendList = ({
                                     <TableCell>
                                         {`${profile.first_name} ${profile.last_name}`}
                                     </TableCell>
-                                    {profile.pending &&
-                                        profile.requestee === user?.id && (
-                                            <TableCell>
+
+                                    <TableCell>
+                                        {profile.pending &&
+                                            profile.requestee === user?.id && (
                                                 <Tooltip title="Accept friend request">
                                                     <IconButton
                                                         onClick={() =>
@@ -165,9 +166,7 @@ const FriendList = ({
                                                         }
                                                     />
                                                 </Tooltip>
-                                            </TableCell>
-                                        )}
-                                    <TableCell>
+                                            )}
                                         <Tooltip title="Remove friend">
                                             <IconButton
                                                 onClick={() =>

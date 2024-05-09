@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { createChat, deleteChat, getChats } from "@/services/chat";
-import { Chat, CreateChat } from "@/types/chat";
+import { createChat, deleteChat, editChat, getChats } from "@/services/chat";
+import { Chat, CreateChat, EditChat } from "@/types/chat";
 import * as y from "yup";
 import queryClient from "@/config/queryClient";
 
@@ -44,6 +44,15 @@ export const useCreateChat = () => {
         mutationKey: CHATS,
         mutationFn: ({ chat, token }: { chat: CreateChat; token: string }) =>
             createChat(chat, token),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: CHATS }),
+    });
+};
+
+export const useEditChat = () => {
+    return useMutation({
+        mutationKey: CHATS,
+        mutationFn: ({ chatID, chat, token }: { chatID: string; chat: EditChat; token: string }) =>
+            editChat(chatID, chat, token),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: CHATS }),
     });
 };
