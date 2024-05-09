@@ -245,6 +245,11 @@ const EditChatDialog = ({
     session,
     chat,
 }: EditChatDialogProps) => {
+    const {
+        data: friends,
+        fetchNextPage,
+        hasNextPage,
+    } = useFriends(session.access_token);
     const { mutate, isSuccess } = useDeleteChat();
     const { mutate: mutateEdit, isSuccess: isEditSuccess } = useEditChat();
 
@@ -253,6 +258,8 @@ const EditChatDialog = ({
             name: chat.name,
             description: chat.description,
             public: chat.public,
+            removeMembers: [] as string[],
+            addMembers: [] as string[],
         },
         validationSchema: EditChatSchema,
         enableReinitialize: true,
@@ -293,6 +300,22 @@ const EditChatDialog = ({
         onClose();
     };
 
+    const addMember = (friendID: string) => {
+        if (!formik.values.addMembers.includes(friendID))
+            formik.setFieldValue(
+                "addMembers",
+                formik.values.addMembers.concat(friendID)
+            );
+    };
+
+    const removeMember = (friendID: string) => {
+        if (formik.values.removeMembers.includes(friendID))
+            formik.setFieldValue(
+                "removeMembers",
+                formik.values.removeMembers.filter((id) => id !== friendID)
+            );
+    };
+
     return (
         <Dialog onClose={onClose} open={open}>
             <Box sx={{ p: 3, display: "flex", flexDirection: "column" }}>
@@ -327,7 +350,77 @@ const EditChatDialog = ({
                     label="Make your chat discoverable"
                     name="public"
                 />
-                <Typography>Add friends to chat:</Typography>
+                <Typography>Edit chat members:</Typography>
+                <InfiniteScroll
+                    dataLength={friends.length}
+                    hasMore={hasNextPage}
+                    next={fetchNextPage}
+                    loader={<Loading />}
+                    endMessage={
+                        <Typography sx={{ textAlign: "center", my: 10 }}>
+                            End of friend list
+                        </Typography>
+                    }
+                    scrollThreshold={0.5}
+                    height={200}
+                >
+                    <Table sx={{ overflow: "auto", m: 2 }} stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Name</TableCell>
+                                <TableCell>Action</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {friends.map(
+                                (profile) =>
+                                    !profile.pending && (
+                                        <TableRow key={profile.user_id}>
+                                            <TableCell>
+                                                {`${profile.first_name} ${profile.last_name}`}
+                                            </TableCell>
+                                            {!formik.values.addMembers.includes(
+                                                profile.user_id
+                                            ) && (
+                                                <TableCell>
+                                                    <Tooltip title="Add friend to group">
+                                                        <IconButton
+                                                            onClick={() =>
+                                                                addMember(
+                                                                    profile.user_id
+                                                                )
+                                                            }
+                                                            children={
+                                                                <PersonAddIcon />
+                                                            }
+                                                        />
+                                                    </Tooltip>
+                                                </TableCell>
+                                            )}
+                                            {formik.values.removeMembers.includes(
+                                                profile.user_id
+                                            ) && (
+                                                <TableCell>
+                                                    <Tooltip title="Remove friend from group">
+                                                        <IconButton
+                                                            onClick={() =>
+                                                                removeMember(
+                                                                    profile.user_id
+                                                                )
+                                                            }
+                                                            children={
+                                                                <PersonRemoveIcon />
+                                                            }
+                                                        />
+                                                    </Tooltip>
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    )
+                            )}
+                        </TableBody>
+                    </Table>
+                </InfiniteScroll>
                 <Button
                     onClick={handleClose}
                     variant="contained"

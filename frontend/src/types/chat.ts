@@ -24,8 +24,8 @@ export const EditChatSchema = y.object().shape({
     description: optionalStr,
     owner_id: optionalStr,
     public: y.boolean().optional(),
-    removeMembers: y.array().of(y.string()).optional(),
-    addMembers: y.array().of(y.string()).optional(),
+    removeMembers: y.array().of(y.string()).required(),
+    addMembers: y.array().of(y.string()).required(),
 });
 
 export type EditChat = InferType<typeof EditChatSchema>;

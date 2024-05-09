@@ -6,7 +6,6 @@ import {
     ChatEditSchema,
     ChatMemberSchema,
     ChatSchema,
-    ChatsSchema,
 } from "@/types/chat";
 import { logError } from "@/utils/logger";
 import z from "zod";
@@ -240,7 +239,7 @@ router.put(
             }));
 
             const { error: memberError } = await supabase
-                .from("chats_members")
+                .from("chat_members")
                 .insert([
                     ...membersData,
                     { user_id: request.user.id, chat_id: request.chat.id },
