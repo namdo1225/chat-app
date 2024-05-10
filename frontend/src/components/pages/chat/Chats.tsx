@@ -27,7 +27,6 @@ import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "@/context/AuthProvider";
 import { useFormik } from "formik";
 import { CreateChatSchema } from "@/types/chat";
-import { editChat } from "@/services/chat";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { DialogProps } from "@/types/prop";
@@ -46,6 +45,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import { useFriends } from "@/hooks/useFriend";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { useChatMembers } from "@/hooks/useChatMembers";
 
 const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
     const { mutate } = useCreateChat();
@@ -252,6 +253,10 @@ const EditChatDialog = ({
     } = useFriends(session.access_token);
     const { mutate, isSuccess } = useDeleteChat();
     const { mutate: mutateEdit, isSuccess: isEditSuccess } = useEditChat();
+    const { data: members, isLoading } = useChatMembers(
+        chat.id,
+        session.access_token
+    );
 
     const formik = useFormik({
         initialValues: {
@@ -301,25 +306,54 @@ const EditChatDialog = ({
     };
 
     const addMember = (friendID: string) => {
-        if (!formik.values.addMembers.includes(friendID))
+        if (!formik.values.addMembers.includes(friendID)) {
             formik.setFieldValue(
                 "addMembers",
                 formik.values.addMembers.concat(friendID)
             );
-    };
 
-    const removeMember = (friendID: string) => {
-        if (formik.values.removeMembers.includes(friendID))
             formik.setFieldValue(
                 "removeMembers",
                 formik.values.removeMembers.filter((id) => id !== friendID)
             );
+        }
     };
+
+    const removeMember = (friendID: string) => {
+        if (!formik.values.removeMembers.includes(friendID)) {
+            formik.setFieldValue(
+                "removeMembers",
+                formik.values.removeMembers.concat(friendID)
+            );
+
+            formik.setFieldValue(
+                "addMembers",
+                formik.values.addMembers.filter((id) => id !== friendID)
+            );
+        }
+    };
+
+    const resetMember = () => {
+        formik.setFieldValue("removeMembers", []);
+
+        formik.setFieldValue("addMembers", []);
+    };
+
+    if (isLoading) return <Loading message="Loading chat edit" />;
+
+    console.log(formik.values.addMembers, formik.values.removeMembers);
 
     return (
         <Dialog onClose={onClose} open={open}>
-            <Box sx={{ p: 3, display: "flex", flexDirection: "column" }}>
-                <DialogTitle textAlign="center">Create a chat:</DialogTitle>
+            <Box
+                sx={{
+                    width: 500,
+                    p: 3,
+                    display: "flex",
+                    flexDirection: "column",
+                }}
+            >
+                <DialogTitle textAlign="center">Edit chat:</DialogTitle>
                 <TextField
                     color="secondary"
                     sx={{ my: 2 }}
@@ -379,48 +413,71 @@ const EditChatDialog = ({
                                             <TableCell>
                                                 {`${profile.first_name} ${profile.last_name}`}
                                             </TableCell>
-                                            {!formik.values.addMembers.includes(
-                                                profile.user_id
-                                            ) && (
-                                                <TableCell>
-                                                    <Tooltip title="Add friend to group">
-                                                        <IconButton
-                                                            onClick={() =>
-                                                                addMember(
-                                                                    profile.user_id
-                                                                )
-                                                            }
-                                                            children={
-                                                                <PersonAddIcon />
-                                                            }
-                                                        />
-                                                    </Tooltip>
-                                                </TableCell>
-                                            )}
-                                            {formik.values.removeMembers.includes(
-                                                profile.user_id
-                                            ) && (
-                                                <TableCell>
-                                                    <Tooltip title="Remove friend from group">
-                                                        <IconButton
-                                                            onClick={() =>
-                                                                removeMember(
-                                                                    profile.user_id
-                                                                )
-                                                            }
-                                                            children={
-                                                                <PersonRemoveIcon />
-                                                            }
-                                                        />
-                                                    </Tooltip>
-                                                </TableCell>
-                                            )}
+                                            <TableCell sx={{color: "Highlight"}}>
+                                                {!formik.values.addMembers.includes(
+                                                    profile.user_id
+                                                ) &&
+                                                    (formik.values.removeMembers.includes(
+                                                        profile.user_id
+                                                    ) ||
+                                                        !members.find(
+                                                            (member) =>
+                                                                member.user_id ===
+                                                                profile.user_id
+                                                        )) && (
+                                                        <Tooltip title="Add friend to group">
+                                                            <IconButton
+                                                                onClick={() =>
+                                                                    addMember(
+                                                                        profile.user_id
+                                                                    )
+                                                                }
+                                                                children={
+                                                                    <PersonAddIcon />
+                                                                }
+                                                            />
+                                                        </Tooltip>
+                                                    )}
+                                                {!formik.values.removeMembers.includes(
+                                                    profile.user_id
+                                                ) &&
+                                                    (formik.values.addMembers.includes(
+                                                        profile.user_id
+                                                    ) ||
+                                                        members.find(
+                                                            (member) =>
+                                                                member.user_id ===
+                                                                profile.user_id
+                                                        )) && (
+                                                        <Tooltip title="Remove friend from group">
+                                                            <IconButton
+                                                                onClick={() =>
+                                                                    removeMember(
+                                                                        profile.user_id
+                                                                    )
+                                                                }
+                                                                children={
+                                                                    <PersonRemoveIcon />
+                                                                }
+                                                            />
+                                                        </Tooltip>
+                                                    )}
+                                            </TableCell>
                                         </TableRow>
                                     )
                             )}
                         </TableBody>
                     </Table>
                 </InfiniteScroll>
+                <Button
+                    onClick={resetMember}
+                    variant="contained"
+                    color="warning"
+                    sx={{ my: 2 }}
+                    endIcon={<RestartAltIcon />}
+                >
+                    Reset Member List
+                </Button>
                 <Button
                     onClick={handleClose}
                     variant="contained"

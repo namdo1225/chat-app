@@ -1,16 +1,16 @@
 import { createAuthHeader } from "./common";
 import apiClient from "@/config/apiClient";
-import { ChatsSchema, CreateChat, ChatSchema, EditChat } from "@/types/chat";
+import { ChatMembersSchema } from "@/types/chat_members";
 
 const api = "chat_members";
 
-const getChatMembers = async (token: string, begin: number, end: number, getAllPublic: boolean = true) => {
+const getChatMembers = async (token: string, chatID: string) => {
     const request = await apiClient.get(
-        `/${api}?begin=${begin}&end=${end}&getAllPublic=${getAllPublic}`,
+        `/${api}/${chatID}`,
         createAuthHeader(token)
     );
 
-    return ChatsSchema.validate(request.data);
+    return ChatMembersSchema.validateSync(request.data);
 };
 
 const deleteChatMember = async (chatID: string, token: string) => {

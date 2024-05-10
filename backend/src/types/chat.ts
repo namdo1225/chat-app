@@ -23,12 +23,6 @@ export const ChatSchema = ChatCreateSchema.omit({members: true}).extend({
     owner_id: setRequiredStr(),
 });
 
-export const ChatMemberSchema = z.object({
-    chat_id: setRequiredStr(),
-    user_id: setRequiredStr(),
-    chats: ChatSchema,
-});
-
 export const ChatsSchema = ChatSchema.array();
 
 export const BaseMsgSchema = z.object({

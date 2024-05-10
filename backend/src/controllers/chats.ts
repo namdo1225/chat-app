@@ -4,7 +4,6 @@ import { supabase } from "@/supabase";
 import {
     ChatCreateSchema,
     ChatEditSchema,
-    ChatMemberSchema,
     ChatSchema,
 } from "@/types/chat";
 import { logError } from "@/utils/logger";
@@ -14,6 +13,7 @@ import {
     userExtractor,
     chatExtractor,
 } from "@/utils/middleware";
+import { ChatMemberSchema } from "@/types/chat_members";
 
 const router = Router();
 
