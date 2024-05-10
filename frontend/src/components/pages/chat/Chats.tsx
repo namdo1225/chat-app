@@ -411,7 +411,7 @@ const EditChatDialog = ({
                                     !profile.pending && (
                                         <TableRow key={profile.user_id}>
                                             <TableCell>
-                                                {`${profile.first_name} ${profile.last_name}`}
+                                                <Typography color={ formik.values.addMembers.includes(profile.user_id) ? "warning" : formik.values.removeMembers.includes(profile.user_id) ? "error" : "primary"}>{`${profile.first_name} ${profile.last_name}`}</Typography>
                                             </TableCell>
                                             <TableCell sx={{color: "Highlight"}}>
                                                 {!formik.values.addMembers.includes(
