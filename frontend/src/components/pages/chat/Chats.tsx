@@ -306,31 +306,31 @@ const EditChatDialog = ({
     };
 
     const addMember = (friendID: string) => {
-        if (!formik.values.addMembers.includes(friendID)) {
-            formik.setFieldValue(
-                "addMembers",
-                formik.values.addMembers.concat(friendID)
-            );
-
+        if (formik.values.removeMembers.includes(friendID)) {
             formik.setFieldValue(
                 "removeMembers",
                 formik.values.removeMembers.filter((id) => id !== friendID)
+            );
+        } else {
+            formik.setFieldValue(
+                "addMembers",
+                formik.values.addMembers.concat(friendID)
             );
         }
     };
 
     const removeMember = (friendID: string) => {
-        if (!formik.values.removeMembers.includes(friendID)) {
-            formik.setFieldValue(
-                "removeMembers",
-                formik.values.removeMembers.concat(friendID)
-            );
-
+        if (formik.values.addMembers.includes(friendID)) {
             formik.setFieldValue(
                 "addMembers",
                 formik.values.addMembers.filter((id) => id !== friendID)
             );
-        }
+        } else {
+            formik.setFieldValue(
+                "removeMembers",
+                formik.values.removeMembers.concat(friendID)
+            );
+        }     
     };
 
     const resetMember = () => {
