@@ -5,6 +5,7 @@ import {
     ChatCreateSchema,
     ChatEditSchema,
     ChatSchema,
+    ChatsSchema,
 } from "@/types/chat";
 import { logError } from "@/utils/logger";
 import z from "zod";
@@ -22,26 +23,31 @@ router.get("/", tokenExtractor, userExtractor, async (request, response) => {
     const begin = z.coerce.number().parse(request.query.begin);
     const end = z.coerce.number().parse(request.query.end);
 
-    const { data: chatMembers, error } = getAllPublic
-        ? await supabase
-              .from("chats")
-              .select("*")
-              .eq("public", true)
-              .order("name", { ascending: true })
-              .range(begin, end)
-        : await supabase
-              .from("chat_members")
-              .select("*,chats(*)")
-              .eq("user_id", request.user.id)
-              .order("name", { referencedTable: "chats", ascending: true })
-              .range(begin, end);
+    if (getAllPublic) {
+        const { data: chats, error } = await supabase
+            .from("chats")
+            .select("*")
+            .eq("public", true)
+            .order("name", { ascending: true })
+            .range(begin, end);
 
-    const formattedChats = ChatMemberSchema.array().parse(chatMembers);
-    const returnedChats = formattedChats.map(member => member.chats);
+        if (error) return response.status(400).json(error);
+        return response.json(ChatsSchema.parse(chats));
+    } else {
+        const { data: chats, error } = await supabase
+            .from("chat_members")
+            .select("*,chats(*)")
+            .eq("user_id", request.user.id)
+            .order("name", { referencedTable: "chats", ascending: true })
+            .range(begin, end);
 
-    if (error) return response.status(400).json(error);
+        const formattedChats = ChatMemberSchema.array().parse(chats);
+        const returnedChats = formattedChats.map((member) => member.chats);
 
-    return response.json(returnedChats);
+        if (error) return response.status(400).json(error);
+
+        return response.json(returnedChats);
+    }
 });
 
 router.get(
@@ -50,7 +56,7 @@ router.get(
     userExtractor,
     chatExtractor,
     (request, response) => {
-        return response.json(request.chat);
+        return response.json(ChatSchema.parse(request.chat));
     }
 );
 
@@ -134,7 +140,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         }
     } else {
         const { error: memberSelfError } = await supabase
-            .from("chats_members")
+            .from("chat_members")
             .insert([{ user_id: request.user.id, chat_id: createdChat.id }])
             .select();
 
@@ -144,7 +150,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         }
     }
 
-    return response.status(201).json(newChat);
+    return response.status(201).json(createdChat);
 });
 
 router.put(
@@ -163,7 +169,12 @@ router.put(
         } = ChatEditSchema.parse(request.body);
 
         // ensures new owner is a chat member
-        if (owner_id !== request.chat.owner_id) {
+        if (owner_id && owner_id !== request.chat.owner_id) {
+            if (removeMembers && removeMembers.includes(owner_id))
+                return response.status(400).json({
+                    error: "You cannot remove a member and make them the owner of a chat.",
+                });
+
             const { data: chatMembers, error: chatMemberError } = await supabase
                 .from("chat_members")
                 .select()
@@ -198,6 +209,8 @@ router.put(
         if (addMembers && addMembers.length !== 0) {
             const memberStr = addMembers.toString();
 
+            console.log("HI 6");
+
             // Check if any potential new members are already in the chat
             const { data: chatMembers, error: chatMemberError } = await supabase
                 .from("chat_members")
@@ -206,6 +219,7 @@ router.put(
                 .in("user_id", addMembers);
 
             if (chatMemberError) {
+                console.log("HI 1");
                 logError(chatMemberError);
                 return response.status(400).json(chatMemberError);
             }
@@ -224,14 +238,19 @@ router.put(
                 );
 
             if (friendError) {
+                console.log("HI 2");
                 logError(friendError);
                 return response.status(400).json(friendError);
             }
+
+            console.log("HI 7");
 
             if (friends.length !== addMembers.length)
                 return response.status(400).json({
                     error: "You can only add non-pending friends to private chats.",
                 });
+
+            console.log("HI 3");
 
             const membersData = addMembers.map((member) => ({
                 user_id: member,
@@ -240,16 +259,16 @@ router.put(
 
             const { error: memberError } = await supabase
                 .from("chat_members")
-                .insert([
-                    ...membersData,
-                    { user_id: request.user.id, chat_id: request.chat.id },
-                ])
+                .insert(membersData)
                 .select();
 
             if (memberError) {
+                console.log("HI 4");
                 logError(memberError);
                 return response.status(400).json(memberError);
             }
+
+            console.log("HI 5");
         }
 
         // remove members:
@@ -266,18 +285,24 @@ router.put(
             }
         }
 
-        const { data: editedChat, error } = await supabase
-            .from("chats")
-            .update(editedData)
-            .eq("id", request.chat.id)
-            .select();
+        console.log("CHAT 2:", request.chat);
 
-        if (error) {
-            logError(error);
-            return response.status(404).json(error);
+        if (editedData) {
+            const { data: editedChat, error } = await supabase
+                .from("chats")
+                .update(editedData)
+                .eq("id", request.chat.id)
+                .select();
+
+            if (error) {
+                logError(error);
+                return response.status(404).json(error);
+            }
+
+            return response.status(201).json(ChatSchema.parse(editedChat[0]));
         }
 
-        return response.status(201).json(editedChat);
+        return response.status(201).json(request.chat);
     }
 );
 

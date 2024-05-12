@@ -19,6 +19,7 @@ const createChat = async (chat: CreateChat, token: string) => {
         chat,
         createAuthHeader(token)
     );
+
     return ChatSchema.validate(request.data);
 };
 

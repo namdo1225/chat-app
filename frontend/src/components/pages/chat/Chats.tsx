@@ -46,15 +46,25 @@ import { useFriends } from "@/hooks/useFriend";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { useChatMembers } from "@/hooks/useChatMembers";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import { useChatMembers, useDeleteChatMember } from "@/hooks/useChatMembers";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
-    const { mutate } = useCreateChat();
+    const { mutate, isPending } = useCreateChat();
     const {
         data: friends,
         fetchNextPage,
         hasNextPage,
     } = useFriends(session.access_token);
+    const [searchStr, setSearchStr] = useState("");
+    const filteredFriends = searchStr
+        ? friends.filter(
+              (friend) =>
+                  friend.first_name.includes(searchStr) ||
+                  friend.last_name.includes(searchStr)
+          )
+        : friends;
 
     const formik = useFormik({
         initialValues: {
@@ -65,19 +75,16 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
         },
         validationSchema: CreateChatSchema,
         enableReinitialize: true,
-        onSubmit: async (values) => {
+        onSubmit: (values) => {
             try {
                 mutate({
                     chat: values,
                     token: session.access_token,
                 });
-                toast.success("Chat created successfully.");
+
                 handleClose();
             } catch (e) {
-                if (axios.isAxiosError(e))
-                    toast.error(
-                        e.response?.data.error ?? "An unknown error occured."
-                    );
+                toast.error("An unknown error occured.");
                 console.error(e);
             }
         },
@@ -105,133 +112,156 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
     };
 
     return (
-        <Dialog disableScrollLock={true} onClose={onClose} open={open}>
-            <form onSubmit={formik.handleSubmit}>
-                <Box sx={{ p: 3, display: "flex", flexDirection: "column" }}>
-                    <DialogTitle textAlign="center">Create a chat:</DialogTitle>
-                    <TextField
-                        color="secondary"
-                        required
-                        sx={{ my: 2 }}
-                        label="Chat name"
-                        type="name"
-                        name="name"
-                        value={formik.values.name}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        error={!!formik.errors.name}
-                        helperText={formik.errors.name}
-                    />
-                    <TextField
-                        color="secondary"
-                        sx={{ my: 2 }}
-                        label="Chat description"
-                        name="description"
-                        value={formik.values.description}
-                        multiline
-                        rows={3}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        error={!!formik.errors.description}
-                        helperText={formik.errors.description}
-                    />
-                    <FormControlLabel
-                        control={<Checkbox checked={formik.values.public} />}
-                        onChange={formik.handleChange}
-                        label="Make your chat discoverable"
-                        name="public"
-                    />
-                    <Typography>
-                        Add friends (non-pending ONLY) to chat:
-                    </Typography>
-                    <InfiniteScroll
-                        dataLength={friends.length}
-                        hasMore={hasNextPage}
-                        next={fetchNextPage}
-                        loader={<Loading />}
-                        endMessage={
-                            <Typography sx={{ textAlign: "center", my: 10 }}>
-                                End of friend list
-                            </Typography>
-                        }
-                        scrollThreshold={0.5}
-                        height={200}
+        <Dialog disableScrollLock={true} onClose={handleClose} open={open}>
+            {isPending && <Loading padding message="Creating chat..." />}
+            {!isPending && (
+                <form onSubmit={formik.handleSubmit}>
+                    <Box
+                        sx={{
+                            p: 3,
+                            display: "flex",
+                            flexDirection: "column",
+                            minWidth: 500,
+                        }}
                     >
-                        <Table sx={{ overflow: "auto", m: 2 }} stickyHeader>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Action</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {friends.map(
-                                    (profile) =>
-                                        !profile.pending && (
-                                            <TableRow key={profile.user_id}>
-                                                <TableCell>
-                                                    {`${profile.first_name} ${profile.last_name}`}
-                                                </TableCell>
-                                                {!formik.values.members.includes(
-                                                    profile.user_id
-                                                ) && (
+                        <DialogTitle textAlign="center">
+                            Create a chat:
+                        </DialogTitle>
+                        <TextField
+                            color="secondary"
+                            required
+                            sx={{ my: 2 }}
+                            label="Chat name"
+                            type="name"
+                            name="name"
+                            value={formik.values.name}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={!!formik.errors.name}
+                            helperText={formik.errors.name}
+                        />
+                        <TextField
+                            color="secondary"
+                            sx={{ my: 2 }}
+                            label="Chat description"
+                            name="description"
+                            value={formik.values.description}
+                            multiline
+                            rows={3}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={!!formik.errors.description}
+                            helperText={formik.errors.description}
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox checked={formik.values.public} />
+                            }
+                            onChange={formik.handleChange}
+                            label="Make your chat discoverable"
+                            name="public"
+                        />
+                        <Typography>
+                            Add friends (non-pending ONLY) to chat:
+                        </Typography>
+                        <TextField
+                            placeholder="Search your friend list"
+                            value={searchStr}
+                            onChange={({ target }) =>
+                                setSearchStr(target.value)
+                            }
+                        />
+                        <InfiniteScroll
+                            dataLength={filteredFriends.length}
+                            hasMore={hasNextPage}
+                            next={fetchNextPage}
+                            loader={<Loading />}
+                            endMessage={
+                                <Typography
+                                    sx={{ textAlign: "center", my: 10 }}
+                                >
+                                    End of friend list
+                                </Typography>
+                            }
+                            scrollThreshold={0.5}
+                            height={200}
+                        >
+                            <Table sx={{ overflow: "auto", m: 2 }} stickyHeader>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Name</TableCell>
+                                        <TableCell>Action</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredFriends.map(
+                                        (profile) =>
+                                            !profile.pending && (
+                                                <TableRow key={profile.user_id}>
                                                     <TableCell>
-                                                        <Tooltip title="Add friend to group">
-                                                            <IconButton
-                                                                onClick={() =>
-                                                                    addMember(
-                                                                        profile.user_id
-                                                                    )
-                                                                }
-                                                                children={
-                                                                    <PersonAddIcon />
-                                                                }
-                                                            />
-                                                        </Tooltip>
+                                                        {`${profile.first_name} ${profile.last_name}`}
                                                     </TableCell>
-                                                )}
-                                                {formik.values.members.includes(
-                                                    profile.user_id
-                                                ) && (
-                                                    <TableCell>
-                                                        <Tooltip title="Remove friend from group">
-                                                            <IconButton
-                                                                onClick={() =>
-                                                                    removeMember(
-                                                                        profile.user_id
-                                                                    )
-                                                                }
-                                                                children={
-                                                                    <PersonRemoveIcon />
-                                                                }
-                                                            />
-                                                        </Tooltip>
-                                                    </TableCell>
-                                                )}
-                                            </TableRow>
-                                        )
-                                )}
-                            </TableBody>
-                        </Table>
-                    </InfiniteScroll>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="info"
-                        sx={{ my: 2 }}
-                        disabled={!formik.values.name}
-                    >
-                        Create
-                    </Button>
-                    <Button
-                        onClick={handleClose}
-                        variant="contained"
-                        color="info"
-                    >
-                        Cancel
-                    </Button>
-                </Box>
-            </form>
+                                                    {!formik.values.members.includes(
+                                                        profile.user_id
+                                                    ) && (
+                                                        <TableCell>
+                                                            <Tooltip title="Add friend to group">
+                                                                <IconButton
+                                                                    onClick={() =>
+                                                                        addMember(
+                                                                            profile.user_id
+                                                                        )
+                                                                    }
+                                                                    children={
+                                                                        <PersonAddIcon />
+                                                                    }
+                                                                />
+                                                            </Tooltip>
+                                                        </TableCell>
+                                                    )}
+                                                    {formik.values.members.includes(
+                                                        profile.user_id
+                                                    ) && (
+                                                        <TableCell>
+                                                            <Tooltip title="Remove friend from group">
+                                                                <IconButton
+                                                                    onClick={() =>
+                                                                        removeMember(
+                                                                            profile.user_id
+                                                                        )
+                                                                    }
+                                                                    children={
+                                                                        <PersonRemoveIcon />
+                                                                    }
+                                                                />
+                                                            </Tooltip>
+                                                        </TableCell>
+                                                    )}
+                                                </TableRow>
+                                            )
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </InfiniteScroll>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="info"
+                            sx={{ my: 2 }}
+                            disabled={!formik.values.name}
+                        >
+                            Create
+                        </Button>
+                        <Button
+                            onClick={handleClose}
+                            variant="contained"
+                            color="secondary"
+                        >
+                            Cancel
+                        </Button>
+                    </Box>
+                </form>
+            )}
         </Dialog>
     );
 };
@@ -251,12 +281,20 @@ const EditChatDialog = ({
         fetchNextPage,
         hasNextPage,
     } = useFriends(session.access_token);
-    const { mutate, isSuccess } = useDeleteChat();
-    const { mutate: mutateEdit, isSuccess: isEditSuccess } = useEditChat();
+    const { mutate } = useDeleteChat();
+    const { mutate: mutateEdit } = useEditChat();
     const { data: members, isLoading } = useChatMembers(
         chat.id,
         session.access_token
     );
+    const [searchStr, setSearchStr] = useState("");
+    const filteredFriends = searchStr
+        ? friends.filter(
+              (friend) =>
+                  friend.first_name.includes(searchStr) ||
+                  friend.last_name.includes(searchStr)
+          )
+        : friends;
 
     const formik = useFormik({
         initialValues: {
@@ -265,6 +303,7 @@ const EditChatDialog = ({
             public: chat.public,
             removeMembers: [] as string[],
             addMembers: [] as string[],
+            owner_id: undefined,
         },
         validationSchema: EditChatSchema,
         enableReinitialize: true,
@@ -276,7 +315,7 @@ const EditChatDialog = ({
                     token: session.access_token,
                 });
 
-                if (isEditSuccess) toast.success("Chat edited successfully.");
+                handleClose();
             } catch (e) {
                 if (axios.isAxiosError(e))
                     toast.error(
@@ -285,6 +324,8 @@ const EditChatDialog = ({
                     );
                 console.error(e);
             }
+
+            handleClose();
         },
     });
 
@@ -295,8 +336,8 @@ const EditChatDialog = ({
 
     const handleDelete = async () => {
         try {
-            mutate({ chatID: chat.id, token: session.access_token });
-            if (isSuccess) toast.success("Chat deleted successfully.");
+            if (window.confirm("Do you really want to delete this chat?"))
+                mutate({ chatID: chat.id, token: session.access_token });
         } catch (error) {
             toast.error(
                 "Error occurred while deleting chat. Was not able to delete chat."
@@ -330,169 +371,304 @@ const EditChatDialog = ({
                 "removeMembers",
                 formik.values.removeMembers.concat(friendID)
             );
-        }     
+        }
     };
 
-    const resetMember = () => {
-        formik.setFieldValue("removeMembers", []);
-
-        formik.setFieldValue("addMembers", []);
-    };
+    const newOwner = friends.find(
+        (friend) => friend.user_id === formik.values.owner_id
+    );
 
     if (isLoading) return <Loading message="Loading chat edit" />;
 
-    console.log(formik.values.addMembers, formik.values.removeMembers);
+    return (
+        <Dialog onClose={onClose} open={open}>
+            <form onSubmit={formik.handleSubmit}>
+                <Box
+                    sx={{
+                        minWidth: 500,
+                        p: 3,
+                        display: "flex",
+                        flexDirection: "column",
+                    }}
+                >
+                    <DialogTitle textAlign="center">Edit chat:</DialogTitle>
+                    <TextField
+                        color="secondary"
+                        sx={{ my: 2 }}
+                        label="Chat name"
+                        type="name"
+                        name="name"
+                        value={formik.values.name}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={!!formik.errors.name}
+                        helperText={formik.errors.name}
+                    />
+                    <TextField
+                        color="secondary"
+                        sx={{ my: 2 }}
+                        label="Chat description"
+                        name="description"
+                        value={formik.values.description}
+                        multiline
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={!!formik.errors.description}
+                        helperText={formik.errors.description}
+                    />
+                    <FormControlLabel
+                        control={<Checkbox checked={formik.values.public} />}
+                        onChange={formik.handleChange}
+                        label="Make your chat discoverable"
+                        name="public"
+                    />
+                    <Typography sx={{ fontWeight: "bold", my: 2 }}>
+                        New chat owner:
+                        {newOwner
+                            ? ` ${newOwner.first_name} ${newOwner.last_name}`
+                            : " None"}
+                        {newOwner && (
+                            <Button
+                                sx={{ mx: 2 }}
+                                variant="contained"
+                                onClick={() =>
+                                    formik.setFieldValue("owner_id", undefined)
+                                }
+                            >
+                                Clear
+                            </Button>
+                        )}
+                    </Typography>
+                    <Typography>Edit chat members:</Typography>
+                    <TextField
+                        placeholder="Search your friend list"
+                        value={searchStr}
+                        onChange={({ target }) => setSearchStr(target.value)}
+                    />
+                    <InfiniteScroll
+                        dataLength={filteredFriends.length}
+                        hasMore={hasNextPage}
+                        next={fetchNextPage}
+                        loader={<Loading />}
+                        endMessage={
+                            <Typography sx={{ textAlign: "center", my: 10 }}>
+                                End of friend list
+                            </Typography>
+                        }
+                        scrollThreshold={0.5}
+                        height={200}
+                    >
+                        <Table sx={{ overflow: "auto", m: 2 }} stickyHeader>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Name</TableCell>
+                                    <TableCell>Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {filteredFriends.map(
+                                    (profile) =>
+                                        !profile.pending && (
+                                            <TableRow key={profile.user_id}>
+                                                <TableCell>
+                                                    <Typography
+                                                        color={
+                                                            formik.values.addMembers.includes(
+                                                                profile.user_id
+                                                            )
+                                                                ? "success.main"
+                                                                : formik.values.removeMembers.includes(
+                                                                      profile.user_id
+                                                                  )
+                                                                ? "error.main"
+                                                                : ""
+                                                        }
+                                                    >{`${profile.first_name} ${profile.last_name}`}</Typography>
+                                                </TableCell>
+                                                <TableCell
+                                                    sx={{ color: "Highlight" }}
+                                                >
+                                                    {!formik.values.addMembers.includes(
+                                                        profile.user_id
+                                                    ) &&
+                                                        (formik.values.removeMembers.includes(
+                                                            profile.user_id
+                                                        ) ||
+                                                            !members.find(
+                                                                (member) =>
+                                                                    member.user_id ===
+                                                                    profile.user_id
+                                                            )) && (
+                                                            <Tooltip title="Add friend to group">
+                                                                <IconButton
+                                                                    onClick={() =>
+                                                                        addMember(
+                                                                            profile.user_id
+                                                                        )
+                                                                    }
+                                                                    children={
+                                                                        <PersonAddIcon />
+                                                                    }
+                                                                />
+                                                            </Tooltip>
+                                                        )}
+                                                    {!formik.values.removeMembers.includes(
+                                                        profile.user_id
+                                                    ) &&
+                                                        (formik.values.addMembers.includes(
+                                                            profile.user_id
+                                                        ) ||
+                                                            members.find(
+                                                                (member) =>
+                                                                    member.user_id ===
+                                                                    profile.user_id
+                                                            )) && (
+                                                            <Tooltip title="Remove friend from group">
+                                                                <IconButton
+                                                                    onClick={() =>
+                                                                        removeMember(
+                                                                            profile.user_id
+                                                                        )
+                                                                    }
+                                                                    children={
+                                                                        <PersonRemoveIcon />
+                                                                    }
+                                                                />
+                                                            </Tooltip>
+                                                        )}
+                                                    {members.find(
+                                                        (member) =>
+                                                            member.user_id ===
+                                                            profile.user_id
+                                                    ) &&
+                                                        formik.values
+                                                            .owner_id !==
+                                                            profile.user_id &&
+                                                        !formik.values.removeMembers.includes(
+                                                            profile.user_id
+                                                        ) && (
+                                                            <Tooltip title="Give chat ownership to friend">
+                                                                <IconButton
+                                                                    onClick={() =>
+                                                                        formik.setFieldValue(
+                                                                            "owner_id",
+                                                                            profile.user_id
+                                                                        )
+                                                                    }
+                                                                    children={
+                                                                        <AdminPanelSettingsIcon />
+                                                                    }
+                                                                />
+                                                            </Tooltip>
+                                                        )}
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                )}
+                            </TableBody>
+                        </Table>
+                    </InfiniteScroll>
+                    <Button
+                        onClick={() => formik.resetForm()}
+                        variant="contained"
+                        color="warning"
+                        sx={{ my: 2 }}
+                        endIcon={<RestartAltIcon />}
+                    >
+                        Reset
+                    </Button>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="info"
+                        sx={{ my: 2 }}
+                    >
+                        Submit
+                    </Button>
+                    <Button
+                        onClick={handleClose}
+                        variant="contained"
+                        color="secondary"
+                        sx={{ my: 2 }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={() => void handleDelete()}
+                        variant="contained"
+                        color="error"
+                        sx={{ my: 2 }}
+                    >
+                        Delete Chat
+                    </Button>
+                </Box>
+            </form>
+        </Dialog>
+    );
+};
+
+const ChatDetailDialog = ({
+    onClose,
+    open,
+    session,
+    chat,
+}: EditChatDialogProps) => {
+    const { mutate, isPending } = useDeleteChatMember();
+
+    const handleLeave = async () => {
+        try {
+            if (window.confirm("Do you really want to leave this chat?"))
+                mutate({ chatID: chat.id, token: session.access_token });
+        } catch (error) {
+            toast.error(
+                "Error occurred while leave chat. Was not able to leave chat."
+            );
+        }
+        onClose();
+    };
+
+    if (isPending) return <Loading message="Loading chat details..." />;
 
     return (
         <Dialog onClose={onClose} open={open}>
             <Box
                 sx={{
-                    width: 500,
+                    minWidth: 500,
                     p: 3,
                     display: "flex",
                     flexDirection: "column",
+                    gap: 3,
                 }}
             >
-                <DialogTitle textAlign="center">Edit chat:</DialogTitle>
-                <TextField
-                    color="secondary"
-                    sx={{ my: 2 }}
-                    label="Chat name"
-                    type="name"
-                    name="name"
-                    value={formik.values.name}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={!!formik.errors.name}
-                    helperText={formik.errors.name}
-                />
-                <TextField
-                    color="secondary"
-                    sx={{ my: 2 }}
-                    label="Chat description"
-                    name="description"
-                    value={formik.values.description}
-                    multiline
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={!!formik.errors.description}
-                    helperText={formik.errors.description}
-                />
-                <FormControlLabel
-                    control={<Checkbox checked={formik.values.public} />}
-                    onChange={formik.handleChange}
-                    label="Make your chat discoverable"
-                    name="public"
-                />
-                <Typography>Edit chat members:</Typography>
-                <InfiniteScroll
-                    dataLength={friends.length}
-                    hasMore={hasNextPage}
-                    next={fetchNextPage}
-                    loader={<Loading />}
-                    endMessage={
-                        <Typography sx={{ textAlign: "center", my: 10 }}>
-                            End of friend list
-                        </Typography>
-                    }
-                    scrollThreshold={0.5}
-                    height={200}
+                <Typography sx={{ fontWeight: "bold" }}>Chat name:</Typography>
+                <Typography
+                    sx={{
+                        fontWeight: "bold",
+                        border: 1,
+                        borderColor: "primary.main",
+                        p: 2,
+                    }}
                 >
-                    <Table sx={{ overflow: "auto", m: 2 }} stickyHeader>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Action</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {friends.map(
-                                (profile) =>
-                                    !profile.pending && (
-                                        <TableRow key={profile.user_id}>
-                                            <TableCell>
-                                                <Typography color={ formik.values.addMembers.includes(profile.user_id) ? "warning" : formik.values.removeMembers.includes(profile.user_id) ? "error" : "primary"}>{`${profile.first_name} ${profile.last_name}`}</Typography>
-                                            </TableCell>
-                                            <TableCell sx={{color: "Highlight"}}>
-                                                {!formik.values.addMembers.includes(
-                                                    profile.user_id
-                                                ) &&
-                                                    (formik.values.removeMembers.includes(
-                                                        profile.user_id
-                                                    ) ||
-                                                        !members.find(
-                                                            (member) =>
-                                                                member.user_id ===
-                                                                profile.user_id
-                                                        )) && (
-                                                        <Tooltip title="Add friend to group">
-                                                            <IconButton
-                                                                onClick={() =>
-                                                                    addMember(
-                                                                        profile.user_id
-                                                                    )
-                                                                }
-                                                                children={
-                                                                    <PersonAddIcon />
-                                                                }
-                                                            />
-                                                        </Tooltip>
-                                                    )}
-                                                {!formik.values.removeMembers.includes(
-                                                    profile.user_id
-                                                ) &&
-                                                    (formik.values.addMembers.includes(
-                                                        profile.user_id
-                                                    ) ||
-                                                        members.find(
-                                                            (member) =>
-                                                                member.user_id ===
-                                                                profile.user_id
-                                                        )) && (
-                                                        <Tooltip title="Remove friend from group">
-                                                            <IconButton
-                                                                onClick={() =>
-                                                                    removeMember(
-                                                                        profile.user_id
-                                                                    )
-                                                                }
-                                                                children={
-                                                                    <PersonRemoveIcon />
-                                                                }
-                                                            />
-                                                        </Tooltip>
-                                                    )}
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                            )}
-                        </TableBody>
-                    </Table>
-                </InfiniteScroll>
-                <Button
-                    onClick={resetMember}
-                    variant="contained"
-                    color="warning"
-                    sx={{ my: 2 }}
-                    endIcon={<RestartAltIcon />}
+                    {chat.name}
+                </Typography>
+                <Typography>Chat description:</Typography>
+                <Typography
+                    sx={{ border: 1, borderColor: "primary.main", p: 2 }}
                 >
-                    Reset Member List
+                    {chat.description ?? "None"}
+                </Typography>
+                <Typography>
+                    This chat is: {chat.public ? "public" : "[rovate"}
+                </Typography>
+                <Button onClick={onClose} variant="contained" color="primary">
+                    Back
                 </Button>
                 <Button
-                    onClick={handleClose}
-                    variant="contained"
-                    color="info"
-                    sx={{ my: 2 }}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    onClick={() => void handleDelete()}
+                    onClick={() => void handleLeave()}
                     variant="contained"
                     color="error"
-                    sx={{ my: 2 }}
                 >
-                    Delete Chat
+                    Leave Chat
                 </Button>
             </Box>
         </Dialog>
@@ -500,7 +676,9 @@ const EditChatDialog = ({
 };
 
 const ChatScroll = ({ session }: { session: Session }) => {
+    const { user } = useAuth();
     const [openEditChat, setOpenEditChat] = useState(false);
+    const [openViewChat, setOpenViewChat] = useState(false);
     const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
     const {
         data: chats,
@@ -508,6 +686,10 @@ const ChatScroll = ({ session }: { session: Session }) => {
         hasNextPage,
         fetchNextPage,
     } = useChats(session.access_token, 1, false);
+    const [searchStr, setSearchStr] = useState("");
+    const filteredChats = searchStr
+        ? chats.filter((chat) => chat.name.includes(searchStr))
+        : chats;
 
     if (loadingChat) return <Loading />;
 
@@ -516,41 +698,92 @@ const ChatScroll = ({ session }: { session: Session }) => {
         setSelectedChat(null);
     };
 
-    const selectDeleteChat = (chat: Chat) => {
+    const selectEditChat = (chat: Chat) => {
         setSelectedChat(chat);
         setOpenEditChat(true);
     };
 
+    const selectViewChat = (chat: Chat) => {
+        setSelectedChat(chat);
+        setOpenViewChat(true);
+    };
+
     return (
         <>
+            <TextField
+                placeholder="Search your chat list"
+                value={searchStr}
+                onChange={({ target }) => setSearchStr(target.value)}
+            />
             <InfiniteScroll
-                dataLength={chats.length}
+                dataLength={filteredChats.length}
                 hasMore={hasNextPage}
                 next={fetchNextPage}
-                loader={<Loading />}
+                loader={
+                    <Loading
+                        size={20}
+                        message="Scroll down to load more chat"
+                    />
+                }
                 height={200}
             >
                 <List dense={true}>
-                    {chats.map((chat) => (
-                        <ListItem key={chat.id}>
-                            <ListItemText primary={chat.name} />
-                            <IconButton sx={{ mx: 2 }} edge="end">
-                                <ReadMoreIcon />
-                            </IconButton>
-                            <IconButton
-                                sx={{ mx: 2 }}
-                                onClick={() => selectDeleteChat(chat)}
-                                edge="end"
-                            >
-                                <EditIcon />
-                            </IconButton>
-                        </ListItem>
+                    {filteredChats.map((chat) => (
+                        <Tooltip
+                            key={chat.id}
+                            title={
+                                chat.description
+                                    ? chat.description.length < 50
+                                        ? chat.description
+                                        : `${chat.description.slice(0, 50)}...`
+                                    : "Click on icon to read chat's messages"
+                            }
+                        >
+                            <ListItem>
+                                <ListItemText
+                                    primary={
+                                        chat.name.length < 10
+                                            ? chat.name
+                                            : `${chat.name.slice(0, 10)}...`
+                                    }
+                                />
+                                <IconButton sx={{ mx: 2 }} edge="start">
+                                    <VisibilityIcon />
+                                </IconButton>
+                                {user?.id === chat.owner_id && (
+                                    <IconButton
+                                        sx={{ mx: 2 }}
+                                        onClick={() => selectEditChat(chat)}
+                                        edge="end"
+                                    >
+                                        <EditIcon />
+                                    </IconButton>
+                                )}
+                                {user?.id !== chat.owner_id && (
+                                    <IconButton
+                                        sx={{ mx: 2 }}
+                                        onClick={() => selectViewChat(chat)}
+                                        edge="end"
+                                    >
+                                        <ReadMoreIcon />
+                                    </IconButton>
+                                )}
+                            </ListItem>
+                        </Tooltip>
                     ))}
                 </List>
             </InfiniteScroll>
             {session && selectedChat && (
                 <EditChatDialog
                     open={openEditChat}
+                    onClose={closeDialog}
+                    session={session}
+                    chat={selectedChat}
+                />
+            )}
+            {session && selectedChat && (
+                <ChatDetailDialog
+                    open={openViewChat}
                     onClose={closeDialog}
                     session={session}
                     chat={selectedChat}
@@ -570,6 +803,7 @@ const Chats = () => {
             <Drawer
                 disableScrollLock={true}
                 open={openDrawer}
+                onClose={() => setOpenDrawer(false)}
                 sx={{
                     flexShrink: 0,
                     "& .MuiDrawer-paper": {
@@ -588,7 +822,7 @@ const Chats = () => {
                 >
                     {session && (
                         <>
-                            <Typography>Your chats</Typography>
+                            <Typography>Chats</Typography>
                             <ChatScroll session={session} />
                             <Divider />
                             <Button
