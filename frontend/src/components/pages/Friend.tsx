@@ -13,8 +13,8 @@ import {
     TableCell,
     Tooltip,
 } from "@mui/material";
-import { useEffect, useState } from "react";
 import { useProfiles } from "@/hooks/useUser";
+import { useState } from "react";
 import Loading from "@/components/Loading";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -112,9 +112,7 @@ const FriendList = ({
 }) => {
     const { mutate: mutateRemove } = useRemoveFriend();
     const { mutate: mutateVerify } = useVerifyFriend();
-    const { fetchNextPage, hasNextPage } = useFriends(
-        session?.access_token as string
-    );
+    const { fetchNextPage, hasNextPage } = useFriends(session.access_token);
 
     const handleRemoveFriend = async (id: string) => {
         if (user && session) mutateRemove({ id, token: session.access_token });
@@ -147,15 +145,15 @@ const FriendList = ({
                 <TableBody>
                     {friends.map(
                         (profile) =>
-                            ((profile.user_id !== user?.id && pending) ||
-                                !profile.pending) && (
+                            pending === profile.pending && (
                                 <TableRow key={profile.user_id}>
                                     <TableCell>
-                                        {profile.first_name} {profile.last_name}
+                                        {`${profile.first_name} ${profile.last_name}`}
                                     </TableCell>
-                                    {profile.pending &&
-                                        profile.requestee === user?.id && (
-                                            <TableCell>
+
+                                    <TableCell>
+                                        {profile.pending &&
+                                            profile.requestee === user?.id && (
                                                 <Tooltip title="Accept friend request">
                                                     <IconButton
                                                         onClick={() =>
@@ -168,9 +166,7 @@ const FriendList = ({
                                                         }
                                                     />
                                                 </Tooltip>
-                                            </TableCell>
-                                        )}
-                                    <TableCell>
+                                            )}
                                         <Tooltip title="Remove friend">
                                             <IconButton
                                                 onClick={() =>

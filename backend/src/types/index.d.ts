@@ -1,5 +1,5 @@
 import { User } from "@supabase/supabase-js";
-import { ChatCreateType } from "./zod";
+import { Chat } from "./chat";
 import { Readable } from "stream";
 import { Profile } from "./database.types";
 export {};
@@ -11,7 +11,7 @@ declare global {
             user: User;
             fileData: Readable;
             fileExtension: string;
-            chat: ChatCreateType
+            chat: Chat
             profile: Profile,
         }
     }

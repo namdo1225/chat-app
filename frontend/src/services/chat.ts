@@ -1,6 +1,6 @@
 import { createAuthHeader } from "./common";
 import apiClient from "@/config/apiClient";
-import { ChatsSchema } from "@/types/chat";
+import { ChatsSchema, CreateChat, ChatSchema, EditChat } from "@/types/chat";
 
 const api = "chats";
 
@@ -13,4 +13,35 @@ const getChats = async (token: string, begin: number, end: number, getAllPublic:
     return ChatsSchema.validate(request.data);
 };
 
-export { getChats };
+const createChat = async (chat: CreateChat, token: string) => {
+    const request = await apiClient.post(
+        `/${api}`,
+        chat,
+        createAuthHeader(token)
+    );
+
+    return ChatSchema.validate(request.data);
+};
+
+const deleteChat = async (chatID: string, token: string) => {
+    const request = await apiClient.delete(
+        `/${api}/${chatID}`,
+        createAuthHeader(token)
+    );
+    return request;
+};
+
+const editChat = async (
+    id: string,
+    editedChat: EditChat,
+    token: string
+) => {
+    const request = await apiClient.put(
+        `/${api}/${id}`,
+        editedChat,
+        createAuthHeader(token)
+    );
+    return request;
+};
+
+export { getChats, createChat, deleteChat, editChat };

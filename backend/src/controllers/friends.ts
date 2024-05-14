@@ -123,6 +123,9 @@ router.delete(
             .select("*")
             .eq("id", friendRequestID);
 
+            console.log(foundError);
+
+
         if (foundError) return response.status(400).json({ error: foundError });
 
         if (data && data.length === 1) {

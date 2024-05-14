@@ -16,6 +16,7 @@ import { useAuth } from "@/context/AuthProvider";
 import { Session, User } from "@supabase/supabase-js";
 import { useChats } from "@/hooks/useChat";
 import { Chat } from "@/types/chat";
+import { useJoinChatMember } from "@/hooks/useChatMembers";
 
 const GroupGrid = ({
     user,
@@ -27,6 +28,7 @@ const GroupGrid = ({
     chats: Chat[];
 }) => {
     const { fetchNextPage, hasNextPage } = useChats(session.access_token);
+    const { mutate, isPending } = useJoinChatMember();
 
     return (
         <InfiniteScroll
@@ -45,16 +47,40 @@ const GroupGrid = ({
                 {chats.map(
                     (chat) =>
                         chat.owner_id !== user?.id && (
-                            <Grid item key={chat.id}>
+                            <Grid item key={chat.id} sx={{ my: 2 }}>
                                 <Paper sx={{ p: 2 }}>
-                                    <Typography>{chat.name}</Typography>
-                                    <Typography>{chat.description}</Typography>
-                                    <Tooltip title="Join group">
-                                        <IconButton
-                                            onClick={() => {}}
-                                            children={<PersonAddIcon />}
-                                        />
-                                    </Tooltip>
+                                    <Typography
+                                        sx={{ fontWeight: "bold" }}
+                                        noWrap
+                                        textAlign="center"
+                                    >
+                                        {chat.name.length < 10
+                                            ? chat.name
+                                            : `${chat.name.slice(0, 10)}...`}
+                                    </Typography>
+                                    {chat.description && (
+                                        <Typography noWrap textAlign="center">
+                                            {chat.description.length < 50
+                                                ? chat.description
+                                                : `${chat.description.slice(
+                                                      0,
+                                                      50
+                                                  )}...`}
+                                        </Typography>
+                                    )}
+                                    {!isPending && (
+                                        <Tooltip title="Join group">
+                                            <IconButton
+                                                onClick={() =>
+                                                    mutate({
+                                                        chatID: chat.id,
+                                                        token: session.access_token,
+                                                    })
+                                                }
+                                                children={<PersonAddIcon />}
+                                            />
+                                        </Tooltip>
+                                    )}
                                 </Paper>
                             </Grid>
                         )

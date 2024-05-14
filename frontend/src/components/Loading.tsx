@@ -1,9 +1,10 @@
-import { CircularProgress, Box } from "@mui/material";
+import { CircularProgress, Box, Typography } from "@mui/material";
 
-const Loading = () => {
+const Loading = ({ size, message, padding }: { size?: number; message?: string; padding?: boolean }) => {
     return (
-        <Box sx={{ display: "flex", my: 10 }}>
-            <CircularProgress sx={{ mx: "auto" }} />
+        <Box sx={{ display: "flex", my: 10, flexDirection: "column", p: padding ? 5 : 0 }}>
+            <CircularProgress sx={{ mx: "auto" }} size={size ?? 32} />
+            {message && <Typography my={2} textAlign="center">{message}</Typography>}
         </Box>
     );
 };

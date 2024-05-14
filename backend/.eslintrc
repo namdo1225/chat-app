@@ -30,10 +30,6 @@
       { "argsIgnorePattern": "^_" }
     ],
     "no-case-declarations": "off",
-    "indent": [
-      "error",
-      4
-    ],
     "max-len": [
       "warn",
       {

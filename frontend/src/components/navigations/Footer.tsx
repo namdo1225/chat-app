@@ -16,6 +16,8 @@ const Footer = () => {
                 display: "flex",
                 flexDirection: "column",
                 minHeight: "100vh",
+                zIndex: (theme) => theme.zIndex.drawer - 1,
+                position: "sticky",
             }}
         >
             <Box component="footer" sx={{ marginTop: "auto", bgcolor: "footer.main", p: 2 }}>

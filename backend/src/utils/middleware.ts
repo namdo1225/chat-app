@@ -158,13 +158,13 @@ const chatExtractor = async (
     const chats = ChatsSchema.parse(data);
 
     if (
-        chats.length > 1 &&
+        chats.length === 1 &&
         chats[0].owner_id &&
         chats[0].owner_id === user.id
     ) {
         request.chat = chats[0];
         next();
-    } else response.status(400).json({ error: "No chat found" });
+    } else response.status(400).json({ error: "No chat found." });
 };
 
 const hcaptchaVerifier = async (
@@ -185,7 +185,7 @@ const hcaptchaVerifier = async (
 
     if (success) next();
     else {
-        response.status(400).json({ error: "Invalid captcha token provided" });
+        response.status(400).json({ error: "Invalid captcha token provided." });
     }
 };
 
