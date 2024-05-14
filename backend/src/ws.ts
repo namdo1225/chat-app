@@ -1,7 +1,7 @@
 import * as WebSocket from "ws";
 import * as http from "http";
 import app from "./app";
-import { HomeMsg, HomeMsgSchema } from "./types/chat";
+import { HomeMsg, HomeMsgSchema } from "./types/message";
 
 export const server = http.createServer(app);
 

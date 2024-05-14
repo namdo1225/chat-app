@@ -21,6 +21,7 @@ router.get(
             .from("chat_members")
             .select()
             .eq("chat_id", chatID);
+
         if (error) return response.status(400).json(error);
 
         const formattedChatMembers =

@@ -20,8 +20,9 @@ import {
     TableRow,
     TableBody,
     Tooltip,
+    Grid,
 } from "@mui/material";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "@/context/AuthProvider";
@@ -49,6 +50,9 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { useChatMembers, useDeleteChatMember } from "@/hooks/useChatMembers";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import SendIcon from "@mui/icons-material/Send";
+import Message from "./Message";
 
 const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
     const { mutate, isPending } = useCreateChat();
@@ -675,7 +679,15 @@ const ChatDetailDialog = ({
     );
 };
 
-const ChatScroll = ({ session }: { session: Session }) => {
+const ChatScroll = ({
+    session,
+    chatToMsg,
+    setChatToMSg,
+}: {
+    session: Session;
+    chatToMsg: Chat | null;
+    setChatToMSg: Dispatch<SetStateAction<Chat | null>>;
+}) => {
     const { user } = useAuth();
     const [openEditChat, setOpenEditChat] = useState(false);
     const [openViewChat, setOpenViewChat] = useState(false);
@@ -740,14 +752,25 @@ const ChatScroll = ({ session }: { session: Session }) => {
                             }
                         >
                             <ListItem>
-                                <ListItemText
-                                    primary={
-                                        chat.name.length < 10
+                                <ListItemText>
+                                    <Typography
+                                        color={
+                                            chatToMsg &&
+                                            chatToMsg.id === chat.id
+                                                ? "secondary"
+                                                : "primary"
+                                        }
+                                    >
+                                        {chat.name.length < 10
                                             ? chat.name
-                                            : `${chat.name.slice(0, 10)}...`
-                                    }
-                                />
-                                <IconButton sx={{ mx: 2 }} edge="start">
+                                            : `${chat.name.slice(0, 10)}...`}
+                                    </Typography>
+                                </ListItemText>
+                                <IconButton
+                                    sx={{ mx: 2 }}
+                                    edge="start"
+                                    onClick={() => setChatToMSg(chat)}
+                                >
                                     <VisibilityIcon />
                                 </IconButton>
                                 {user?.id === chat.owner_id && (
@@ -793,13 +816,157 @@ const ChatScroll = ({ session }: { session: Session }) => {
     );
 };
 
+const ChattingScreen = () => {
+    const [input, setInput] = useState("");
+
+    return (
+        <Box>
+            <Box
+                sx={{
+                    p: 1,
+                    height: 1 / 2,
+                    mx: "auto",
+                    my: 2,
+                    maxHeight: 500,
+                    overflow: "auto",
+                }}
+            >
+                <List sx={{ flexGrow: 1, overflow: "auto", p: 2 }}>
+                    <Message
+                        key={"Fw2erwerew"}
+                        msg={{
+                            id: "fwejlkrwejwe",
+                            sent_at: "12/14/2001",
+                            chatter: "John",
+                            text: "Hello World!",
+                        }}
+                        fromUser={true}
+                    />
+                    <Message
+                        key={"Fw2erwerew"}
+                        msg={{
+                            id: "fwejlkrwejwe",
+                            sent_at: "12/14/2001",
+                            chatter: "John",
+                            text: "Hello World!",
+                        }}
+                        fromUser={false}
+                    />
+                </List>
+            </Box>
+            <Box
+                sx={{
+                    p: 2,
+                }}
+            >
+                <Grid wrap="wrap" container spacing={2}>
+                    <Grid item xs>
+                        <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Type a message"
+                            variant="outlined"
+                            value={input}
+                            onChange={({ target }) => setInput(target.value)}
+                        />
+                    </Grid>
+                    <Grid item xs="auto">
+                        <Button
+                            color="primary"
+                            variant="contained"
+                            endIcon={<SendIcon />}
+                        >
+                            Send
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Box>
+        </Box>
+    );
+};
+
+const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
+    const { data: members, isLoading } = useChatMembers(chat.id, token);
+    const [hideMembers, setHideMembers] = useState(false);
+
+    if (isLoading) return <Loading message="Loading chat..." />;
+
+    return (
+        <Box>
+            <Paper
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    m: 5,
+                    p: 5,
+                }}
+            >
+                <Box sx={{ display: "flex", justifyContent: "space-around" }}>
+                    <Typography sx={{ fontWeight: "bold" }}>
+                        {chat.name}
+                    </Typography>
+                    <Tooltip title="Hide member list">
+                        <IconButton
+                            sx={{}}
+                            onClick={() => setHideMembers(!hideMembers)}
+                        >
+                            <MenuOpenIcon />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+                <Paper
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                    }}
+                >
+                    <Box sx={{ width: hideMembers ? 3 / 4 : 1 / 1 }}>
+                        <ChattingScreen />
+                    </Box>
+                    {!hideMembers && (
+                        <Box
+                            sx={{
+                                width: 1 / 4,
+                                borderLeft: 1,
+                                overflow: "auto",
+                            }}
+                        >
+                            <List>
+                                {members.map((member) => (
+                                    <ListItem key={member.user_id}>
+                                        <ListItemText>
+                                            <Typography>{member.id}</Typography>
+                                        </ListItemText>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
+                    )}
+                </Paper>
+            </Paper>
+        </Box>
+    );
+};
+
 const Chats = () => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [openCreateChat, setOpenCreateChat] = useState(false);
+    const [chatToMsg, setChatToMSg] = useState<Chat | null>(null);
+
     const { session } = useAuth();
 
     return (
         <Box>
+            <Typography textAlign="center" variant="h4" m={2}>
+                Chats
+            </Typography>
+            <IconButton
+                sx={{ position: "absolute", top: 65, left: 2 }}
+                onClick={() => setOpenDrawer(true)}
+            >
+                <MenuOpenIcon />
+            </IconButton>
             <Drawer
                 disableScrollLock={true}
                 open={openDrawer}
@@ -823,7 +990,11 @@ const Chats = () => {
                     {session && (
                         <>
                             <Typography>Chats</Typography>
-                            <ChatScroll session={session} />
+                            <ChatScroll
+                                chatToMsg={chatToMsg}
+                                setChatToMSg={setChatToMSg}
+                                session={session}
+                            />
                             <Divider />
                             <Button
                                 onClick={() => setOpenCreateChat(true)}
@@ -841,10 +1012,37 @@ const Chats = () => {
                     </Button>
                 </Box>
             </Drawer>
-            <Paper sx={{ m: 2 }}>
-                <Button onClick={() => setOpenDrawer(true)}>Open drawer</Button>
-                <Typography>Open the sidebar to select a chat</Typography>
-            </Paper>
+            {!chatToMsg ? (
+                <Paper
+                    sx={{
+                        m: 2,
+                        p: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                    }}
+                >
+                    <Button
+                        sx={{ m: 2 }}
+                        variant="contained"
+                        onClick={() => setOpenDrawer(true)}
+                    >
+                        Open sidebar
+                    </Button>
+                    <Typography textAlign="center">
+                        Open the sidebar to select a chat
+                    </Typography>
+                </Paper>
+            ) : (
+                <>
+                    {session && (
+                        <Chatroom
+                            chat={chatToMsg}
+                            token={session.access_token}
+                        />
+                    )}
+                </>
+            )}
             {session && (
                 <CreateChatDialog
                     open={openCreateChat}

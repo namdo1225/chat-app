@@ -1,5 +1,5 @@
 import { Avatar, Box, Paper, Typography } from "@mui/material";
-import { HomeMsg } from "@/types/chat";
+import { HomeMsg } from "@/types/message";
 
 const Message = ({
     msg,

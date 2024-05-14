@@ -2,7 +2,7 @@ import { Box, Button, Grid, List, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import Message from "./Message";
 import SendIcon from "@mui/icons-material/Send";
-import { HomeMsg, HomeMsgSchema } from "@/types/chat";
+import { HomeMsg, HomeMsgSchema } from "@/types/message";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { v4 as uuidv4 } from 'uuid';
 
