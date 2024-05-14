@@ -203,11 +203,21 @@ const hcaptchaVerifier = async (
     const { success } = HCaptchaSchema.parse(verifyRes.data);
 
     if (success) next();
-    else {
+    else
         response.status(400).json({ error: "Invalid captcha token provided." });
-    }
 };
 
+const paginationVerifier = (
+    request: Request,
+    response: Response,
+    next: NextFunction
+) => {
+    if (request.params.begin && request.params.end)
+        next();
+    else
+        response.status(400).json({ error: "Missing pagination (begin or end parameters are undefined)." });
+};
+        
 export {
     requestLogger,
     unknownEndpoint,
@@ -220,4 +230,5 @@ export {
     chatMemberExtractor,
     hcaptchaVerifier,
     profileImgEditor,
+    paginationVerifier,
 };
