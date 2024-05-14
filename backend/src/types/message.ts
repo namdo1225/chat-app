@@ -1,10 +1,13 @@
 import { setRequiredStr } from "./zod";
 import z from "zod";
 
-export const BaseMsgSchema = z.object({
+export const MsgEditSchema = z.object({
+    text: setRequiredStr(),
+});
+
+export const BaseMsgSchema = MsgEditSchema.extend({
     id: setRequiredStr(),
     sent_at: setRequiredStr(),
-    text: setRequiredStr(),
 });
 
 export const ChatMsgSchema = BaseMsgSchema.extend({

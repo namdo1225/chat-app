@@ -53,6 +53,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import SendIcon from "@mui/icons-material/Send";
 import Message from "./Message";
+import { useMessages, useSendMessage } from "@/hooks/useMessages";
 
 const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
     const { mutate, isPending } = useCreateChat();
@@ -816,8 +817,19 @@ const ChatScroll = ({
     );
 };
 
-const ChattingScreen = () => {
-    const [input, setInput] = useState("");
+const ChattingScreen = ({ chat, token }: { chat: Chat; token: string }) => {
+    const { user } = useAuth();
+    const [text, setText] = useState("");
+    const { mutate } = useSendMessage();
+    const { finalData } = useMessages(token, chat.id);
+
+    const sendMessage = () => {
+        try {
+            mutate({ token, text, chatID: chat.id });
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     return (
         <Box>
@@ -833,7 +845,6 @@ const ChattingScreen = () => {
             >
                 <List sx={{ flexGrow: 1, overflow: "auto", p: 2 }}>
                     <Message
-                        key={"Fw2erwerew"}
                         msg={{
                             id: "fwejlkrwejwe",
                             sent_at: "12/14/2001",
@@ -843,7 +854,6 @@ const ChattingScreen = () => {
                         fromUser={true}
                     />
                     <Message
-                        key={"Fw2erwerew"}
                         msg={{
                             id: "fwejlkrwejwe",
                             sent_at: "12/14/2001",
@@ -852,6 +862,15 @@ const ChattingScreen = () => {
                         }}
                         fromUser={false}
                     />
+                    {finalData.map((msg) => (
+                        <Message
+                            key={msg.id}
+                            msg={{ ...msg, chatter: "T" }}
+                            fromUser={
+                                user ? msg.from_user_id === user.id : false
+                            }
+                        />
+                    ))}
                 </List>
             </Box>
             <Box
@@ -866,8 +885,8 @@ const ChattingScreen = () => {
                             size="small"
                             placeholder="Type a message"
                             variant="outlined"
-                            value={input}
-                            onChange={({ target }) => setInput(target.value)}
+                            value={text}
+                            onChange={({ target }) => setText(target.value)}
                         />
                     </Grid>
                     <Grid item xs="auto">
@@ -875,6 +894,7 @@ const ChattingScreen = () => {
                             color="primary"
                             variant="contained"
                             endIcon={<SendIcon />}
+                            onClick={sendMessage}
                         >
                             Send
                         </Button>
@@ -922,7 +942,7 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                     }}
                 >
                     <Box sx={{ width: hideMembers ? 3 / 4 : 1 / 1 }}>
-                        <ChattingScreen />
+                        <ChattingScreen chat={chat} token={token} />
                     </Box>
                     {!hideMembers && (
                         <Box

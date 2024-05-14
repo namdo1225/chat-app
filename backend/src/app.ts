@@ -14,6 +14,7 @@ import chatsRouter from "./controllers/chats";
 import contactRouter from "./controllers/contact";
 import friendsRouter from "./controllers/friends";
 import chatMembersRouter from "./controllers/chat_members";
+import messagesRouter from "./controllers/messages";
 
 import { slowDown } from "express-slow-down";
 import { rateLimit } from 'express-rate-limit';
@@ -46,6 +47,7 @@ app.use("/chats", chatsRouter);
 app.use("/contact", rateLimiter, contactRouter);
 app.use("/friends", friendsRouter);
 app.use("/chat_members", chatMembersRouter);
+app.use("/messages", messagesRouter);
 
 app.use(unknownEndpoint);
 app.use(errorHandler);

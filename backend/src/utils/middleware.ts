@@ -167,6 +167,25 @@ const chatExtractor = async (
     } else response.status(400).json({ error: "No chat found." });
 };
 
+const chatMemberExtractor = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+): Promise<void> => {
+    const chatID = request.params.chatID;
+    const user = request.user;
+
+    const { data: members, error: memberError } = await supabase
+        .from("chat_members")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .eq("chat_id", chatID);
+
+    if (!memberError && members && members.length === 1) {
+        next();
+    } else response.status(400).json({ error: "No chat membership found." });
+};
+
 const hcaptchaVerifier = async (
     request: Request,
     response: Response,
@@ -198,6 +217,7 @@ export {
     imageParser,
     fileExtractor,
     chatExtractor,
+    chatMemberExtractor,
     hcaptchaVerifier,
     profileImgEditor,
 };

@@ -20,3 +20,7 @@ export const HomeMsgSchema = BaseMsgSchema.shape({
 export type BaseMsg = InferType<typeof BaseMsgSchema>;
 
 export type HomeMsg = InferType<typeof HomeMsgSchema>;
+
+export type ChatMsg = InferType<typeof ChatMsgSchema>;
+
+export const ChatMsgsSchema = y.array().of(ChatMsgSchema).required();

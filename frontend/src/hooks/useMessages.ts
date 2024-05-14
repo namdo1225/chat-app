@@ -1,14 +1,23 @@
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
-import { getChats } from "@/services/chat";
-import { ChatMsg } from "@/types/chat";
 import * as y from "yup";
+import toast from "react-hot-toast";
+//import queryClient from "@/config/queryClient";
+import {
+    deleteMessage,
+    editMessage,
+    getMessages,
+    sendMessage,
+} from "@/services/messages";
+import { ChatMsg } from "@/types/message";
 
-export const useMessagesInfinite = (token: string, chatID: string, inclusiveLimit: number = 1, getAllPublic: boolean = true) => {
+export const useMessages = (
+    token: string,
+    chatID: string,
+    inclusiveLimit: number = 7
+) => {
     const currentMessages = useQuery<ChatMsg[]>({
         queryKey: [`MSG_${chatID}_CURRENT`],
-        queryFn: () => {
-            return getFriends(token) ?? [];
-        },
+        queryFn: () => [],
         enabled: !!token,
     });
 
@@ -17,7 +26,7 @@ export const useMessagesInfinite = (token: string, chatID: string, inclusiveLimi
         initialPageParam: 0,
         queryFn: ({ pageParam }) => {
             const page = y.number().required().validateSync(pageParam);
-            return getChats(token, page, page + inclusiveLimit, getAllPublic);
+            return getMessages(token, chatID, page, page + inclusiveLimit);
         },
         getNextPageParam: (lastPage, _allPages, lastPageParam) => {
             const page = y.number().required().validateSync(lastPageParam);
@@ -32,5 +41,56 @@ export const useMessagesInfinite = (token: string, chatID: string, inclusiveLimi
         enabled: !!token,
     });
 
-    return { infinite: infiniteMessages, current: currentMessages, finalData: infiniteMessages.data?.pages.flat().concat(currentMessages.data) ?? [] };
+    return {
+        infinite: infiniteMessages,
+        current: currentMessages,
+        finalData:
+            infiniteMessages.data?.pages
+                .flat()
+                .concat(currentMessages.data ?? []) ?? [],
+    };
+};
+
+export const useDeleteMessage = () => {
+    return useMutation({
+        mutationFn: ({ token, msgID }: { token: string; msgID: string }) =>
+            deleteMessage(token, msgID),
+        onSuccess: () => {
+            toast.success("Message deleted successfully.");
+        },
+    });
+};
+
+export const useSendMessage = () => {
+    return useMutation({
+        mutationFn: ({
+            token,
+            text,
+            chatID,
+        }: {
+            token: string;
+            text: string;
+            chatID: string;
+        }) => sendMessage(token, text, chatID),
+        onSuccess: () => {
+            toast.success("Message sent successfully.");
+        },
+    });
+};
+
+export const useEditChat = () => {
+    return useMutation({
+        mutationFn: ({
+            token,
+            msgID,
+            text,
+        }: {
+            token: string;
+            msgID: string;
+            text: string;
+        }) => editMessage(token, msgID, text),
+        onSuccess: () => {
+            toast.success("Message edited successfully.");
+        },
+    });
 };
