@@ -15,6 +15,24 @@ export const useMessages = (
     chatID: string,
     inclusiveLimit: number = 7
 ) => {
+    const curTime = new Date().toISOString();
+    
+useEffect(() => {
+  const msgListener = supabase
+    .channel("public:messages")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages", filter: `chat_id=eq.${chatID}`, },
+      (payload) => {
+        console.log("Change received!", payload);
+          // either concatenate to infinite data or put it in a new state
+      }
+    )
+    .subscribe();
+
+  return msgListener.unsubscribe();
+}, []);
+    
     const currentMessages = useQuery<ChatMsg[]>({
         queryKey: [`MSG_${chatID}_CURRENT`],
         queryFn: () => [],
@@ -26,7 +44,7 @@ export const useMessages = (
         initialPageParam: 0,
         queryFn: ({ pageParam }) => {
             const page = y.number().required().validateSync(pageParam);
-            return getMessages(token, chatID, page, page + inclusiveLimit);
+            return getMessages(token, chatID, page, page + inclusiveLimit, curTime);
         },
         getNextPageParam: (lastPage, _allPages, lastPageParam) => {
             const page = y.number().required().validateSync(lastPageParam);
@@ -43,11 +61,9 @@ export const useMessages = (
 
     return {
         infinite: infiniteMessages,
-        current: currentMessages,
         finalData:
             infiniteMessages.data?.pages
-                .flat()
-                .concat(currentMessages.data ?? []) ?? [],
+                .flat() ?? [],
     };
 };
 
