@@ -25,5 +25,5 @@ jobs:
         cache-dependency-path: '**/package-lock.json'
     - name: Build backend
       run: |
-        npm install
+        npm i --legacy-peer-deps
         grunt
