@@ -19,7 +19,7 @@ router.get(
     async (request, response) => {
         const begin = z.coerce.number().parse(request.query.begin);
         const end = z.coerce.number().parse(request.query.end);
-        const beforeTimestamp = z.coerce.number().parse(request.query.beforeTimestamp);
+        const beforeTimestamp = request.query.beforeTimestamp;
 
         if (!beforeTimestamp)
             return response.status(400).json({error: "This API route needs a beforeTimestamp in your query."});
@@ -28,7 +28,7 @@ router.get(
             .from("messages")
             .select("*")
             .order("sent_at", { ascending: false })
-            .gte("sent_at" beforeTimestamp)
+            .lte("sent_at", beforeTimestamp)
             .range(begin, end);
 
         const formattedMessages = ChatMsgSchema.array().parse(messages);

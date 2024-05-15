@@ -9,6 +9,8 @@ import {
     sendMessage,
 } from "@/services/messages";
 import { ChatMsg } from "@/types/message";
+import { useEffect } from "react";
+import { supabase } from "@/config/supabase";
 
 export const useMessages = (
     token: string,
@@ -16,35 +18,46 @@ export const useMessages = (
     inclusiveLimit: number = 7
 ) => {
     const curTime = new Date().toISOString();
-    
-useEffect(() => {
-  const msgListener = supabase
-    .channel("public:messages")
-    .on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages", filter: `chat_id=eq.${chatID}`, },
-      (payload) => {
-        console.log("Change received!", payload);
-          // either concatenate to infinite data or put it in a new state
-      }
-    )
-    .subscribe();
 
-  return msgListener.unsubscribe();
-}, []);
-    
-    const currentMessages = useQuery<ChatMsg[]>({
-        queryKey: [`MSG_${chatID}_CURRENT`],
-        queryFn: () => [],
-        enabled: !!token,
-    });
+    useEffect(() => {
+        const listen = () => {
+            const msgListener = supabase
+                .channel("custom-all-channel")
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "INSERT",
+                        schema: "public",
+                        table: "messages",
+                        filter: `chat_id=eq.${chatID}`,
+                    },
+                    (payload) => {
+                        console.log("Change received!", payload);
+                        // either concatenate to infinite data or put it in a new state
+                    }
+                )
+                .subscribe();
+
+            return () => msgListener.unsubscribe();
+        };
+
+        console.log("Hello!");
+
+        return void listen();
+    }, []);
 
     const infiniteMessages = useInfiniteQuery<ChatMsg[], Error>({
         queryKey: [`MSG_${chatID}_INFINITE`],
         initialPageParam: 0,
         queryFn: ({ pageParam }) => {
             const page = y.number().required().validateSync(pageParam);
-            return getMessages(token, chatID, page, page + inclusiveLimit, curTime);
+            return getMessages(
+                token,
+                chatID,
+                page,
+                page + inclusiveLimit,
+                curTime
+            );
         },
         getNextPageParam: (lastPage, _allPages, lastPageParam) => {
             const page = y.number().required().validateSync(lastPageParam);
@@ -61,9 +74,7 @@ useEffect(() => {
 
     return {
         infinite: infiniteMessages,
-        finalData:
-            infiniteMessages.data?.pages
-                .flat() ?? [],
+        finalData: infiniteMessages.data?.pages.flat() ?? [],
     };
 };
 

@@ -6,7 +6,7 @@ const api = "messages";
 
 const getMessages = async (token: string, chatID: string, begin: number, end: number, beforeTimestamp: string) => {
     const request = await apiClient.get(
-        `/${api}/${chatID}?timestamp=${beforeTimestamp}&begin=${begin}&end=${end}`,
+        `/${api}/${chatID}?beforeTimestamp=${beforeTimestamp}&begin=${begin}&end=${end}`,
         createAuthHeader(token)
     );
 

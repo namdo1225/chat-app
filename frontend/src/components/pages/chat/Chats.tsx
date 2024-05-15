@@ -821,11 +821,12 @@ const ChattingScreen = ({ chat, token }: { chat: Chat; token: string }) => {
     const { user } = useAuth();
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
-    const { finalData } = useMessages(token, chat.id);
+    const { finalData, infinite } = useMessages(token, chat.id);
 
     const sendMessage = () => {
         try {
             mutate({ token, text, chatID: chat.id });
+            setText("");
         } catch (e) {
             console.error(e);
         }
@@ -834,34 +835,29 @@ const ChattingScreen = ({ chat, token }: { chat: Chat; token: string }) => {
     return (
         <Box>
             <Box
+                id="scrollableDiv"
+                height={500}
                 sx={{
-                    p: 1,
-                    height: 1 / 2,
-                    mx: "auto",
-                    my: 2,
-                    maxHeight: 500,
-                    overflow: "auto",
+                    overflowY: "scroll",
+                    display: "flex",
+                    flexDirection: "column-reverse",
                 }}
             >
-                <List sx={{ flexGrow: 1, overflow: "auto", p: 2 }}>
-                    <Message
-                        msg={{
-                            id: "fwejlkrwejwe",
-                            sent_at: "12/14/2001",
-                            chatter: "John",
-                            text: "Hello World!",
-                        }}
-                        fromUser={true}
-                    />
-                    <Message
-                        msg={{
-                            id: "fwejlkrwejwe",
-                            sent_at: "12/14/2001",
-                            chatter: "John",
-                            text: "Hello World!",
-                        }}
-                        fromUser={false}
-                    />
+                <InfiniteScroll
+                    inverse
+                    className="flex flex-col-reverse overflow-visible"
+                    dataLength={finalData.length}
+                    hasMore={infinite.hasNextPage}
+                    next={infinite.fetchNextPage}
+                    loader={<Loading />}
+                    endMessage={
+                        <Typography sx={{ textAlign: "center", my: 10 }}>
+                            You are up to date.
+                        </Typography>
+                    }
+                    scrollThreshold={0.5}
+                    scrollableTarget="scrollableDiv"
+                >
                     {finalData.map((msg) => (
                         <Message
                             key={msg.id}
@@ -871,7 +867,7 @@ const ChattingScreen = ({ chat, token }: { chat: Chat; token: string }) => {
                             }
                         />
                     ))}
-                </List>
+                </InfiniteScroll>
             </Box>
             <Box
                 sx={{
