@@ -817,8 +817,15 @@ const ChatScroll = ({
     );
 };
 
-const ChattingScreen = ({ chat, token }: { chat: Chat; token: string }) => {
-    const { user } = useAuth();
+const ChattingScreen = ({
+    userID,
+    chat,
+    token,
+}: {
+    userID: string;
+    chat: Chat;
+    token: string;
+}) => {
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
     const { finalData, infinite } = useMessages(token, chat.id);
@@ -841,6 +848,7 @@ const ChattingScreen = ({ chat, token }: { chat: Chat; token: string }) => {
                     overflowY: "scroll",
                     display: "flex",
                     flexDirection: "column-reverse",
+                    p: 2,
                 }}
             >
                 <InfiniteScroll
@@ -852,7 +860,7 @@ const ChattingScreen = ({ chat, token }: { chat: Chat; token: string }) => {
                     loader={<Loading />}
                     endMessage={
                         <Typography sx={{ textAlign: "center", my: 10 }}>
-                            You are up to date.
+                            No older chat history.
                         </Typography>
                     }
                     scrollThreshold={0.5}
@@ -862,9 +870,8 @@ const ChattingScreen = ({ chat, token }: { chat: Chat; token: string }) => {
                         <Message
                             key={msg.id}
                             msg={{ ...msg, chatter: "T" }}
-                            fromUser={
-                                user ? msg.from_user_id === user.id : false
-                            }
+                            fromUser={msg.from_user_id === userID}
+                            fromServer={true}
                         />
                     ))}
                 </InfiniteScroll>
@@ -904,6 +911,7 @@ const ChattingScreen = ({ chat, token }: { chat: Chat; token: string }) => {
 const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
     const { data: members, isLoading } = useChatMembers(chat.id, token);
     const [hideMembers, setHideMembers] = useState(false);
+    const { user } = useAuth();
 
     if (isLoading) return <Loading message="Loading chat..." />;
 
@@ -937,9 +945,15 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                         justifyContent: "center",
                     }}
                 >
-                    <Box sx={{ width: hideMembers ? 3 / 4 : 1 / 1 }}>
-                        <ChattingScreen chat={chat} token={token} />
-                    </Box>
+                    {user && (
+                        <Box sx={{ width: hideMembers ? 3 / 4 : 1 / 1 }}>
+                            <ChattingScreen
+                                userID={user.id}
+                                chat={chat}
+                                token={token}
+                            />
+                        </Box>
+                    )}
                     {!hideMembers && (
                         <Box
                             sx={{

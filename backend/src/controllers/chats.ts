@@ -13,12 +13,13 @@ import {
     tokenExtractor,
     userExtractor,
     chatExtractor,
+    paginationVerifier
 } from "@/utils/middleware";
 import { ChatMemberSchema } from "@/types/chat_members";
 
 const router = Router();
 
-router.get("/", tokenExtractor, userExtractor, async (request, response) => {
+router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (request, response) => {
     const getAllPublic = request.query.getAllPublic === "true";
     const begin = z.coerce.number().parse(request.query.begin);
     const end = z.coerce.number().parse(request.query.end);

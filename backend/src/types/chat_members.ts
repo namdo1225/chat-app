@@ -1,5 +1,6 @@
 import { setRequiredStr } from "./zod";
 import { ChatSchema } from "./chat";
+import { ProfileSchema } from "./profile";
 import z from "zod";
 
 export const ChatMemberOnlySchema = z.object({
@@ -10,4 +11,8 @@ export const ChatMemberOnlySchema = z.object({
 
 export const ChatMemberSchema = ChatMemberOnlySchema.extend({
     chats: ChatSchema,
+});
+
+export const ChatMemberProfileSchema = ChatMemberOnlySchema.extend({
+    profiles: ProfileSchema,
 });

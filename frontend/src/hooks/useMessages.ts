@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import * as y from "yup";
 import toast from "react-hot-toast";
 //import queryClient from "@/config/queryClient";
@@ -8,16 +8,17 @@ import {
     getMessages,
     sendMessage,
 } from "@/services/messages";
-import { ChatMsg } from "@/types/message";
-import { useEffect } from "react";
+import { ChatMsg, ChatMsgSchema, ChatMsgsSchema } from "@/types/message";
+import { useEffect, useState } from "react";
 import { supabase } from "@/config/supabase";
 
 export const useMessages = (
     token: string,
     chatID: string,
-    inclusiveLimit: number = 7
+    limit: number = 7
 ) => {
     const curTime = new Date().toISOString();
+    const [currentMessages, setCurrentMessages] = useState<ChatMsg[]>([]);
 
     useEffect(() => {
         const listen = () => {
@@ -32,8 +33,8 @@ export const useMessages = (
                         filter: `chat_id=eq.${chatID}`,
                     },
                     (payload) => {
-                        console.log("Change received!", payload);
-                        // either concatenate to infinite data or put it in a new state
+                        const msg = ChatMsgSchema.validateSync(payload.new);
+                        setCurrentMessages(currentMessages.concat(msg));
                     }
                 )
                 .subscribe();
@@ -41,32 +42,21 @@ export const useMessages = (
             return () => msgListener.unsubscribe();
         };
 
-        console.log("Hello!");
-
         return void listen();
     }, []);
 
     const infiniteMessages = useInfiniteQuery<ChatMsg[], Error>({
         queryKey: [`MSG_${chatID}_INFINITE`],
-        initialPageParam: 0,
+        initialPageParam: curTime,
         queryFn: ({ pageParam }) => {
-            const page = y.number().required().validateSync(pageParam);
-            return getMessages(
-                token,
-                chatID,
-                page,
-                page + inclusiveLimit,
-                curTime
-            );
+            const timestamp = y.string().required().validateSync(pageParam);
+            return getMessages(token, chatID, limit, timestamp);
         },
-        getNextPageParam: (lastPage, _allPages, lastPageParam) => {
-            const page = y.number().required().validateSync(lastPageParam);
-            if (
-                lastPage &&
-                lastPage.length > 0 &&
-                lastPage.length >= inclusiveLimit
-            )
-                return page + inclusiveLimit + 1;
+        getNextPageParam: (lastPage, _allPages) => {
+            if (lastPage && lastPage.length > 0) {
+                const msgs = ChatMsgsSchema.validateSync(lastPage);
+                return msgs[msgs.length - 1 < 0 ? 0 : msgs.length - 1].sent_at;
+            }
             return null;
         },
         enabled: !!token,
@@ -74,7 +64,9 @@ export const useMessages = (
 
     return {
         infinite: infiniteMessages,
-        finalData: infiniteMessages.data?.pages.flat() ?? [],
+        finalData:
+            currentMessages.concat(infiniteMessages.data?.pages.flat() ?? []) ??
+            [],
     };
 };
 
@@ -105,7 +97,7 @@ export const useSendMessage = () => {
     });
 };
 
-export const useEditChat = () => {
+export const useEditMessage = () => {
     return useMutation({
         mutationFn: ({
             token,

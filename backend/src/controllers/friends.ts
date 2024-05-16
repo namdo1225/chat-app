@@ -2,14 +2,14 @@ import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
 import { logError } from "@/utils/logger";
-import { tokenExtractor, userExtractor } from "@/utils/middleware";
+import { tokenExtractor, userExtractor, paginationVerifier } from "@/utils/middleware";
 import { BaseFriendSchema, FriendsSchema } from "@/types/friend";
 import z from "zod";
 
 const router = Router();
 const FRIENDS = "friends";
 
-router.get("/", tokenExtractor, userExtractor, async (request, response) => {
+router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (request, response) => {
     const id = request.user.id;
     const begin = z.coerce.number().parse(request.query.begin);
     const end = z.coerce.number().parse(request.query.end);

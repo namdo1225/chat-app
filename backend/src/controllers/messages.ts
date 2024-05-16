@@ -17,19 +17,26 @@ router.get(
     userExtractor,
     chatMemberExtractor,
     async (request, response) => {
-        const begin = z.coerce.number().parse(request.query.begin);
-        const end = z.coerce.number().parse(request.query.end);
-        const beforeTimestamp = request.query.beforeTimestamp;
+        const chatID = request.params.chatID;
+
+        const beforeTimestamp = z.coerce
+            .string()
+            .parse(request.query.beforeTimestamp);
+        const numLimit = z.coerce.number().parse(request.query.limit);
+        const limit = numLimit < 10 ? numLimit : 10;
 
         if (!beforeTimestamp)
-            return response.status(400).json({error: "This API route needs a beforeTimestamp in your query."});
-        
+            return response.status(400).json({
+                error: "This API route needs a beforeTimestamp in your query.",
+            });
+
         const { data: messages, error } = await supabase
             .from("messages")
             .select("*")
+            .eq("chat_id", chatID)
             .order("sent_at", { ascending: false })
-            .lte("sent_at", beforeTimestamp)
-            .range(begin, end);
+            .lt("sent_at", `${beforeTimestamp.slice(0, -6)}Z`)
+            .limit(limit);
 
         const formattedMessages = ChatMsgSchema.array().parse(messages);
 
@@ -69,14 +76,17 @@ router.put("/:id", tokenExtractor, userExtractor, async (request, response) => {
 
     const { data: editedMessage, error } = await supabase
         .from("messages")
-        .update(text)
+        .update({ text: text })
         .eq("id", request.params.id)
         .eq("from_user_id", request.user.id)
         .select();
 
-    if (error) return response.status(404).json(error);
+    if (error) return response.status(400).json(error);
 
-    return response.status(201).json(ChatMsgSchema.parse(editedMessage));
+    if (editedMessage && editedMessage.length === 1)
+        return response.status(201).json(ChatMsgSchema.parse(editedMessage[0]));
+
+    return response.status(400).json({ error: "No messages found" });
 });
 
 router.delete(
@@ -87,8 +97,8 @@ router.delete(
         const { error: deleteMessageError } = await supabase
             .from("messages")
             .delete()
-            .eq("from_user_id", request.user.id)
-            .eq("id", request.params.id);
+            .eq("id", request.params.id)
+            .eq("from_user_id", request.user.id);
 
         if (deleteMessageError)
             return response.status(400).json(deleteMessageError);

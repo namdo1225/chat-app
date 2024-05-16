@@ -211,13 +211,16 @@ const paginationVerifier = (
     request: Request,
     response: Response,
     next: NextFunction
-) => {
-    if (request.params.begin && request.params.end)
-        next();
+): void => {
+    if (request.query.begin && request.query.end) next();
     else
-        response.status(400).json({ error: "Missing pagination (begin or end parameters are undefined)." });
+        response
+            .status(400)
+            .json({
+                error: "Missing pagination (begin or end parameters are undefined).",
+            });
 };
-        
+
 export {
     requestLogger,
     unknownEndpoint,
