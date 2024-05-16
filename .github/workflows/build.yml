@@ -25,6 +25,5 @@ jobs:
         cache-dependency-path: '**/package-lock.json'
     - name: Install backend dependencies
     - run: npm i --legacy-peer-deps
-    
     - name: Build backend
     - run: npm run build --if-present
