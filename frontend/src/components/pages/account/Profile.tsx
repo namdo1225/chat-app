@@ -279,7 +279,7 @@ const Profile = () => {
                     onChange={({ target }) =>
                         handleChatThemeChange(target.value, "fromMessageBox")
                     }
-                    defaultValue={chatTheme.fromMessageBox}
+                    value={chatTheme.fromMessageBox}
                 >
                     {PALETTE_COLORS.map((color) => (
                         <MenuItem key={`fromMessageBox_${color}`} value={color}>
@@ -293,7 +293,7 @@ const Profile = () => {
                     onChange={({ target }) =>
                         handleChatThemeChange(target.value, "toMessageBox")
                     }
-                    defaultValue={chatTheme.toMessageBox}
+                    value={chatTheme.toMessageBox}
                 >
                     {PALETTE_COLORS.map((color) => (
                         <MenuItem key={`toMessageBox${color}`} value={color}>
@@ -307,7 +307,7 @@ const Profile = () => {
                     onChange={({ target }) =>
                         handleChatThemeChange(target.value, "fromMessageText")
                     }
-                    defaultValue={chatTheme.fromMessageText}
+                    value={chatTheme.fromMessageText ?? ""}
                 >
                     {PALETTE_COLORS.map((color) => (
                         <MenuItem key={`fromMessageText${color}`} value={color}>
@@ -322,7 +322,7 @@ const Profile = () => {
                     onChange={({ target }) =>
                         handleChatThemeChange(target.value, "toMessageText")
                     }
-                    defaultValue={chatTheme.toMessageText}
+                    value={chatTheme.toMessageText ?? ""}
                 >
                     {PALETTE_COLORS.map((color) => (
                         <MenuItem key={`toMessageText${color}`} value={color}>

@@ -899,6 +899,11 @@ const ChattingScreen = ({
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
     const { finalData, infinite } = useMessages(token, chat.id);
+    const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
+    const { profile } = useAuth();
+    const fromProfile = profile
+        ? `${profile?.first_name} ${profile?.last_name}`
+        : "Unknown";
 
     const sendMessage = () => {
         try {
@@ -908,6 +913,8 @@ const ChattingScreen = ({
             console.error(e);
         }
     };
+
+    if (isLoading) return <Loading />;
 
     return (
         <Box>
@@ -939,7 +946,28 @@ const ChattingScreen = ({
                     {finalData.map((msg) => (
                         <Message
                             key={msg.id}
-                            msg={{ ...msg, chatter: "T" }}
+                            msg={{
+                                ...msg,
+                                chatter: members.find(
+                                    (member) =>
+                                        member.profiles.user_id ===
+                                        msg.from_user_id
+                                )
+                                    ? `${
+                                          members.find(
+                                              (member) =>
+                                                  member.profiles.user_id ===
+                                                  msg.from_user_id
+                                          )?.profiles.first_name
+                                      } ${
+                                          members.find(
+                                              (member) =>
+                                                  member.profiles.user_id ===
+                                                  msg.from_user_id
+                                          )?.profiles.last_name
+                                      }`
+                                    : fromProfile,
+                            }}
                             fromUser={msg.from_user_id === userID}
                             fromServer={true}
                         />
