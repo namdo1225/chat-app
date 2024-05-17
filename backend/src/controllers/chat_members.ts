@@ -8,7 +8,7 @@ import {
 } from "@/utils/middleware";
 import {
     ChatMemberOnlySchema,
-    ChatMemberProfileSchema,
+    ChatMemberProfilesSchema,
 } from "@/types/chat_members";
 import { ChatSchema } from "@/types/chat";
 
@@ -39,15 +39,15 @@ router.get(
         } else {
             const { data: chatMembers, error } = await supabase
                 .from("chat_members")
-                .select("*,profiles(*)")
+                .select("id,chat_id,profiles(*)")
                 .eq("chat_id", chatID)
                 .neq("user_id", request.user.id);
+
 
             if (error) return response.status(400).json(error);
 
             const formattedChatMembers =
-                ChatMemberProfileSchema.array().parse(chatMembers);
-
+                ChatMemberProfilesSchema.parse(chatMembers);
             return response.status(200).json(formattedChatMembers);
         }
     }

@@ -21,6 +21,7 @@ import {
     TableBody,
     Tooltip,
     Grid,
+    Avatar,
 } from "@mui/material";
 import { Dispatch, SetStateAction, useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
@@ -48,12 +49,17 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import { useChatMembers, useDeleteChatMember } from "@/hooks/useChatMembers";
+import {
+    useChatMembers,
+    useChatMembersProfile,
+    useDeleteChatMember,
+} from "@/hooks/useChatMembers";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import SendIcon from "@mui/icons-material/Send";
 import Message from "./Message";
 import { useMessages, useSendMessage } from "@/hooks/useMessages";
+import UserProfileDialog from "@/components/UserProfileDialog";
 
 const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
     const { mutate, isPending } = useCreateChat();
@@ -909,9 +915,18 @@ const ChattingScreen = ({
 };
 
 const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
-    const { data: members, isLoading } = useChatMembers(chat.id, token);
+    const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const [hideMembers, setHideMembers] = useState(false);
+    const [openUserDialog, setOpenUserDialog] = useState(false);
     const { user } = useAuth();
+    const { mutate } = useDeleteChatMember();
+    const deleteMember = () => {
+        try {
+            mutate({ chatID: chat.id, token });
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     if (isLoading) return <Loading message="Loading chat..." />;
 
@@ -964,10 +979,38 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                         >
                             <List>
                                 {members.map((member) => (
-                                    <ListItem key={member.user_id}>
-                                        <ListItemText>
-                                            <Typography>{member.id}</Typography>
+                                    <ListItem key={member.profiles.user_id}>
+                                        <Avatar
+                                            onClick={() =>
+                                                setOpenUserDialog(true)
+                                            }
+                                            alt="User Avatar"
+                                            src={member.profiles.profile_photo}
+                                        />
+                                        <ListItemText sx={{ mx: 2 }}>
+                                            <Typography>
+                                                {member.profiles.first_name}{" "}
+                                                {member.profiles.last_name}
+                                            </Typography>
                                         </ListItemText>
+                                        {chat.owner_id === user?.id && (
+                                            <Tooltip title="Remove member from chat">
+                                                <IconButton
+                                                    onClick={deleteMember}
+                                                >
+                                                    <PersonRemoveIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                        {openUserDialog && (
+                                            <UserProfileDialog
+                                                open={openUserDialog}
+                                                onClose={() =>
+                                                    setOpenUserDialog(false)
+                                                }
+                                                profile={member.profiles}
+                                            />
+                                        )}
                                     </ListItem>
                                 ))}
                             </List>

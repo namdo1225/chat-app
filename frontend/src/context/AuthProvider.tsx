@@ -10,6 +10,9 @@ import {
     THEME_VALUES,
     LIGHT_THEME_COLORS,
     DARK_THEME_COLORS,
+    ChatMessageTheme,
+    PALETTE_COLORS,
+    PaletteColors,
 } from "@/types/theme";
 
 const AuthContext = createContext<{
@@ -25,6 +28,8 @@ const AuthContext = createContext<{
     refreshToken: () => Promise<void>;
     setThemeMode: Dispatch<React.SetStateAction<"dark" | "light">>;
     themeMode: string;
+    chatTheme: ChatMessageTheme;
+    handleChatTheme: () => void;
 }>({
     session: null,
     user: null,
@@ -37,6 +42,13 @@ const AuthContext = createContext<{
     refreshToken: async () => {},
     setThemeMode: () => {},
     themeMode: "light",
+    chatTheme: {
+        fromMessageBox: "secondary.main",
+        toMessageBox: "info.main",
+        fromMessageText: undefined,
+        toMessageText: undefined,
+    },
+    handleChatTheme: () => {},
 });
 
 /**
@@ -53,6 +65,44 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
     const [themeMode, setThemeMode] = useState<"light" | "dark">(() => {
         const theme = localStorage.getItem("theme");
         return theme === "light" || theme === "dark" ? theme : "light";
+    });
+
+    const handleChatTheme = () => {
+        const fromMessageBox = PALETTE_COLORS.includes(
+            localStorage.getItem("fromMessageBox") as PaletteColors
+        )
+            ? (localStorage.getItem("fromMessageBox") as PaletteColors)
+            : "secondary.main";
+        const toMessageBox = PALETTE_COLORS.includes(
+            localStorage.getItem("toMessageBox") as PaletteColors
+        )
+            ? (localStorage.getItem("toMessageBox") as PaletteColors)
+            : "info.main";
+
+        const fromMessageText = PALETTE_COLORS.includes(
+            localStorage.getItem("fromMessageText") as PaletteColors
+        )
+            ? (localStorage.getItem("fromMessageText") as PaletteColors)
+            : undefined;
+        const toMessageText = PALETTE_COLORS.includes(
+            localStorage.getItem("toMessageText") as PaletteColors
+        )
+            ? (localStorage.getItem("toMessageText") as PaletteColors)
+            : undefined;
+
+        setChatTheme({
+            fromMessageBox,
+            toMessageBox,
+            fromMessageText,
+            toMessageText,
+        });
+    };
+
+    const [chatTheme, setChatTheme] = useState<ChatMessageTheme>({
+        fromMessageBox: "secondary.main",
+        toMessageBox: "info.main",
+        fromMessageText: undefined,
+        toMessageText: undefined,
     });
 
     const color =
@@ -154,6 +204,8 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
         refreshToken,
         setThemeMode,
         themeMode,
+        chatTheme,
+        handleChatTheme,
     };
 
     return (

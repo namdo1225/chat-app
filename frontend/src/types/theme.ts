@@ -43,3 +43,21 @@ export const DARK_THEME_COLORS = {
         footer: { main: blueGrey[900] },
     },
 };
+
+export const PALETTE_COLORS = [
+    "primary.main",
+    "secondary.main",
+    "error.main",
+    "warning.main",
+    "info.main",
+    "success.main",
+] as const;
+
+export type PaletteColors = (typeof PALETTE_COLORS)[number];
+
+export interface ChatMessageTheme {
+    fromMessageBox: PaletteColors;
+    toMessageBox: PaletteColors;
+    fromMessageText: PaletteColors | undefined;
+    toMessageText: PaletteColors | undefined;
+}

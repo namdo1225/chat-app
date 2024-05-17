@@ -13,6 +13,10 @@ export const ChatMemberSchema = ChatMemberOnlySchema.extend({
     chats: ChatSchema,
 });
 
-export const ChatMemberProfileSchema = ChatMemberOnlySchema.extend({
+export const ChatMemberProfileSchema = ChatMemberOnlySchema.omit({
+    user_id: true,
+}).extend({
     profiles: ProfileSchema,
 });
+
+export const ChatMemberProfilesSchema = ChatMemberProfileSchema.array();

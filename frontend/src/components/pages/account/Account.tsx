@@ -19,11 +19,7 @@ import { useFormik } from "formik";
 import * as y from "yup";
 import { email, password } from "@/types/yup";
 import { EditProfileSchema } from "@/types/profile";
-
-export interface SimpleDialogProps {
-    open: boolean;
-    onClose: () => void;
-}
+import { SimpleDialogProps } from "@/types/prop";
 
 const DeleteAccountDialog = ({ onClose, open }: SimpleDialogProps) => {
     const [email, setEmail] = useState("");

@@ -93,6 +93,7 @@ const Message = ({
     const { session, user } = useAuth();
     const [openEditMessage, setOpenEditMessage] = useState(false);
     const [showIcon, setShowIcon] = useState(false);
+    const { chatTheme } = useAuth();
 
     const validDate = y.string().datetime().isValidSync(msg.sent_at);
     const date = new Date(
@@ -139,8 +140,8 @@ const Message = ({
                     <Avatar
                         sx={{
                             bgcolor: fromUser
-                                ? "secondary.main"
-                                : "primary.main",
+                                ? chatTheme.fromMessageBox
+                                : chatTheme.toMessageBox,
                             width: 25,
                             height: 25,
                         }}
@@ -154,14 +155,22 @@ const Message = ({
                             ml: fromUser ? 0 : 1,
                             mr: fromUser ? 1 : 0,
                             backgroundColor: fromUser
-                                ? "secondary.main"
-                                : "info.light",
+                                ? chatTheme.fromMessageBox
+                                : chatTheme.toMessageBox,
                             borderRadius: fromUser
                                 ? "20px 20px 5px 20px"
                                 : "20px 20px 20px 5px",
                         }}
                     >
-                        <Typography>{msg.text}</Typography>
+                        <Typography
+                            color={
+                                fromUser
+                                    ? chatTheme.fromMessageText
+                                    : chatTheme.toMessageText
+                            }
+                        >
+                            {msg.text}
+                        </Typography>
                     </Paper>
                 </Box>
             </Box>
