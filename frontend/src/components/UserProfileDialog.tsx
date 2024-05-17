@@ -41,7 +41,7 @@ const UserProfileDialog = ({
                     color="info"
                     sx={{ my: 2 }}
                 >
-                    Cancel
+                    Return
                 </Button>
             </Box>
         </Dialog>

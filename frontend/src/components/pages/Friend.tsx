@@ -12,6 +12,7 @@ import {
     TableRow,
     TableCell,
     Tooltip,
+    Avatar,
 } from "@mui/material";
 import { useProfiles } from "@/hooks/useUser";
 import { useState } from "react";
@@ -29,6 +30,7 @@ import { useAuth } from "@/context/AuthProvider";
 import { Session, User } from "@supabase/supabase-js";
 import { Friend as Friendtype } from "@/types/friend";
 import { Profile } from "@/types/profile";
+import UserProfileDialog from "@/components/UserProfileDialog";
 
 const UserList = ({
     user,
@@ -46,6 +48,7 @@ const UserList = ({
         if (user && session) mutateAdd({ id, token: session.access_token });
     };
     const { fetchNextPage, hasNextPage } = useProfiles();
+    const [openUserDialog, setOpenUserDialog] = useState(false);
 
     return (
         <InfiniteScroll
@@ -75,7 +78,20 @@ const UserList = ({
                                 (f) => f.user_id === profile.user_id
                             ) && (
                                 <TableRow key={profile.user_id}>
-                                    <TableCell>
+                                    <TableCell
+                                        sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 2,
+                                        }}
+                                    >
+                                        <Avatar
+                                            onClick={() =>
+                                                setOpenUserDialog(true)
+                                            }
+                                            alt="User Avatar"
+                                            src={profile.profile_photo}
+                                        />
                                         {profile.first_name} {profile.last_name}
                                     </TableCell>
                                     <TableCell>
@@ -90,6 +106,15 @@ const UserList = ({
                                             />
                                         </Tooltip>
                                     </TableCell>
+                                    {openUserDialog && (
+                                        <UserProfileDialog
+                                            open={openUserDialog}
+                                            onClose={() =>
+                                                setOpenUserDialog(false)
+                                            }
+                                            profile={profile}
+                                        />
+                                    )}
                                 </TableRow>
                             )
                     )}
@@ -113,6 +138,7 @@ const FriendList = ({
     const { mutate: mutateRemove } = useRemoveFriend();
     const { mutate: mutateVerify } = useVerifyFriend();
     const { fetchNextPage, hasNextPage } = useFriends(session.access_token);
+    const [openUserDialog, setOpenUserDialog] = useState(false);
 
     const handleRemoveFriend = async (id: string) => {
         if (user && session) mutateRemove({ id, token: session.access_token });
@@ -147,10 +173,22 @@ const FriendList = ({
                         (profile) =>
                             pending === profile.pending && (
                                 <TableRow key={profile.user_id}>
-                                    <TableCell>
-                                        {`${profile.first_name} ${profile.last_name}`}
+                                    <TableCell
+                                        sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 2,
+                                        }}
+                                    >
+                                        <Avatar
+                                            onClick={() =>
+                                                setOpenUserDialog(true)
+                                            }
+                                            alt="User Avatar"
+                                            src={profile.profile_photo}
+                                        />
+                                        {profile.first_name} {profile.last_name}
                                     </TableCell>
-
                                     <TableCell>
                                         {profile.pending &&
                                             profile.requestee === user?.id && (
@@ -178,6 +216,15 @@ const FriendList = ({
                                             />
                                         </Tooltip>
                                     </TableCell>
+                                    {openUserDialog && (
+                                        <UserProfileDialog
+                                            open={openUserDialog}
+                                            onClose={() =>
+                                                setOpenUserDialog(false)
+                                            }
+                                            profile={profile}
+                                        />
+                                    )}
                                 </TableRow>
                             )
                     )}

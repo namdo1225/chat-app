@@ -76,6 +76,7 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
                   friend.last_name.includes(searchStr)
           )
         : friends;
+    const [openUserDialog, setOpenUserDialog] = useState(false);
 
     const formik = useFormik({
         initialValues: {
@@ -209,8 +210,27 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
                                         (profile) =>
                                             !profile.pending && (
                                                 <TableRow key={profile.user_id}>
-                                                    <TableCell>
-                                                        {`${profile.first_name} ${profile.last_name}`}
+                                                    <TableCell
+                                                        sx={{
+                                                            display: "flex",
+                                                            alignItems:
+                                                                "center",
+                                                            gap: 2,
+                                                        }}
+                                                    >
+                                                        <Avatar
+                                                            onClick={() =>
+                                                                setOpenUserDialog(
+                                                                    true
+                                                                )
+                                                            }
+                                                            alt="User Avatar"
+                                                            src={
+                                                                profile.profile_photo
+                                                            }
+                                                        />
+                                                        {profile.first_name}{" "}
+                                                        {profile.last_name}
                                                     </TableCell>
                                                     {!formik.values.members.includes(
                                                         profile.user_id
@@ -247,6 +267,19 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
                                                                 />
                                                             </Tooltip>
                                                         </TableCell>
+                                                    )}
+                                                    {openUserDialog && (
+                                                        <UserProfileDialog
+                                                            open={
+                                                                openUserDialog
+                                                            }
+                                                            onClose={() =>
+                                                                setOpenUserDialog(
+                                                                    false
+                                                                )
+                                                            }
+                                                            profile={profile}
+                                                        />
                                                     )}
                                                 </TableRow>
                                             )
@@ -298,6 +331,7 @@ const EditChatDialog = ({
         chat.id,
         session.access_token
     );
+    const [openUserDialog, setOpenUserDialog] = useState(false);
     const [searchStr, setSearchStr] = useState("");
     const filteredFriends = searchStr
         ? friends.filter(
@@ -481,7 +515,24 @@ const EditChatDialog = ({
                                     (profile) =>
                                         !profile.pending && (
                                             <TableRow key={profile.user_id}>
-                                                <TableCell>
+                                                <TableCell
+                                                    sx={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: 2,
+                                                    }}
+                                                >
+                                                    <Avatar
+                                                        onClick={() =>
+                                                            setOpenUserDialog(
+                                                                true
+                                                            )
+                                                        }
+                                                        alt="User Avatar"
+                                                        src={
+                                                            profile.profile_photo
+                                                        }
+                                                    />
                                                     <Typography
                                                         color={
                                                             formik.values.addMembers.includes(
@@ -494,7 +545,9 @@ const EditChatDialog = ({
                                                                 ? "error.main"
                                                                 : ""
                                                         }
-                                                    >{`${profile.first_name} ${profile.last_name}`}</Typography>
+                                                    >
+                                                        {`${profile.first_name} ${profile.last_name}`}
+                                                    </Typography>
                                                 </TableCell>
                                                 <TableCell
                                                     sx={{ color: "Highlight" }}
@@ -573,6 +626,17 @@ const EditChatDialog = ({
                                                             </Tooltip>
                                                         )}
                                                 </TableCell>
+                                                {openUserDialog && (
+                                                    <UserProfileDialog
+                                                        open={openUserDialog}
+                                                        onClose={() =>
+                                                            setOpenUserDialog(
+                                                                false
+                                                            )
+                                                        }
+                                                        profile={profile}
+                                                    />
+                                                )}
                                             </TableRow>
                                         )
                                 )}
