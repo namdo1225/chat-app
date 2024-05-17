@@ -14,7 +14,7 @@ import {
 import ImageIcon from "@mui/icons-material/Image";
 import { useFormik } from "formik";
 import { EditProfileSchema } from "@/types/profile";
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import * as userService from "@/services/users";
 import axios from "axios";
 import AvatarEditor from "react-avatar-editor";
@@ -23,7 +23,7 @@ import { useAuth } from "@/context/AuthProvider";
 import toast from "react-hot-toast";
 import ChatAvatarEditor from "@/components/ChatAvatarEditor";
 import Message from "@/components/pages/chat/Message";
-import { PALETTE_COLORS } from "@/types/theme";
+import { CHAT_THEMES_KEY, ChatThemeKey, PALETTE_COLORS } from "@/types/theme";
 import { setRequiredStr } from "@/types/yup";
 
 const fields = [
@@ -36,6 +36,11 @@ const fields = [
         label: "Last Name",
     },
 ];
+
+const camelCaseToWords = (s: string) => {
+    const result = s.replace(/([A-Z])/g, " $1");
+    return result.charAt(0).toUpperCase() + result.slice(1);
+};
 
 const Profile = () => {
     const ref = useRef<HTMLInputElement>(null);
@@ -124,7 +129,7 @@ const Profile = () => {
         if (error && "files" in error) clearUpload();
     };
 
-    const handleChatThemeChange = (value: unknown, key: string) => {
+    const handleChatThemeChange = (value: unknown, key: ChatThemeKey) => {
         localStorage.setItem(key, setRequiredStr().validateSync(value));
 
         handleChatTheme();
@@ -273,64 +278,41 @@ const Profile = () => {
                 <Typography textAlign="center">
                     Change Chat's Appearance
                 </Typography>
-                <Typography textAlign="center">From Message Box</Typography>
-                <Select
-                    label="From Message Box"
-                    onChange={({ target }) =>
-                        handleChatThemeChange(target.value, "fromMessageBox")
-                    }
-                    value={chatTheme.fromMessageBox}
-                >
-                    {PALETTE_COLORS.map((color) => (
-                        <MenuItem key={`fromMessageBox_${color}`} value={color}>
-                            {color}
-                        </MenuItem>
-                    ))}
-                </Select>
-                <Typography textAlign="center">To Message Box</Typography>
-                <Select
-                    label="To Message Box"
-                    onChange={({ target }) =>
-                        handleChatThemeChange(target.value, "toMessageBox")
-                    }
-                    value={chatTheme.toMessageBox}
-                >
-                    {PALETTE_COLORS.map((color) => (
-                        <MenuItem key={`toMessageBox${color}`} value={color}>
-                            {color}
-                        </MenuItem>
-                    ))}
-                </Select>
-                <Typography textAlign="center">From Message Text</Typography>
-                <Select
-                    label="From Message Text"
-                    onChange={({ target }) =>
-                        handleChatThemeChange(target.value, "fromMessageText")
-                    }
-                    value={chatTheme.fromMessageText ?? ""}
-                >
-                    {PALETTE_COLORS.map((color) => (
-                        <MenuItem key={`fromMessageText${color}`} value={color}>
-                            {color}
-                        </MenuItem>
-                    ))}
-                    <MenuItem value={undefined}>Use Default</MenuItem>
-                </Select>
-                <Typography textAlign="center">To Message Text</Typography>
-                <Select
-                    label="To Message Text"
-                    onChange={({ target }) =>
-                        handleChatThemeChange(target.value, "toMessageText")
-                    }
-                    value={chatTheme.toMessageText ?? ""}
-                >
-                    {PALETTE_COLORS.map((color) => (
-                        <MenuItem key={`toMessageText${color}`} value={color}>
-                            {color}
-                        </MenuItem>
-                    ))}
-                    <MenuItem value={undefined}>Use Default</MenuItem>
-                </Select>
+                {CHAT_THEMES_KEY.map((key) => (
+                    <Fragment key={key}>
+                        <Typography textAlign="center">
+                            {camelCaseToWords(key)}
+                        </Typography>
+                        <Select
+                            onChange={({ target }) =>
+                                handleChatThemeChange(
+                                    target.value,
+                                    key
+                                )
+                            }
+                            value={chatTheme[key] ?? ""}
+                        >
+                            {PALETTE_COLORS.map((color) => (
+                                <MenuItem
+                                    key={`${key}${color}`}
+                                    value={color}
+                                >
+                                    {color}
+                                    <Box
+                                        sx={{
+                                            p: 2,
+                                            m: 2,
+                                            backgroundColor: color,
+                                            borderRadius: 2,
+                                            border: 1,
+                                        }}
+                                    />
+                                </MenuItem>
+                            ))}
+                            {key.includes("Text") && <MenuItem value={undefined}>Use Default</MenuItem>}
+                        </Select>
+                    </Fragment>
+                ))}
                 <Message
                     fromServer={false}
                     msg={{

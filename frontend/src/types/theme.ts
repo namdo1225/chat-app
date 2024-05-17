@@ -51,13 +51,37 @@ export const PALETTE_COLORS = [
     "warning.main",
     "info.main",
     "success.main",
+    "primary.light",
+    "secondary.light",
+    "error.light",
+    "warning.light",
+    "info.light",
+    "success.light",
+    "primary.dark",
+    "secondary.dark",
+    "error.dark",
+    "warning.dark",
+    "info.dark",
+    "success.dark",
+    "black",
+    "white"
 ] as const;
 
+
 export type PaletteColors = (typeof PALETTE_COLORS)[number];
+
+export const CHAT_THEMES_KEY = [
+    "fromMessageBox",
+    "toMessageBox",
+    "fromMessageText",
+    "toMessageText"
+] as const;
+
+export type ChatThemeKey = (typeof CHAT_THEMES_KEY)[number];
 
 export interface ChatMessageTheme {
     fromMessageBox: PaletteColors;
     toMessageBox: PaletteColors;
     fromMessageText: PaletteColors | undefined;
     toMessageText: PaletteColors | undefined;
-}
+};
