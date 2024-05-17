@@ -23,6 +23,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
+    - name: Lint backend
+      run: npm run lint
   lint-frontend:
     runs-on: ubuntu-latest
     defaults:
