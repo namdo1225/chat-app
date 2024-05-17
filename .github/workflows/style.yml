@@ -23,6 +23,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
+    - name: Install backend dependencies
+      run: npm i --legacy-peer-deps
     - name: Lint backend
       run: npm run lint
   lint-frontend:
