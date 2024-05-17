@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 const HomeChat = ({ chatter }: { chatter: string }) => {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<HomeMsg[]>([]);
-    const [socketUrl, setSocketUrl] = useState("ws://localhost:8080/homechat");
+    const [socketUrl] = useState("ws://localhost:8080/homechat");
     const [shouldConnect, setShouldConnect] = useState(true);
     const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, undefined, shouldConnect);
     const [connected, setConnected] = useState(false);
@@ -90,7 +90,7 @@ const HomeChat = ({ chatter }: { chatter: string }) => {
                         {messages.map((message) => (
                             <Message
                                 key={message.id}
-                                msg={message}
+                                msg={{...message, chat_id: "HOME"}}
                                 fromUser={message.chatter === chatter}
                             />
                         ))}
