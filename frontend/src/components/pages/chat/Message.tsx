@@ -27,7 +27,7 @@ interface EditMessageDialogProps extends DialogProps {
 const EditMessageDialog = ({
     onClose,
     open,
-    session,
+    token,
     msg,
 }: EditMessageDialogProps) => {
     const { mutate, isPending } = useEditMessage();
@@ -36,7 +36,7 @@ const EditMessageDialog = ({
 
     const handleEdit = () => {
         try {
-            mutate({ token: session.access_token, msgID: msg.id, text });
+            mutate({ token, msgID: msg.id, text });
             onClose();
         } catch (e) {
             console.error(e);
@@ -222,12 +222,14 @@ const Message = ({
                                     <EditIcon />
                                 </IconButton>
                             </Box>
-                            <EditMessageDialog
-                                open={openEditMessage}
-                                onClose={() => setOpenEditMessage(false)}
-                                session={session}
-                                msg={msg}
-                            />
+                            {session && (
+                                <EditMessageDialog
+                                    open={openEditMessage}
+                                    onClose={() => setOpenEditMessage(false)}
+                                    token={session.access_token}
+                                    msg={msg}
+                                />
+                            )}
                         </>
                     )}
             </Box>

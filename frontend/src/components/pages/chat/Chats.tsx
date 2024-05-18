@@ -61,14 +61,11 @@ import ChatMsgWrapper from "./ChatMsgWrapper";
 import SearchIcon from "@mui/icons-material/Search";
 import AvatarWrapper from "../AvatarWrapper";
 import { differentDays, formatSupabaseDate } from "@/utils/date";
+import DescriptionIcon from "@mui/icons-material/Description";
 
-const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
+const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
     const { mutate, isPending } = useCreateChat();
-    const {
-        data: friends,
-        fetchNextPage,
-        hasNextPage,
-    } = useFriends(session.access_token);
+    const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
     const [searchStr, setSearchStr] = useState("");
     const filteredFriends = searchStr
         ? friends.filter(
@@ -91,7 +88,7 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
             try {
                 mutate({
                     chat: values,
-                    token: session.access_token,
+                    token,
                 });
 
                 handleClose();
@@ -296,20 +293,13 @@ interface EditChatDialogProps extends DialogProps {
 const EditChatDialog = ({
     onClose,
     open,
-    session,
+    token,
     chat,
 }: EditChatDialogProps) => {
-    const {
-        data: friends,
-        fetchNextPage,
-        hasNextPage,
-    } = useFriends(session.access_token);
+    const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
     const { mutate } = useDeleteChat();
     const { mutate: mutateEdit } = useEditChat();
-    const { data: members, isLoading } = useChatMembers(
-        chat.id,
-        session.access_token
-    );
+    const { data: members, isLoading } = useChatMembers(chat.id, token);
     const [searchStr, setSearchStr] = useState("");
     const filteredFriends = searchStr
         ? friends.filter(
@@ -335,7 +325,7 @@ const EditChatDialog = ({
                 mutateEdit({
                     chatID: chat.id,
                     chat: values,
-                    token: session.access_token,
+                    token,
                 });
 
                 handleClose();
@@ -360,7 +350,7 @@ const EditChatDialog = ({
     const handleDelete = async () => {
         try {
             if (window.confirm("Do you really want to delete this chat?"))
-                mutate({ chatID: chat.id, token: session.access_token });
+                mutate({ chatID: chat.id, token });
         } catch (error) {
             toast.error(
                 "Error occurred while deleting chat. Was not able to delete chat."
@@ -644,7 +634,7 @@ const EditChatDialog = ({
 const ChatDetailDialog = ({
     onClose,
     open,
-    session,
+    token,
     chat,
 }: EditChatDialogProps) => {
     const { mutate, isPending } = useDeleteChatMember();
@@ -652,7 +642,7 @@ const ChatDetailDialog = ({
     const handleLeave = async () => {
         try {
             if (window.confirm("Do you really want to leave this chat?"))
-                mutate({ chatID: chat.id, token: session.access_token });
+                mutate({ chatID: chat.id, token });
         } catch (error) {
             toast.error(
                 "Error occurred while leave chat. Was not able to leave chat."
@@ -837,7 +827,7 @@ const ChatScroll = ({
                 <EditChatDialog
                     open={openEditChat}
                     onClose={closeDialog}
-                    session={session}
+                    token={session.access_token}
                     chat={selectedChat}
                 />
             )}
@@ -845,7 +835,7 @@ const ChatScroll = ({
                 <ChatDetailDialog
                     open={openViewChat}
                     onClose={closeDialog}
-                    session={session}
+                    token={session.access_token}
                     chat={selectedChat}
                 />
             )}
@@ -984,9 +974,11 @@ const ChattingScreen = ({
 };
 
 const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
+    const { session } = useAuth();
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const [hideMembers, setHideMembers] = useState(false);
     const [hideSearch, setHideSearch] = useState(true);
+    const [hideViewChat, setHideViewChat] = useState(true);
     const [searchStr, setSearchStr] = useState("");
     const { user } = useAuth();
     const { mutate } = useEditChat();
@@ -1029,6 +1021,14 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                             <SearchIcon />
                         </IconButton>
                     </Tooltip>
+                    <Tooltip title="Show chat's description">
+                        <IconButton
+                            sx={{}}
+                            onClick={() => setHideViewChat(!hideViewChat)}
+                        >
+                            <DescriptionIcon />
+                        </IconButton>
+                    </Tooltip>
                     <Tooltip title="Hide member list">
                         <IconButton
                             sx={{}}
@@ -1038,6 +1038,22 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                         </IconButton>
                     </Tooltip>
                 </Box>
+                {session &&
+                    (chat.owner_id === user?.id ? (
+                        <EditChatDialog
+                            open={!hideViewChat}
+                            onClose={() => setHideViewChat(true)}
+                            token={session.access_token}
+                            chat={chat}
+                        />
+                    ) : (
+                        <ChatDetailDialog
+                            open={!hideViewChat}
+                            onClose={() => setHideViewChat(true)}
+                            token={session.access_token}
+                            chat={chat}
+                        />
+                    ))}
                 <Paper
                     sx={{
                         display: "flex",
@@ -1217,7 +1233,7 @@ const Chats = () => {
                 <CreateChatDialog
                     open={openCreateChat}
                     onClose={() => setOpenCreateChat(false)}
-                    session={session}
+                    token={session.access_token}
                 />
             )}
         </Box>
