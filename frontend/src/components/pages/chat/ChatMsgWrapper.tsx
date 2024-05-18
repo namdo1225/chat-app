@@ -34,6 +34,7 @@ const ChatMsgWrapper = ({
                             : "Unknown",
                 }}
                 fromUser={msg.from_user_id === userID}
+                fromServer={true}
             />
         </>
     );

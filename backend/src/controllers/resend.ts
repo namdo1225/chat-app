@@ -32,8 +32,6 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
             redirectTo: `${REDIRECT_URL}/resetpassword`
         });
 
-        console.log(data);
-
         if (error) {
             logError(error);
             return response.status(404).json({error: "Error occured"});

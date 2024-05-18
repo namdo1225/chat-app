@@ -22,7 +22,7 @@ import {
     Tooltip,
     Grid,
 } from "@mui/material";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "@/context/AuthProvider";
@@ -60,6 +60,7 @@ import { useMessages, useSendMessage } from "@/hooks/useMessages";
 import ChatMsgWrapper from "./ChatMsgWrapper";
 import SearchIcon from "@mui/icons-material/Search";
 import AvatarWrapper from "../AvatarWrapper";
+import { differentDays, formatSupabaseDate } from "@/utils/date";
 
 const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
     const { mutate, isPending } = useCreateChat();
@@ -309,7 +310,6 @@ const EditChatDialog = ({
         chat.id,
         session.access_token
     );
-    const [openUserDialog, setOpenUserDialog] = useState(false);
     const [searchStr, setSearchStr] = useState("");
     const filteredFriends = searchStr
         ? friends.filter(
@@ -790,6 +790,13 @@ const ChatScroll = ({
                                                 ? "secondary"
                                                 : "primary"
                                         }
+                                        sx={{
+                                            fontWeight:
+                                                chatToMsg &&
+                                                chatToMsg.id === chat.id
+                                                    ? "bold"
+                                                    : "unset",
+                                        }}
                                     >
                                         {chat.name.length < 10
                                             ? chat.name
@@ -898,24 +905,49 @@ const ChattingScreen = ({
                     next={infinite.fetchNextPage}
                     loader={<Loading />}
                     endMessage={
-                        <Typography sx={{ textAlign: "center", my: 10 }}>
+                        <Typography
+                            sx={{
+                                textAlign: "center",
+                                my: 10,
+                                fontWeight: "bold",
+                            }}
+                        >
                             No older chat history.
                         </Typography>
                     }
                     scrollThreshold={0.5}
                     scrollableTarget="scrollableDiv"
                 >
-                    {filteredMsgs.map((msg) => (
-                        <ChatMsgWrapper
-                            msg={msg}
-                            key={msg.id}
-                            foundMember={members.find(
-                                (member) =>
-                                    member.profiles.user_id === msg.from_user_id
-                            )}
-                            userID={userID}
-                            userProfile={profile}
-                        />
+                    {filteredMsgs.map((msg, index) => (
+                        <Fragment key={msg.id}>
+                            {index !== 0 &&
+                                differentDays(
+                                    filteredMsgs[index - 1].sent_at,
+                                    msg.sent_at
+                                ) && (
+                                    <>
+                                        <Typography
+                                            sx={{ fontWeight: "bold" }}
+                                            textAlign="center"
+                                        >
+                                            {`Viewing messages for ${formatSupabaseDate(
+                                                msg.sent_at
+                                            )}`}
+                                        </Typography>
+                                        <Divider sx={{ my: 2 }} />
+                                    </>
+                                )}
+                            <ChatMsgWrapper
+                                msg={msg}
+                                foundMember={members.find(
+                                    (member) =>
+                                        member.profiles.user_id ===
+                                        msg.from_user_id
+                                )}
+                                userID={userID}
+                                userProfile={profile}
+                            />
+                        </Fragment>
                     ))}
                 </InfiniteScroll>
             </Box>

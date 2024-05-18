@@ -18,6 +18,7 @@ import Loading from "@/components/Loading";
 import { DialogProps } from "@/types/prop";
 import { useState } from "react";
 import { Profile } from "@/types/profile";
+import { parseSupabaseDate } from "@/utils/date";
 
 interface EditMessageDialogProps extends DialogProps {
     msg: FrontendMsg;
@@ -99,8 +100,13 @@ const Message = ({
     const { chatTheme } = useAuth();
 
     const validDate = y.string().datetime().isValidSync(msg.sent_at);
+
     const date = new Date(
-        validDate || !fromServer ? JSON.parse(msg.sent_at) : `${msg.sent_at.slice(0, -6)}Z`
+        validDate
+            ? msg.sent_at
+            : !fromServer
+            ? JSON.parse(msg.sent_at)
+            : parseSupabaseDate(msg.sent_at)
     );
 
     const handleDeleteMsg = (token: string) => {
