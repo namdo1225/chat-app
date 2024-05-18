@@ -21,7 +21,6 @@ import {
     TableBody,
     Tooltip,
     Grid,
-    Avatar,
 } from "@mui/material";
 import { Dispatch, SetStateAction, useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
@@ -57,9 +56,10 @@ import {
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import SendIcon from "@mui/icons-material/Send";
-import Message from "./Message";
 import { useMessages, useSendMessage } from "@/hooks/useMessages";
-import UserProfileDialog from "@/components/UserProfileDialog";
+import ChatMsgWrapper from "./ChatMsgWrapper";
+import SearchIcon from "@mui/icons-material/Search";
+import AvatarWrapper from "../AvatarWrapper";
 
 const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
     const { mutate, isPending } = useCreateChat();
@@ -76,7 +76,6 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
                   friend.last_name.includes(searchStr)
           )
         : friends;
-    const [openUserDialog, setOpenUserDialog] = useState(false);
 
     const formik = useFormik({
         initialValues: {
@@ -218,16 +217,8 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
                                                             gap: 2,
                                                         }}
                                                     >
-                                                        <Avatar
-                                                            onClick={() =>
-                                                                setOpenUserDialog(
-                                                                    true
-                                                                )
-                                                            }
-                                                            alt="User Avatar"
-                                                            src={
-                                                                profile.profile_photo
-                                                            }
+                                                        <AvatarWrapper
+                                                            profile={profile}
                                                         />
                                                         {profile.first_name}{" "}
                                                         {profile.last_name}
@@ -267,19 +258,6 @@ const CreateChatDialog = ({ onClose, open, session }: DialogProps) => {
                                                                 />
                                                             </Tooltip>
                                                         </TableCell>
-                                                    )}
-                                                    {openUserDialog && (
-                                                        <UserProfileDialog
-                                                            open={
-                                                                openUserDialog
-                                                            }
-                                                            onClose={() =>
-                                                                setOpenUserDialog(
-                                                                    false
-                                                                )
-                                                            }
-                                                            profile={profile}
-                                                        />
                                                     )}
                                                 </TableRow>
                                             )
@@ -522,16 +500,8 @@ const EditChatDialog = ({
                                                         gap: 2,
                                                     }}
                                                 >
-                                                    <Avatar
-                                                        onClick={() =>
-                                                            setOpenUserDialog(
-                                                                true
-                                                            )
-                                                        }
-                                                        alt="User Avatar"
-                                                        src={
-                                                            profile.profile_photo
-                                                        }
+                                                    <AvatarWrapper
+                                                        profile={profile}
                                                     />
                                                     <Typography
                                                         color={
@@ -626,17 +596,6 @@ const EditChatDialog = ({
                                                             </Tooltip>
                                                         )}
                                                 </TableCell>
-                                                {openUserDialog && (
-                                                    <UserProfileDialog
-                                                        open={openUserDialog}
-                                                        onClose={() =>
-                                                            setOpenUserDialog(
-                                                                false
-                                                            )
-                                                        }
-                                                        profile={profile}
-                                                    />
-                                                )}
                                             </TableRow>
                                         )
                                 )}
@@ -891,19 +850,22 @@ const ChattingScreen = ({
     userID,
     chat,
     token,
+    searchStr,
 }: {
     userID: string;
     chat: Chat;
     token: string;
+    searchStr: string;
 }) => {
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
     const { finalData, infinite } = useMessages(token, chat.id);
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const { profile } = useAuth();
-    const fromProfile = profile
-        ? `${profile?.first_name} ${profile?.last_name}`
-        : "Unknown";
+
+    const filteredMsgs = searchStr
+        ? finalData.filter((msg) => msg.text.includes(searchStr))
+        : finalData;
 
     const sendMessage = () => {
         try {
@@ -931,7 +893,7 @@ const ChattingScreen = ({
                 <InfiniteScroll
                     inverse
                     className="flex flex-col-reverse overflow-visible"
-                    dataLength={finalData.length}
+                    dataLength={filteredMsgs.length}
                     hasMore={infinite.hasNextPage}
                     next={infinite.fetchNextPage}
                     loader={<Loading />}
@@ -943,33 +905,16 @@ const ChattingScreen = ({
                     scrollThreshold={0.5}
                     scrollableTarget="scrollableDiv"
                 >
-                    {finalData.map((msg) => (
-                        <Message
+                    {filteredMsgs.map((msg) => (
+                        <ChatMsgWrapper
+                            msg={msg}
                             key={msg.id}
-                            msg={{
-                                ...msg,
-                                chatter: members.find(
-                                    (member) =>
-                                        member.profiles.user_id ===
-                                        msg.from_user_id
-                                )
-                                    ? `${
-                                          members.find(
-                                              (member) =>
-                                                  member.profiles.user_id ===
-                                                  msg.from_user_id
-                                          )?.profiles.first_name
-                                      } ${
-                                          members.find(
-                                              (member) =>
-                                                  member.profiles.user_id ===
-                                                  msg.from_user_id
-                                          )?.profiles.last_name
-                                      }`
-                                    : fromProfile,
-                            }}
-                            fromUser={msg.from_user_id === userID}
-                            fromServer={true}
+                            foundMember={members.find(
+                                (member) =>
+                                    member.profiles.user_id === msg.from_user_id
+                            )}
+                            userID={userID}
+                            userProfile={profile}
                         />
                     ))}
                 </InfiniteScroll>
@@ -1009,12 +954,17 @@ const ChattingScreen = ({
 const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const [hideMembers, setHideMembers] = useState(false);
-    const [openUserDialog, setOpenUserDialog] = useState(false);
+    const [hideSearch, setHideSearch] = useState(true);
+    const [searchStr, setSearchStr] = useState("");
     const { user } = useAuth();
-    const { mutate } = useDeleteChatMember();
-    const deleteMember = () => {
+    const { mutate } = useEditChat();
+    const deleteMember = (userID: string) => {
         try {
-            mutate({ chatID: chat.id, token });
+            mutate({
+                chatID: chat.id,
+                chat: { addMembers: [], removeMembers: [userID] },
+                token,
+            });
         } catch (e) {
             console.error(e);
         }
@@ -1033,10 +983,20 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                     p: 5,
                 }}
             >
-                <Box sx={{ display: "flex", justifyContent: "space-around" }}>
-                    <Typography sx={{ fontWeight: "bold" }}>
-                        {chat.name}
-                    </Typography>
+                <Typography sx={{ fontWeight: "bold", textAlign: "center" }}>
+                    {chat.name}
+                </Typography>
+                <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Tooltip
+                        title={`${hideSearch ? "Show" : "Hide"} search bar`}
+                    >
+                        <IconButton
+                            sx={{}}
+                            onClick={() => setHideSearch(!hideSearch)}
+                        >
+                            <SearchIcon />
+                        </IconButton>
+                    </Tooltip>
                     <Tooltip title="Hide member list">
                         <IconButton
                             sx={{}}
@@ -1049,35 +1009,53 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                 <Paper
                     sx={{
                         display: "flex",
+                        flexDirection: { xs: "column-reverse", md: "row" },
                         justifyContent: "center",
                     }}
                 >
                     {user && (
-                        <Box sx={{ width: hideMembers ? 3 / 4 : 1 / 1 }}>
+                        <Box
+                            sx={{
+                                width: { md: hideMembers ? 1 / 1 : 2 / 3 },
+                                display: "flex",
+                                flexDirection: "column",
+                            }}
+                        >
+                            {!hideSearch && (
+                                <TextField
+                                    value={searchStr}
+                                    placeholder="Search for a message"
+                                    onChange={({ target }) =>
+                                        setSearchStr(target.value)
+                                    }
+                                />
+                            )}
                             <ChattingScreen
                                 userID={user.id}
                                 chat={chat}
                                 token={token}
+                                searchStr={searchStr}
                             />
                         </Box>
                     )}
                     {!hideMembers && (
                         <Box
                             sx={{
-                                width: 1 / 4,
-                                borderLeft: 1,
+                                width: { md: 1 / 3 },
+                                borderLeft: { xs: 0, md: 1 },
+                                borderBottom: { xs: 1, md: 0 },
+                                height: { xs: 300, md: "unset" },
                                 overflow: "auto",
                             }}
                         >
                             <List>
                                 {members.map((member) => (
-                                    <ListItem key={member.profiles.user_id}>
-                                        <Avatar
-                                            onClick={() =>
-                                                setOpenUserDialog(true)
-                                            }
-                                            alt="User Avatar"
-                                            src={member.profiles.profile_photo}
+                                    <ListItem
+                                        sx={{ display: "flex", gap: 5 }}
+                                        key={member.profiles.user_id}
+                                    >
+                                        <AvatarWrapper
+                                            profile={member.profiles}
                                         />
                                         <ListItemText sx={{ mx: 2 }}>
                                             <Typography>
@@ -1088,20 +1066,16 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                                         {chat.owner_id === user?.id && (
                                             <Tooltip title="Remove member from chat">
                                                 <IconButton
-                                                    onClick={deleteMember}
+                                                    onClick={() =>
+                                                        deleteMember(
+                                                            member.profiles
+                                                                .user_id
+                                                        )
+                                                    }
                                                 >
                                                     <PersonRemoveIcon />
                                                 </IconButton>
                                             </Tooltip>
-                                        )}
-                                        {openUserDialog && (
-                                            <UserProfileDialog
-                                                open={openUserDialog}
-                                                onClose={() =>
-                                                    setOpenUserDialog(false)
-                                                }
-                                                profile={member.profiles}
-                                            />
                                         )}
                                     </ListItem>
                                 ))}
@@ -1137,7 +1111,6 @@ const Chats = () => {
                 open={openDrawer}
                 onClose={() => setOpenDrawer(false)}
                 sx={{
-                    flexShrink: 0,
                     "& .MuiDrawer-paper": {
                         boxSizing: "border-box",
                     },

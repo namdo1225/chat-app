@@ -210,8 +210,6 @@ router.put(
         if (addMembers && addMembers.length !== 0) {
             const memberStr = addMembers.toString();
 
-            console.log("HI 6");
-
             // Check if any potential new members are already in the chat
             const { data: chatMembers, error: chatMemberError } = await supabase
                 .from("chat_members")
@@ -220,7 +218,6 @@ router.put(
                 .in("user_id", addMembers);
 
             if (chatMemberError) {
-                console.log("HI 1");
                 logError(chatMemberError);
                 return response.status(400).json(chatMemberError);
             }
@@ -285,8 +282,6 @@ router.put(
                 return response.status(400).json(deleteError);
             }
         }
-
-        console.log("CHAT 2:", request.chat);
 
         if (editedData) {
             const { data: editedChat, error } = await supabase

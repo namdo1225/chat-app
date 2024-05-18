@@ -285,18 +285,12 @@ const Profile = () => {
                         </Typography>
                         <Select
                             onChange={({ target }) =>
-                                handleChatThemeChange(
-                                    target.value,
-                                    key
-                                )
+                                handleChatThemeChange(target.value, key)
                             }
                             value={chatTheme[key] ?? ""}
                         >
                             {PALETTE_COLORS.map((color) => (
-                                <MenuItem
-                                    key={`${key}${color}`}
-                                    value={color}
-                                >
+                                <MenuItem key={`${key}${color}`} value={color}>
                                     {color}
                                     <Box
                                         sx={{
@@ -309,7 +303,11 @@ const Profile = () => {
                                     />
                                 </MenuItem>
                             ))}
-                            {key.includes("Text") && <MenuItem value={undefined}>Use Default</MenuItem>}
+                            {key.includes("Text") && (
+                                <MenuItem value={undefined}>
+                                    Use Default
+                                </MenuItem>
+                            )}
                         </Select>
                     </Fragment>
                 ))}
@@ -336,6 +334,32 @@ const Profile = () => {
                         text: "Text from another user",
                     }}
                     fromUser={false}
+                />
+                <Message
+                    fromServer={false}
+                    msg={{
+                        id: "messageID01",
+                        sent_at: new Date().toDateString(),
+                        chat_id: "chatID01",
+                        chatter: "User",
+                        from_user_id: "fromUserID01",
+                        text: "Text from the user with profile picture",
+                    }}
+                    fromUser={true}
+                    profile={profile}
+                />
+                <Message
+                    fromServer={false}
+                    msg={{
+                        id: "messageID02",
+                        sent_at: new Date().toDateString(),
+                        chat_id: "chatID02",
+                        chatter: "Friend",
+                        from_user_id: "fromUserID02",
+                        text: "Text from another user with profile picture",
+                    }}
+                    fromUser={false}
+                    profile={profile}
                 />
             </Paper>
         </Box>

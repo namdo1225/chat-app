@@ -17,6 +17,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import Loading from "@/components/Loading";
 import { DialogProps } from "@/types/prop";
 import { useState } from "react";
+import { Profile } from "@/types/profile";
 
 interface EditMessageDialogProps extends DialogProps {
     msg: FrontendMsg;
@@ -84,10 +85,12 @@ const Message = ({
     msg,
     fromUser,
     fromServer = false,
+    profile = null,
 }: {
     msg: FrontendMsg;
     fromUser: boolean;
     fromServer?: boolean;
+    profile?: Profile | null;
 }) => {
     const { mutate: mutateDelete } = useDeleteMessage();
     const { session, user } = useAuth();
@@ -97,7 +100,7 @@ const Message = ({
 
     const validDate = y.string().datetime().isValidSync(msg.sent_at);
     const date = new Date(
-        validDate ? msg.sent_at : `${msg.sent_at.slice(0, -6)}Z`
+        validDate || !fromServer ? JSON.parse(msg.sent_at) : `${msg.sent_at.slice(0, -6)}Z`
     );
 
     const handleDeleteMsg = (token: string) => {
@@ -145,6 +148,7 @@ const Message = ({
                             width: 25,
                             height: 25,
                         }}
+                        src={profile ? profile.profile_photo : undefined}
                     >
                         {msg.chatter.charAt(0)}
                     </Avatar>
@@ -174,50 +178,53 @@ const Message = ({
                     </Paper>
                 </Box>
             </Box>
-            <Typography
+            <Box
                 sx={{
                     display: "flex",
                     justifyContent: fromUser ? "flex-end" : "flex-start",
                     fontSize: 12,
                 }}
             >
-                {date.toLocaleTimeString()}
-            </Typography>
-            {showIcon &&
-                session &&
-                fromServer &&
-                user &&
-                user.id === msg.from_user_id && (
-                    <>
-                        <Box
-                            sx={{
-                                display: "flex",
-                                justifyContent: fromUser
-                                    ? "flex-end"
-                                    : "flex-start",
-                            }}
-                        >
-                            <IconButton
-                                onClick={() =>
-                                    handleDeleteMsg(session.access_token)
-                                }
+                <Typography
+                    sx={{
+                        fontSize: 12,
+                    }}
+                >
+                    {date.toLocaleTimeString()}
+                </Typography>
+                {showIcon &&
+                    session &&
+                    fromServer &&
+                    user &&
+                    user.id === msg.from_user_id && (
+                        <>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                }}
                             >
-                                <DeleteIcon />
-                            </IconButton>
-                            <IconButton
-                                onClick={() => setOpenEditMessage(true)}
-                            >
-                                <EditIcon />
-                            </IconButton>
-                        </Box>
-                        <EditMessageDialog
-                            open={openEditMessage}
-                            onClose={() => setOpenEditMessage(false)}
-                            session={session}
-                            msg={msg}
-                        />
-                    </>
-                )}
+                                <IconButton
+                                    onClick={() =>
+                                        handleDeleteMsg(session.access_token)
+                                    }
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                                <IconButton
+                                    onClick={() => setOpenEditMessage(true)}
+                                >
+                                    <EditIcon />
+                                </IconButton>
+                            </Box>
+                            <EditMessageDialog
+                                open={openEditMessage}
+                                onClose={() => setOpenEditMessage(false)}
+                                session={session}
+                                msg={msg}
+                            />
+                        </>
+                    )}
+            </Box>
         </Box>
     );
 };
