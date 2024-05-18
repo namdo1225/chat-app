@@ -9,11 +9,11 @@ import { ChatMember, ChatMemberProfile } from "@/types/chat_members";
 import toast from "react-hot-toast";
 import queryClient from "@/config/queryClient";
 
-export const useChatMembers = (chatID: string, token: string) => {
+export const useChatMembers = (chatID: string, token: string, chatMemberExist: boolean = false) => {
     const chatMembers = useQuery<ChatMember[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}`],
         queryFn: () => getChatMembers(token, chatID),
-        enabled: !!token,
+        enabled: !!token && !chatMemberExist,
     });
 
     return { ...chatMembers, data: chatMembers.data ?? [] };

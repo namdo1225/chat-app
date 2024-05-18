@@ -62,6 +62,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AvatarWrapper from "../AvatarWrapper";
 import { differentDays, formatSupabaseDate } from "@/utils/date";
 import DescriptionIcon from "@mui/icons-material/Description";
+import { ChatMember } from "@/types/chat_members";
 
 const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
     const { mutate, isPending } = useCreateChat();
@@ -288,6 +289,7 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
 
 interface EditChatDialogProps extends DialogProps {
     chat: Chat;
+    chatMembers?: ChatMember[];
 }
 
 const EditChatDialog = ({
@@ -295,11 +297,16 @@ const EditChatDialog = ({
     open,
     token,
     chat,
+    chatMembers,
 }: EditChatDialogProps) => {
     const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
     const { mutate } = useDeleteChat();
     const { mutate: mutateEdit } = useEditChat();
-    const { data: members, isLoading } = useChatMembers(chat.id, token);
+    const { data: members, isLoading } = useChatMembers(
+        chat.id,
+        token,
+        !!chatMembers
+    );
     const [searchStr, setSearchStr] = useState("");
     const filteredFriends = searchStr
         ? friends.filter(
@@ -308,6 +315,8 @@ const EditChatDialog = ({
                   friend.last_name.includes(searchStr)
           )
         : friends;
+
+    const finalMembers = chatMembers ?? members;
 
     const formik = useFormik({
         initialValues: {
@@ -518,7 +527,7 @@ const EditChatDialog = ({
                                                         (formik.values.removeMembers.includes(
                                                             profile.user_id
                                                         ) ||
-                                                            !members.find(
+                                                            !finalMembers.find(
                                                                 (member) =>
                                                                     member.user_id ===
                                                                     profile.user_id
@@ -542,7 +551,7 @@ const EditChatDialog = ({
                                                         (formik.values.addMembers.includes(
                                                             profile.user_id
                                                         ) ||
-                                                            members.find(
+                                                            finalMembers.find(
                                                                 (member) =>
                                                                     member.user_id ===
                                                                     profile.user_id
@@ -560,7 +569,7 @@ const EditChatDialog = ({
                                                                 />
                                                             </Tooltip>
                                                         )}
-                                                    {members.find(
+                                                    {finalMembers.find(
                                                         (member) =>
                                                             member.user_id ===
                                                             profile.user_id
@@ -998,7 +1007,7 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
 
     return (
         <Box>
-            <Paper
+            <Box
                 sx={{
                     display: "flex",
                     flexDirection: "column",
@@ -1045,6 +1054,12 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                             onClose={() => setHideViewChat(true)}
                             token={session.access_token}
                             chat={chat}
+                            chatMembers={members.map((member) => {
+                                return {
+                                    ...member,
+                                    user_id: member.profiles.user_id,
+                                };
+                            })}
                         />
                     ) : (
                         <ChatDetailDialog
@@ -1131,7 +1146,7 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
                         </Box>
                     )}
                 </Paper>
-            </Paper>
+            </Box>
         </Box>
     );
 };
