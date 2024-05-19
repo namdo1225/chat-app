@@ -21,9 +21,9 @@ router.get(
     chatMemberExtractor,
     async (request, response) => {
         const chatID = request.params.chatID;
-        const retrieveProfile = request.params.profile === "true";
+        const retrieveProfile = request.query.retrieveProfile === "true";
 
-        if (retrieveProfile) {
+        if (!retrieveProfile) {
             const { data: chatMembers, error } = await supabase
                 .from("chat_members")
                 .select()

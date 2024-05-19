@@ -18,6 +18,7 @@ const Footer = () => {
                 minHeight: "100vh",
                 zIndex: (theme) => theme.zIndex.drawer - 1,
                 position: "sticky",
+                minWidth: 150,
             }}
         >
             <Box component="footer" sx={{ marginTop: "auto", bgcolor: "footer.main", p: 2 }}>

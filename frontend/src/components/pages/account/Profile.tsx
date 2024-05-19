@@ -24,7 +24,7 @@ import toast from "react-hot-toast";
 import ChatAvatarEditor from "@/components/ChatAvatarEditor";
 import Message from "@/components/pages/chat/Message";
 import { CHAT_THEMES_KEY, ChatThemeKey, PALETTE_COLORS } from "@/types/theme";
-import { setRequiredStr } from "@/types/yup";
+import { optionalStr, setRequiredStr } from "@/types/yup";
 
 const fields = [
     {
@@ -130,7 +130,11 @@ const Profile = () => {
     };
 
     const handleChatThemeChange = (value: unknown, key: ChatThemeKey) => {
-        localStorage.setItem(key, setRequiredStr().validateSync(value));
+        const finalValue = optionalStr.validateSync(value);
+        if (finalValue)
+            localStorage.setItem(key, finalValue);
+        else
+            localStorage.removeItem(key);
 
         handleChatTheme();
     };
@@ -311,56 +315,26 @@ const Profile = () => {
                         </Select>
                     </Fragment>
                 ))}
-                <Message
-                    fromServer={false}
-                    msg={{
-                        id: "messageID01",
-                        sent_at: new Date().toDateString(),
-                        chat_id: "chatID01",
-                        chatter: "User",
-                        from_user_id: "fromUserID01",
-                        text: "Text from the user",
-                    }}
-                    fromUser={true}
-                />
-                <Message
-                    fromServer={false}
-                    msg={{
-                        id: "messageID02",
-                        sent_at: new Date().toDateString(),
-                        chat_id: "chatID02",
-                        chatter: "Friend",
-                        from_user_id: "fromUserID02",
-                        text: "Text from another user",
-                    }}
-                    fromUser={false}
-                />
-                <Message
-                    fromServer={false}
-                    msg={{
-                        id: "messageID01",
-                        sent_at: new Date().toDateString(),
-                        chat_id: "chatID01",
-                        chatter: "User",
-                        from_user_id: "fromUserID01",
-                        text: "Text from the user with profile picture",
-                    }}
-                    fromUser={true}
-                    profile={profile}
-                />
-                <Message
-                    fromServer={false}
-                    msg={{
-                        id: "messageID02",
-                        sent_at: new Date().toDateString(),
-                        chat_id: "chatID02",
-                        chatter: "Friend",
-                        from_user_id: "fromUserID02",
-                        text: "Text from another user with profile picture",
-                    }}
-                    fromUser={false}
-                    profile={profile}
-                />
+                {[
+                    "Text from the user",
+                    "Text from another user",
+                    "Text from the user with profile picture",
+                    "Text from another user with profile picture",
+                ].map((text, index) => (
+                    <Message
+                        key={index}
+                        fromServer={false}
+                        msg={{
+                            id: `messageID${index}`,
+                            sent_at: JSON.stringify(new Date()),
+                            chat_id: `chatID${index}`,
+                            chatter: "User",
+                            from_user_id: `fromUserID${index}`,
+                            text,
+                        }}
+                        fromUser={index % 2 === 0}
+                    />
+                ))}
             </Paper>
         </Box>
     );

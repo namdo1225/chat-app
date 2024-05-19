@@ -15,12 +15,13 @@ import Captcha from "@/components/Captcha";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { sendEmail } from "@/services/contact";
 import axios from "axios";
+import Logo from "@/components/branding/Logo";
 
 const ContactUs = () => {
     const [message, setMessage] = useState<string>("");
     const [captchaToken, setCaptchaToken] = useState("");
     const captcha = useRef<HCaptcha>(null);
-    
+
     const formik = useFormik({
         initialValues: {
             email: "",
@@ -29,18 +30,24 @@ const ContactUs = () => {
         validationSchema: EmailSchema,
         onSubmit: async (values) => {
             try {
-                if (!captchaToken) throw new Error("Captcha needs to be filled out.");
-                const response = await sendEmail(values.email, values.body, captchaToken)
+                if (!captchaToken)
+                    throw new Error("Captcha needs to be filled out.");
+                const response = await sendEmail(
+                    values.email,
+                    values.body,
+                    captchaToken
+                );
                 if (response.status === 200)
                     setMessage("Your message is successfully sent.");
             } catch (e) {
                 if (axios.isAxiosError(e))
-                    setMessage(e.response?.data.error ?? "An unknown error occured.");
+                    setMessage(
+                        e.response?.data.error ?? "An unknown error occured."
+                    );
                 console.error(e);
             }
             setCaptchaToken("");
-            if (captcha.current)
-                captcha.current.resetCaptcha();
+            if (captcha.current) captcha.current.resetCaptcha();
         },
     });
 
@@ -50,8 +57,9 @@ const ContactUs = () => {
                 <form className="flex flex-col" onSubmit={formik.handleSubmit}>
                     <FormControl>
                         <FormLabel sx={{ mx: "auto", my: 2 }}>
-                           Contact Us
+                            Contact Us
                         </FormLabel>
+                        <Logo />
                         {message && (
                             <Alert icon={<Notifications />} severity="info">
                                 Note: {message}
@@ -84,7 +92,10 @@ const ContactUs = () => {
                             error={Boolean(formik.errors.body)}
                             helperText={formik.errors.body}
                         />
-                        <Captcha captcha={captcha} setCaptchaToken={setCaptchaToken} />
+                        <Captcha
+                            captcha={captcha}
+                            setCaptchaToken={setCaptchaToken}
+                        />
                         <Button type="submit" sx={{ my: 2 }}>
                             Submit
                         </Button>

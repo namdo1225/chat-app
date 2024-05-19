@@ -15,7 +15,7 @@ const getChatMembers = async (token: string, chatID: string) => {
 
 const getChatMembersProfile = async (token: string, chatID: string) => {
     const request = await apiClient.get(
-        `/${api}/${chatID}`,
+        `/${api}/${chatID}?retrieveProfile=true`,
         createAuthHeader(token)
     );
 
