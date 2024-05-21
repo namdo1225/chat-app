@@ -1,5 +1,8 @@
-export interface DialogProps {
+export interface SimpleDialogProps {
     open: boolean;
     onClose: () => void;
-    session: Session;
-};
+}
+
+export interface DialogProps extends SimpleDialogProps {
+    token: string;
+}

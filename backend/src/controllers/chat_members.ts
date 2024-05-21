@@ -2,10 +2,14 @@ import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
 import {
+    chatMemberExtractor,
     tokenExtractor,
     userExtractor,
 } from "@/utils/middleware";
-import { ChatMemberOnlySchema } from "@/types/chat_members";
+import {
+    ChatMemberOnlySchema,
+    ChatMemberProfilesSchema,
+} from "@/types/chat_members";
 import { ChatSchema } from "@/types/chat";
 
 const router = Router();
@@ -14,35 +18,38 @@ router.get(
     "/:chatID",
     tokenExtractor,
     userExtractor,
+    chatMemberExtractor,
     async (request, response) => {
         const chatID = request.params.chatID;
+        const retrieveProfile = request.query.retrieveProfile === "true";
 
-        const { data: chatMembers, error } = await supabase
-            .from("chat_members")
-            .select()
-            .eq("chat_id", chatID);
-        if (error) return response.status(400).json(error);
+        if (!retrieveProfile) {
+            const { data: chatMembers, error } = await supabase
+                .from("chat_members")
+                .select()
+                .eq("chat_id", chatID)
+                .neq("user_id", request.user.id);
 
-        const formattedChatMembers =
-            ChatMemberOnlySchema.array().parse(chatMembers);
+            if (error) return response.status(400).json(error);
 
-        if (
-            formattedChatMembers.find(
-                (member) => member.user_id == request.user.id
-            )
-        ) {
-            return response
-                .status(200)
-                .json(
-                    formattedChatMembers.filter(
-                        (member) => member.user_id !== request.user.id
-                    )
-                );
+            const formattedChatMembers =
+                ChatMemberOnlySchema.array().parse(chatMembers);
+
+            return response.status(200).json(formattedChatMembers);
+        } else {
+            const { data: chatMembers, error } = await supabase
+                .from("chat_members")
+                .select("id,chat_id,profiles(*)")
+                .eq("chat_id", chatID)
+                .neq("user_id", request.user.id);
+
+
+            if (error) return response.status(400).json(error);
+
+            const formattedChatMembers =
+                ChatMemberProfilesSchema.parse(chatMembers);
+            return response.status(200).json(formattedChatMembers);
         }
-
-        return response
-            .status(400)
-            .json({ error: "You are not authorized to perform this action." });
     }
 );
 
@@ -105,11 +112,9 @@ router.delete(
 
         const formattedChat = ChatSchema.parse(chat[0]);
         if (formattedChat.owner_id === request.user.id)
-            return response
-                .status(400)
-                .json({
-                    error: "You are the owner of this chat. You cannot leave this chat.",
-                });
+            return response.status(400).json({
+                error: "You are the owner of this chat. You cannot leave this chat.",
+            });
 
         const { error: deleteMemberError } = await supabase
             .from("chat_members")

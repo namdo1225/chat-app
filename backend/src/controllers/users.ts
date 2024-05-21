@@ -13,6 +13,7 @@ import {
     userExtractor,
     hcaptchaVerifier,
     profileImgEditor,
+    paginationVerifier,
 } from "@/utils/middleware";
 import { cacheData } from "@/utils/cache";
 import redisClient from "@/utils/redis";
@@ -20,7 +21,7 @@ import z from "zod";
 
 const router = Router();
 
-router.get("/", async (request, response) => {
+router.get("/", paginationVerifier, async (request, response) => {
     const begin = z.coerce.number().parse(request.query.begin);
     const end = z.coerce.number().parse(request.query.end);
 

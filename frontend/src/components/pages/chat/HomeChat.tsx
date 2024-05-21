@@ -2,9 +2,9 @@ import { Box, Button, Grid, List, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import Message from "./Message";
 import SendIcon from "@mui/icons-material/Send";
-import { HomeMsg, HomeMsgSchema } from "@/types/chat";
+import { HomeMsg, HomeMsgSchema } from "@/types/message";
 import useWebSocket, { ReadyState } from "react-use-websocket";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Code from: https://frontendshape.com/post/create-a-chat-ui-in-react-with-mui-5
@@ -12,9 +12,13 @@ import { v4 as uuidv4 } from 'uuid';
 const HomeChat = ({ chatter }: { chatter: string }) => {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<HomeMsg[]>([]);
-    const [socketUrl, setSocketUrl] = useState("ws://localhost:8080/homechat");
+    const [socketUrl] = useState("ws://localhost:8080/homechat");
     const [shouldConnect, setShouldConnect] = useState(true);
-    const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, undefined, shouldConnect);
+    const { sendMessage, lastMessage, readyState } = useWebSocket(
+        socketUrl,
+        undefined,
+        shouldConnect
+    );
     const [connected, setConnected] = useState(false);
 
     const connectionStatus = {
@@ -32,12 +36,12 @@ const HomeChat = ({ chatter }: { chatter: string }) => {
     useEffect(() => {
         const recvMsg = async () => {
             if (lastMessage) {
-                const msg = await HomeMsgSchema.validate(JSON.parse(lastMessage.data));
-                setMessages(
-                    messages.concat(msg).slice(0, 300)
+                const msg = await HomeMsgSchema.validate(
+                    JSON.parse(lastMessage.data)
                 );
+                setMessages(messages.concat(msg).slice(0, 300));
             }
-        }
+        };
 
         void recvMsg();
     }, [lastMessage]);
@@ -47,14 +51,12 @@ const HomeChat = ({ chatter }: { chatter: string }) => {
             const msg = {
                 id: uuidv4(),
                 text: input,
-                sent_at: new Date().getTime().toString(),
+                sent_at: JSON.stringify(new Date()),
                 chatter,
-            }
+            };
 
             sendMessage(JSON.stringify(msg));
-            setMessages(
-                messages.concat(msg)
-            );
+            setMessages(messages.concat(msg));
         }
         setInput("");
     };
@@ -78,11 +80,9 @@ const HomeChat = ({ chatter }: { chatter: string }) => {
                 <Box
                     sx={{
                         p: 1,
-                        height: 1 / 2,
-                        width: 3 / 4,
+                        height: 300,
                         mx: "auto",
                         my: 2,
-                        maxHeight: 300,
                         overflow: "auto",
                     }}
                 >
@@ -90,8 +90,9 @@ const HomeChat = ({ chatter }: { chatter: string }) => {
                         {messages.map((message) => (
                             <Message
                                 key={message.id}
-                                msg={message}
+                                msg={{ ...message, chat_id: "HOME" }}
                                 fromUser={message.chatter === chatter}
+                                fromServer={false}
                             />
                         ))}
                     </List>
@@ -100,14 +101,17 @@ const HomeChat = ({ chatter }: { chatter: string }) => {
                     sx={{
                         p: 2,
                         backgroundColor: "background.default",
-                        width: 3 / 4,
                         mx: "auto",
                     }}
                 >
                     <Grid wrap="wrap" container spacing={2}>
                         <Grid item xs>
                             <TextField
-                                disabled={!shouldConnect || !connected}
+                                disabled={
+                                    !shouldConnect ||
+                                    !connected ||
+                                    connectionStatus !== "Open"
+                                }
                                 fullWidth
                                 size="small"
                                 placeholder="Type a message"

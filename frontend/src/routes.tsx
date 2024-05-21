@@ -1,4 +1,3 @@
-import Page from "./Page";
 import Login from "@/components/pages/authentication/Login";
 import Register from "@/components/pages/authentication/Register";
 import Forget from "@/components/pages/authentication/Forget";
@@ -9,6 +8,7 @@ import About from "@/components/pages/About";
 import Friend from "@/components/pages/Friend";
 import Discover from "@/components/pages/Discover";
 import Chats from "@/components/pages/chat/Chats";
+import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 
 interface WebsiteRoute {
     name: string;
@@ -32,11 +32,10 @@ export const authRoutes: WebsiteRoute[] = [
 
 export const supportRoutes: WebsiteRoute[] = [
     { name: "Contact Us", path: "/contact", component: <ContactUs /> },
-    { name: "Privacy Policy", path: "/privacy", component: <Page /> },
+    { name: "Privacy Policy", path: "/privacy", component: <PrivacyPolicy /> },
     {
         name: "GitHub",
-        link: "https://github.com/namdo1225",
-        component: <Page />,
+        link: "https://github.com/namdo1225/chat-app",
     },
     { name: "About", path: "/about", component: <About /> },
 ];

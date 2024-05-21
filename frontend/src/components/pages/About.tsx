@@ -3,13 +3,16 @@ import { Box, Typography } from "@mui/material";
 const About = () => {
     return (
         <Box
-            sx={{ p: 1 }}
-            display="flex"
-            alignItems="center"
-            flexDirection="column"
-            rowGap={5}
+        sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 5,
+            width: 3 / 4,
+            mx: "auto",
+            my: 5,
+        }}
         >
-            <Typography variant="h5">CaChat</Typography>
+            <Typography textAlign="center" variant="h5">CaChat</Typography>
             <Typography>
                 CaChat or Chat App Chat (I know, very original), is a web
                 application made by Nam Do (namdo1225 on GitHub). This is meant

@@ -167,6 +167,25 @@ const chatExtractor = async (
     } else response.status(400).json({ error: "No chat found." });
 };
 
+const chatMemberExtractor = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+): Promise<void> => {
+    const chatID = request.params.chatID;
+    const user = request.user;
+
+    const { data: members, error: memberError } = await supabase
+        .from("chat_members")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .eq("chat_id", chatID);
+
+    if (!memberError && members && members.length === 1) {
+        next();
+    } else response.status(400).json({ error: "No chat membership found." });
+};
+
 const hcaptchaVerifier = async (
     request: Request,
     response: Response,
@@ -184,9 +203,22 @@ const hcaptchaVerifier = async (
     const { success } = HCaptchaSchema.parse(verifyRes.data);
 
     if (success) next();
-    else {
+    else
         response.status(400).json({ error: "Invalid captcha token provided." });
-    }
+};
+
+const paginationVerifier = (
+    request: Request,
+    response: Response,
+    next: NextFunction
+): void => {
+    if (request.query.begin && request.query.end) next();
+    else
+        response
+            .status(400)
+            .json({
+                error: "Missing pagination (begin or end parameters are undefined).",
+            });
 };
 
 export {
@@ -198,6 +230,8 @@ export {
     imageParser,
     fileExtractor,
     chatExtractor,
+    chatMemberExtractor,
     hcaptchaVerifier,
     profileImgEditor,
+    paginationVerifier,
 };

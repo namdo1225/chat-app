@@ -43,3 +43,45 @@ export const DARK_THEME_COLORS = {
         footer: { main: blueGrey[900] },
     },
 };
+
+export const PALETTE_COLORS = [
+    "primary.main",
+    "primary.light",
+    "primary.dark",
+    "secondary.main",
+    "secondary.light",
+    "secondary.dark",
+    "warning.main",
+    "warning.light",
+    "warning.dark",
+    "info.main",
+    "info.light",
+    "info.dark",
+    "error.main",
+    "error.light",
+    "error.dark",
+    "success.main",
+    "success.light",
+    "success.dark",
+    "black",
+    "white"
+] as const;
+
+
+export type PaletteColors = (typeof PALETTE_COLORS)[number];
+
+export const CHAT_THEMES_KEY = [
+    "fromMessageBox",
+    "toMessageBox",
+    "fromMessageText",
+    "toMessageText"
+] as const;
+
+export type ChatThemeKey = (typeof CHAT_THEMES_KEY)[number];
+
+export interface ChatMessageTheme {
+    fromMessageBox: PaletteColors;
+    toMessageBox: PaletteColors;
+    fromMessageText: PaletteColors | undefined;
+    toMessageText: PaletteColors | undefined;
+};

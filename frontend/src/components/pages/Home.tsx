@@ -15,8 +15,9 @@ const Home = () => {
             sx={{
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
                 my: 5,
+                width: { xs: undefined, sm: 2 / 3 },
+                mx: "auto",
             }}
         >
             <Typography textAlign="center" variant="h1" fontSize={32}>

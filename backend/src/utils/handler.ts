@@ -4,7 +4,7 @@ import { extname } from "path";
 
 export const fileResultHandler = (err: NodeJS.ErrnoException | null): void => {
     if (err) {
-        console.log("unlink failed", err);
+        console.error("unlink failed", err);
     } else {
         console.log("file deleted");
     }
