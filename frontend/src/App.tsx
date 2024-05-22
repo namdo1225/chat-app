@@ -9,12 +9,12 @@ import queryClient from "@/config/queryClient";
 const App = () => {
     return (
         <QueryClientProvider client={queryClient}>
-                <BrowserRouter>
-                    <Toaster />
-                    <AuthProvider>
-                        <MainRoutes />
-                    </AuthProvider>
-                </BrowserRouter>
+            <BrowserRouter>
+                <Toaster />
+                <AuthProvider>
+                    <MainRoutes />
+                </AuthProvider>
+            </BrowserRouter>
         </QueryClientProvider>
     );
 };

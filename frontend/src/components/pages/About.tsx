@@ -3,14 +3,14 @@ import { Box, Typography } from "@mui/material";
 const About = () => {
     return (
         <Box
-        sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 5,
-            width: 3 / 4,
-            mx: "auto",
-            my: 5,
-        }}
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 5,
+                width: 3 / 4,
+                mx: "auto",
+                my: 5,
+            }}
         >
             <Typography textAlign="center" variant="h5">CaChat</Typography>
             <Typography>

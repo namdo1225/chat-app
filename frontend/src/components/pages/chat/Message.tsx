@@ -105,8 +105,8 @@ const Message = ({
         validDate
             ? msg.sent_at
             : !fromServer
-            ? JSON.parse(msg.sent_at)
-            : parseSupabaseDate(msg.sent_at)
+                ? JSON.parse(msg.sent_at)
+                : parseSupabaseDate(msg.sent_at)
     );
 
     const handleDeleteMsg = (token: string) => {
@@ -203,35 +203,35 @@ const Message = ({
                     fromServer &&
                     user &&
                     user.id === msg.from_user_id && (
-                        <>
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                }}
+                    <>
+                        <Box
+                            sx={{
+                                display: "flex",
+                            }}
+                        >
+                            <IconButton
+                                onClick={() =>
+                                    handleDeleteMsg(session.access_token)
+                                }
                             >
-                                <IconButton
-                                    onClick={() =>
-                                        handleDeleteMsg(session.access_token)
-                                    }
-                                >
-                                    <DeleteIcon />
-                                </IconButton>
-                                <IconButton
-                                    onClick={() => setOpenEditMessage(true)}
-                                >
-                                    <EditIcon />
-                                </IconButton>
-                            </Box>
-                            {session && (
-                                <EditMessageDialog
-                                    open={openEditMessage}
-                                    onClose={() => setOpenEditMessage(false)}
-                                    token={session.access_token}
-                                    msg={msg}
-                                />
-                            )}
-                        </>
-                    )}
+                                <DeleteIcon />
+                            </IconButton>
+                            <IconButton
+                                onClick={() => setOpenEditMessage(true)}
+                            >
+                                <EditIcon />
+                            </IconButton>
+                        </Box>
+                        {session && (
+                            <EditMessageDialog
+                                open={openEditMessage}
+                                onClose={() => setOpenEditMessage(false)}
+                                token={session.access_token}
+                                msg={msg}
+                            />
+                        )}
+                    </>
+                )}
             </Box>
         </Box>
     );

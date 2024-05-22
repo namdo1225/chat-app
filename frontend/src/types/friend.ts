@@ -8,7 +8,7 @@ export const FriendSchema = ProfileSchema.shape({
     requester: setRequiredStr(),
     requestee: setRequiredStr(),
     pending: y.bool().required(),
-})
+});
 
 export const FriendsSchema = y.array().of(FriendSchema).required();
 

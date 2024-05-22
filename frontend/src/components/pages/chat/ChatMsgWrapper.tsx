@@ -30,8 +30,8 @@ const ChatMsgWrapper = ({
                                 ? `${userProfile.first_name} ${userProfile.last_name}`
                                 : "Unknown"
                             : foundMember
-                            ? `${foundMember.profiles.first_name} ${foundMember.profiles.last_name}`
-                            : "Unknown",
+                                ? `${foundMember.profiles.first_name} ${foundMember.profiles.last_name}`
+                                : "Unknown",
                 }}
                 fromUser={msg.from_user_id === userID}
                 fromServer={true}

@@ -84,4 +84,4 @@ export interface ChatMessageTheme {
     toMessageBox: PaletteColors;
     fromMessageText: PaletteColors | undefined;
     toMessageText: PaletteColors | undefined;
-};
+}

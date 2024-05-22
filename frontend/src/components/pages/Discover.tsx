@@ -63,9 +63,9 @@ const GroupGrid = ({
                                             {chat.description.length < 50
                                                 ? chat.description
                                                 : `${chat.description.slice(
-                                                      0,
-                                                      50
-                                                  )}...`}
+                                                    0,
+                                                    50
+                                                )}...`}
                                         </Typography>
                                     )}
                                     {!isPending && (

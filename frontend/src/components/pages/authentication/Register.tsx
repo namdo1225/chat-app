@@ -247,7 +247,7 @@ const Register = () => {
                         <Button
                             type="submit"
                             sx={{ my: 2 }}
-                            disabled={!Boolean(captchaToken)}
+                            disabled={!captchaToken}
                         >
                             Submit
                         </Button>

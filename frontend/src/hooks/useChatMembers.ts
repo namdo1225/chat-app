@@ -9,7 +9,11 @@ import { ChatMember, ChatMemberProfile } from "@/types/chat_members";
 import toast from "react-hot-toast";
 import queryClient from "@/config/queryClient";
 
-export const useChatMembers = (chatID: string, token: string, chatMemberExist: boolean = false) => {
+export const useChatMembers = (
+    chatID: string,
+    token: string,
+    chatMemberExist: boolean = false
+) => {
     const chatMembers = useQuery<ChatMember[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}`],
         queryFn: () => getChatMembers(token, chatID),
@@ -18,7 +22,6 @@ export const useChatMembers = (chatID: string, token: string, chatMemberExist: b
 
     return { ...chatMembers, data: chatMembers.data ?? [] };
 };
-
 
 export const useChatMembersProfile = (chatID: string, token: string) => {
     const chatMembers = useQuery<ChatMemberProfile[], Error>({
@@ -29,7 +32,6 @@ export const useChatMembersProfile = (chatID: string, token: string) => {
 
     return { ...chatMembers, data: chatMembers.data ?? [] };
 };
-
 
 export const useJoinChatMember = () => {
     return useMutation({

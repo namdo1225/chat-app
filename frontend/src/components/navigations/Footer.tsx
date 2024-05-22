@@ -7,7 +7,7 @@ const Footer = () => {
         sx: {
             color: "grey.50",
         },
-        underline: "hover" as "hover",
+        underline: "hover" as const,
     };
 
     return (

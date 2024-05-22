@@ -30,26 +30,26 @@ const AuthContext = createContext<{
     themeMode: string;
     chatTheme: ChatMessageTheme;
     handleChatTheme: () => void;
-}>({
-    session: null,
-    user: null,
-    profile: null,
-    signOut: async () => {},
-    signInWithPassword: async () => {
-        return null;
-    },
-    setNull: () => {},
-    refreshToken: async () => {},
-    setThemeMode: () => {},
-    themeMode: "light",
-    chatTheme: {
-        fromMessageBox: "secondary.main",
-        toMessageBox: "info.main",
-        fromMessageText: undefined,
-        toMessageText: undefined,
-    },
-    handleChatTheme: () => {},
-});
+        }>({
+            session: null,
+            user: null,
+            profile: null,
+            signOut: async () => {},
+            signInWithPassword: async () => {
+                return null;
+            },
+            setNull: () => {},
+            refreshToken: async () => {},
+            setThemeMode: () => {},
+            themeMode: "light",
+            chatTheme: {
+                fromMessageBox: "secondary.main",
+                toMessageBox: "info.main",
+                fromMessageText: undefined,
+                toMessageText: undefined,
+            },
+            handleChatTheme: () => {},
+        });
 
 /**
  *

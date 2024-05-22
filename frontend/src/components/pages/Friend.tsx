@@ -192,19 +192,19 @@ const FriendList = ({
                                     <TableCell>
                                         {profile.pending &&
                                             profile.requestee === user?.id && (
-                                                <Tooltip title="Accept friend request">
-                                                    <IconButton
-                                                        onClick={() =>
-                                                            void handleVerifyFriend(
-                                                                profile.id
-                                                            )
-                                                        }
-                                                        children={
-                                                            <PersonAddIcon />
-                                                        }
-                                                    />
-                                                </Tooltip>
-                                            )}
+                                            <Tooltip title="Accept friend request">
+                                                <IconButton
+                                                    onClick={() =>
+                                                        void handleVerifyFriend(
+                                                            profile.id
+                                                        )
+                                                    }
+                                                    children={
+                                                        <PersonAddIcon />
+                                                    }
+                                                />
+                                            </Tooltip>
+                                        )}
                                         <Tooltip title="Remove friend">
                                             <IconButton
                                                 onClick={() =>
@@ -257,19 +257,19 @@ const Friend = () => {
     const filteredFriends =
         searchStr && !searchPublic
             ? friends.filter(
-                  (friend) =>
-                      friend.first_name.includes(searchStr) ||
+                (friend) =>
+                    friend.first_name.includes(searchStr) ||
                       friend.last_name.includes(searchStr)
-              )
+            )
             : friends;
 
     const filteredProfiles =
         searchStr && searchPublic && profiles
             ? profiles.filter(
-                  (profile) =>
-                      profile.first_name.includes(searchStr) ||
+                (profile) =>
+                    profile.first_name.includes(searchStr) ||
                       profile.last_name.includes(searchStr)
-              )
+            )
             : profiles ?? [];
 
     return (

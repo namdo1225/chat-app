@@ -64,7 +64,16 @@ import { differentDays, formatSupabaseDate } from "@/utils/date";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { ChatMember } from "@/types/chat_members";
 
-const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
+/**
+ * 
+ * @param {() => void} props.onClose Di
+ * @returns 
+ */
+const CreateChatDialog = ({
+    onClose,
+    open,
+    token,
+}: DialogProps): JSX.Element => {
     const { mutate, isPending } = useCreateChat();
     const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
     const [searchStr, setSearchStr] = useState("");
@@ -100,12 +109,12 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
         },
     });
 
-    const handleClose = () => {
+    const handleClose = (): void => {
         formik.resetForm();
         onClose();
     };
 
-    const addMember = (friendID: string) => {
+    const addMember = (friendID: string): void => {
         if (!formik.values.members.includes(friendID))
             formik.setFieldValue(
                 "members",
@@ -113,7 +122,7 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
             );
     };
 
-    const removeMember = (friendID: string) => {
+    const removeMember = (friendID: string): void => {
         if (formik.values.members.includes(friendID))
             formik.setFieldValue(
                 "members",
@@ -123,8 +132,9 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
 
     return (
         <Dialog disableScrollLock={true} onClose={handleClose} open={open}>
-            {isPending && <Loading padding message="Creating chat..." />}
-            {!isPending && (
+            {isPending ? (
+                <Loading padding message="Creating chat..." />
+            ) : (
                 <form onSubmit={formik.handleSubmit}>
                     <Box
                         sx={{
@@ -204,63 +214,60 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {filteredFriends.map(
-                                        (profile) =>
-                                            !profile.pending && (
-                                                <TableRow key={profile.user_id}>
-                                                    <TableCell
-                                                        sx={{
-                                                            display: "flex",
-                                                            alignItems:
-                                                                "center",
-                                                            gap: 2,
-                                                        }}
-                                                    >
-                                                        <AvatarWrapper
-                                                            profile={profile}
-                                                        />
-                                                        {profile.first_name}{" "}
-                                                        {profile.last_name}
+                                    {filteredFriends.map((profile) => {
+                                        const isMember =
+                                            formik.values.members.includes(
+                                                profile.user_id
+                                            );
+
+                                        return (
+                                            <TableRow key={profile.user_id}>
+                                                <TableCell
+                                                    sx={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: 2,
+                                                    }}
+                                                >
+                                                    <AvatarWrapper
+                                                        profile={profile}
+                                                    />
+                                                    {`${profile.first_name} ${profile.last_name}`}
+                                                </TableCell>
+                                                {!isMember ? (
+                                                    <TableCell>
+                                                        <Tooltip title="Add friend to group">
+                                                            <IconButton
+                                                                onClick={() =>
+                                                                    addMember(
+                                                                        profile.user_id
+                                                                    )
+                                                                }
+                                                                children={
+                                                                    <PersonAddIcon />
+                                                                }
+                                                            />
+                                                        </Tooltip>
                                                     </TableCell>
-                                                    {!formik.values.members.includes(
-                                                        profile.user_id
-                                                    ) && (
-                                                        <TableCell>
-                                                            <Tooltip title="Add friend to group">
-                                                                <IconButton
-                                                                    onClick={() =>
-                                                                        addMember(
-                                                                            profile.user_id
-                                                                        )
-                                                                    }
-                                                                    children={
-                                                                        <PersonAddIcon />
-                                                                    }
-                                                                />
-                                                            </Tooltip>
-                                                        </TableCell>
-                                                    )}
-                                                    {formik.values.members.includes(
-                                                        profile.user_id
-                                                    ) && (
-                                                        <TableCell>
-                                                            <Tooltip title="Remove friend from group">
-                                                                <IconButton
-                                                                    onClick={() =>
-                                                                        removeMember(
-                                                                            profile.user_id
-                                                                        )
-                                                                    }
-                                                                    children={
-                                                                        <PersonRemoveIcon />
-                                                                    }
-                                                                />
-                                                            </Tooltip>
-                                                        </TableCell>
-                                                    )}
-                                                </TableRow>
-                                            )
-                                    )}
+                                                ) : (
+                                                    <TableCell>
+                                                        <Tooltip title="Remove friend from group">
+                                                            <IconButton
+                                                                onClick={() =>
+                                                                    removeMember(
+                                                                        profile.user_id
+                                                                    )
+                                                                }
+                                                                children={
+                                                                    <PersonRemoveIcon />
+                                                                }
+                                                            />
+                                                        </Tooltip>
+                                                    </TableCell>
+                                                )}
+                                            </TableRow>
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
                         </InfiniteScroll>
@@ -298,7 +305,7 @@ const EditChatDialog = ({
     token,
     chat,
     chatMembers,
-}: EditChatDialogProps) => {
+}: EditChatDialogProps): JSX.Element => {
     const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
     const { mutate } = useDeleteChat();
     const { mutate: mutateEdit } = useEditChat();
@@ -329,7 +336,7 @@ const EditChatDialog = ({
         },
         validationSchema: EditChatSchema,
         enableReinitialize: true,
-        onSubmit: async (values) => {
+        onSubmit: (values) => {
             try {
                 mutateEdit({
                     chatID: chat.id,
@@ -340,10 +347,7 @@ const EditChatDialog = ({
                 handleClose();
             } catch (e) {
                 if (axios.isAxiosError(e))
-                    toast.error(
-                        e.response?.data.error ??
-                            "An unknown error occured while editing chat."
-                    );
+                    toast.error("An unknown error occured while editing chat.");
                 console.error(e);
             }
 
@@ -351,12 +355,12 @@ const EditChatDialog = ({
         },
     });
 
-    const handleClose = () => {
+    const handleClose = (): void => {
         formik.resetForm();
         onClose();
     };
 
-    const handleDelete = async () => {
+    const handleDelete = (): void => {
         try {
             if (window.confirm("Do you really want to delete this chat?"))
                 mutate({ chatID: chat.id, token });
@@ -368,7 +372,7 @@ const EditChatDialog = ({
         onClose();
     };
 
-    const addMember = (friendID: string) => {
+    const addMember = (friendID: string): void => {
         if (formik.values.removeMembers.includes(friendID)) {
             formik.setFieldValue(
                 "removeMembers",
@@ -382,7 +386,7 @@ const EditChatDialog = ({
         }
     };
 
-    const removeMember = (friendID: string) => {
+    const removeMember = (friendID: string): void => {
         if (formik.values.addMembers.includes(friendID)) {
             formik.setFieldValue(
                 "addMembers",
@@ -630,10 +634,10 @@ const ChatDetailDialog = ({
     open,
     token,
     chat,
-}: EditChatDialogProps) => {
+}: EditChatDialogProps): JSX.Element => {
     const { mutate, isPending } = useDeleteChatMember();
 
-    const handleLeave = async () => {
+    const handleLeave = (): void => {
         try {
             if (window.confirm("Do you really want to leave this chat?"))
                 mutate({ chatID: chat.id, token });
@@ -701,7 +705,7 @@ const ChatScroll = ({
     session: Session;
     chatToMsg: Chat | null;
     setChatToMSg: Dispatch<SetStateAction<Chat | null>>;
-}) => {
+}): JSX.Element => {
     const { user } = useAuth();
     const [openEditChat, setOpenEditChat] = useState(false);
     const [openViewChat, setOpenViewChat] = useState(false);
@@ -719,17 +723,17 @@ const ChatScroll = ({
 
     if (loadingChat) return <Loading />;
 
-    const closeDialog = () => {
+    const closeDialog = (): void => {
         setOpenEditChat(false);
         setSelectedChat(null);
     };
 
-    const selectEditChat = (chat: Chat) => {
+    const selectEditChat = (chat: Chat): void => {
         setSelectedChat(chat);
         setOpenEditChat(true);
     };
 
-    const selectViewChat = (chat: Chat) => {
+    const selectViewChat = (chat: Chat): void => {
         setSelectedChat(chat);
         setOpenViewChat(true);
     };
@@ -847,7 +851,7 @@ const ChattingScreen = ({
     chat: Chat;
     token: string;
     searchStr: string;
-}) => {
+}): JSX.Element => {
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
     const { finalData, infinite } = useMessages(token, chat.id);
@@ -858,7 +862,7 @@ const ChattingScreen = ({
         ? finalData.filter((msg) => msg.text.includes(searchStr))
         : finalData;
 
-    const sendMessage = () => {
+    const sendMessage = (): void => {
         try {
             mutate({ token, text, chatID: chat.id });
             setText("");
@@ -967,7 +971,13 @@ const ChattingScreen = ({
     );
 };
 
-const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
+const Chatroom = ({
+    chat,
+    token,
+}: {
+    chat: Chat;
+    token: string;
+}): JSX.Element => {
     const { session } = useAuth();
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const [hideMembers, setHideMembers] = useState(false);
@@ -976,7 +986,7 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
     const [searchStr, setSearchStr] = useState("");
     const { user } = useAuth();
     const { mutate } = useEditChat();
-    const deleteMember = (userID: string) => {
+    const deleteMember = (userID: string): void => {
         try {
             mutate({
                 chatID: chat.id,
@@ -1136,7 +1146,7 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
     );
 };
 
-const Chats = () => {
+const Chats = (): JSX.Element => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [openCreateChat, setOpenCreateChat] = useState(false);
     const [chatToMsg, setChatToMSg] = useState<Chat | null>(null);

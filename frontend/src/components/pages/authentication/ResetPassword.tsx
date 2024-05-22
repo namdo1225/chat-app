@@ -51,7 +51,7 @@ const ResetPassword = () => {
     }, []);
 
     if (!reset)
-        return <></>
+        return <></>;
 
     return (
         <Paper sx={{ m: 2, p: 2 }}>

@@ -19,7 +19,7 @@ export const ProfileSchema = y.object().shape({
     profile_photo: requiredStr,
     user_id: requiredStr,
     public_profile: y.bool().required(),
-})
+});
 
 export const ProfilesSchema = y.array().of(ProfileSchema).required();
 
