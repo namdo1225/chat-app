@@ -53,3 +53,9 @@ jobs:
           push: true
           target: prod
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}-backend:latest
+      - name: Render deployment for frontend
+        run: curl https://api.render.com/deploy/${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}&imgURL=${{ secrets.RENDER_FRONTEND_IMAGE_URL }}
+        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip')}}
+      - name: Render deployment for backend
+        run: curl https://api.render.com/deploy/${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}&imgURL=${{ secrets.RENDER_BACKEND_IMAGE_URL }}
+        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip')}}
