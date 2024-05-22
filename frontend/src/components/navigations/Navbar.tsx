@@ -17,15 +17,12 @@ import {
     Button,
     Tooltip,
     Switch,
-    useMediaQuery,
-    useTheme,
 } from "@mui/material";
 import { useAuth } from "@/context/AuthProvider";
 import Logo from "@/components/branding/Logo";
 
 const Navbar = () => {
     const { user, signOut, profile, themeMode, setThemeMode } = useAuth();
-    const theme = useTheme();
     const anchorNav = useRef<HTMLButtonElement>(null);
     const anchorUser = useRef<HTMLButtonElement>(null);
 

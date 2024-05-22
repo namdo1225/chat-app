@@ -30,7 +30,7 @@ import { useFormik } from "formik";
 import { CreateChatSchema } from "@/types/chat";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { DialogProps } from "@/types/prop";
+import { AuthDialogProps } from "@/types/prop";
 import { EditChatSchema, Chat } from "@/types/chat";
 import InfiniteScroll from "react-infinite-scroll-component";
 import {
@@ -40,7 +40,6 @@ import {
     useEditChat,
 } from "@/hooks/useChat";
 import Loading from "@/components/Loading";
-import { Session } from "@supabase/supabase-js";
 import ReadMoreIcon from "@mui/icons-material/ReadMore";
 import EditIcon from "@mui/icons-material/Edit";
 import { useFriends } from "@/hooks/useFriend";
@@ -65,15 +64,15 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import { ChatMember } from "@/types/chat_members";
 
 /**
- * 
- * @param {() => void} props.onClose Di
- * @returns 
+ * Component to create a chat in a dialog.
+ * Check {@link AuthDialogProps} for prop info.
+ * @returns {JSX.Element} The React component.
  */
 const CreateChatDialog = ({
     onClose,
     open,
     token,
-}: DialogProps): JSX.Element => {
+}: AuthDialogProps): JSX.Element => {
     const { mutate, isPending } = useCreateChat();
     const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
     const [searchStr, setSearchStr] = useState("");
@@ -294,18 +293,27 @@ const CreateChatDialog = ({
     );
 };
 
-interface EditChatDialogProps extends DialogProps {
+/**
+ * Interface for edit chat dialog props.
+ * Check {@link AuthDialogProps} for more prop info.
+ */
+interface ChatDialogProps extends AuthDialogProps {
     chat: Chat;
     chatMembers?: ChatMember[];
 }
 
+/**
+ * Component to edit a chat in a dialog.
+ * Check {@link ChatDialogProps} for prop info.
+ * @returns {JSX.Element} The React component.
+ */
 const EditChatDialog = ({
     onClose,
     open,
     token,
     chat,
     chatMembers,
-}: EditChatDialogProps): JSX.Element => {
+}: ChatDialogProps): JSX.Element => {
     const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
     const { mutate } = useDeleteChat();
     const { mutate: mutateEdit } = useEditChat();
@@ -629,12 +637,17 @@ const EditChatDialog = ({
     );
 };
 
+/**
+ * Component to view a chat's details in a dialog.
+ * Check {@link ChatDialogProps} for prop info.
+ * @returns {JSX.Element} The React component.
+ */
 const ChatDetailDialog = ({
     onClose,
     open,
     token,
     chat,
-}: EditChatDialogProps): JSX.Element => {
+}: ChatDialogProps): JSX.Element => {
     const { mutate, isPending } = useDeleteChatMember();
 
     const handleLeave = (): void => {
@@ -697,12 +710,21 @@ const ChatDetailDialog = ({
     );
 };
 
+/**
+ * Component to view all of a user's chats and
+ * actions that can be performed on them.
+ * @param {string} props.token The user's supabase access token.
+ * @param {Chat} props.chatToMsg The chat currently selected.
+ * @param {Dispatch<SetStateAction<Chat | null>>} props.setChatToMSg
+ * Setter for selected chat.
+ * @returns {JSX.Element} The React component.
+ */
 const ChatScroll = ({
-    session,
+    token,
     chatToMsg,
     setChatToMSg,
 }: {
-    session: Session;
+    token: string;
     chatToMsg: Chat | null;
     setChatToMSg: Dispatch<SetStateAction<Chat | null>>;
 }): JSX.Element => {
@@ -715,7 +737,7 @@ const ChatScroll = ({
         isLoading: loadingChat,
         hasNextPage,
         fetchNextPage,
-    } = useChats(session.access_token, 1, false);
+    } = useChats(token, 1, false);
     const [searchStr, setSearchStr] = useState("");
     const filteredChats = searchStr
         ? chats.filter((chat) => chat.name.includes(searchStr))
@@ -737,6 +759,7 @@ const ChatScroll = ({
         setSelectedChat(chat);
         setOpenViewChat(true);
     };
+    const canSelect = !!selectedChat && !!user;
 
     return (
         <>
@@ -766,7 +789,7 @@ const ChatScroll = ({
                                     ? chat.description.length < 50
                                         ? chat.description
                                         : `${chat.description.slice(0, 50)}...`
-                                    : "Click on icon to read chat's messages"
+                                    : "Click on the eye icon to read chat's messages"
                             }
                         >
                             <ListItem>
@@ -798,42 +821,39 @@ const ChatScroll = ({
                                 >
                                     <VisibilityIcon />
                                 </IconButton>
-                                {user?.id === chat.owner_id && (
-                                    <IconButton
-                                        sx={{ mx: 2 }}
-                                        onClick={() => selectEditChat(chat)}
-                                        edge="end"
-                                    >
+                                <IconButton
+                                    sx={{ mx: 2 }}
+                                    onClick={() =>
+                                        user?.id === chat.owner_id
+                                            ? selectEditChat(chat)
+                                            : selectViewChat(chat)
+                                    }
+                                    edge="end"
+                                >
+                                    {user?.id === chat.owner_id ? (
                                         <EditIcon />
-                                    </IconButton>
-                                )}
-                                {user?.id !== chat.owner_id && (
-                                    <IconButton
-                                        sx={{ mx: 2 }}
-                                        onClick={() => selectViewChat(chat)}
-                                        edge="end"
-                                    >
+                                    ) : (
                                         <ReadMoreIcon />
-                                    </IconButton>
-                                )}
+                                    )}
+                                </IconButton>
                             </ListItem>
                         </Tooltip>
                     ))}
                 </List>
             </InfiniteScroll>
-            {session && selectedChat && (
+            {canSelect && user.id === selectedChat.owner_id && (
                 <EditChatDialog
                     open={openEditChat}
                     onClose={closeDialog}
-                    token={session.access_token}
+                    token={token}
                     chat={selectedChat}
                 />
             )}
-            {session && selectedChat && (
+            {canSelect && user.id !== selectedChat.owner_id && (
                 <ChatDetailDialog
                     open={openViewChat}
                     onClose={closeDialog}
-                    token={session.access_token}
+                    token={token}
                     chat={selectedChat}
                 />
             )}
@@ -841,6 +861,15 @@ const ChatScroll = ({
     );
 };
 
+/**
+ * Component containing the actual chat portion, messages, and messaging UIs.
+ * @param {string} props.userID The user's ID.
+ * @param {Chat} props.chat The chat currently selected.
+ * @param {string} props.token The user's supabase access token.
+ * @param {string} props.searchStr The search string to filter messages content.
+ * Setter for selected chat.
+ * @returns {JSX.Element} The React component.
+ */
 const ChattingScreen = ({
     userID,
     chat,
@@ -971,6 +1000,12 @@ const ChattingScreen = ({
     );
 };
 
+/**
+ * Component containing the chatroom and all standard chatroom UIs.
+ * @param {Chat} props.chat The chat currently selected.
+ * @param {string} props.token The user's supabase access token.
+ * @returns {JSX.Element} The React component.
+ */
 const Chatroom = ({
     chat,
     token,
@@ -1146,12 +1181,18 @@ const Chatroom = ({
     );
 };
 
+/**
+ * Component containing the main page for /chats.
+ * @returns {JSX.Element} The React component.
+ */
 const Chats = (): JSX.Element => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [openCreateChat, setOpenCreateChat] = useState(false);
     const [chatToMsg, setChatToMSg] = useState<Chat | null>(null);
 
     const { session } = useAuth();
+
+    if (!session) return <Loading />;
 
     return (
         <Box>
@@ -1192,23 +1233,19 @@ const Chats = (): JSX.Element => {
                         overflow: "auto",
                     }}
                 >
-                    {session && (
-                        <>
-                            <Typography>Chats</Typography>
-                            <ChatScroll
-                                chatToMsg={chatToMsg}
-                                setChatToMSg={setChatToMSg}
-                                session={session}
-                            />
-                            <Divider />
-                            <Button
-                                onClick={() => setOpenCreateChat(true)}
-                                endIcon={<AddIcon />}
-                            >
-                                Create a chat
-                            </Button>
-                        </>
-                    )}
+                    <Typography>Chats</Typography>
+                    <ChatScroll
+                        chatToMsg={chatToMsg}
+                        setChatToMSg={setChatToMSg}
+                        token={session.access_token}
+                    />
+                    <Divider />
+                    <Button
+                        onClick={() => setOpenCreateChat(true)}
+                        endIcon={<AddIcon />}
+                    >
+                        Create a chat
+                    </Button>
                     <Button
                         onClick={() => setOpenDrawer(false)}
                         endIcon={<ExitToAppIcon />}
@@ -1239,22 +1276,13 @@ const Chats = (): JSX.Element => {
                     </Typography>
                 </Paper>
             ) : (
-                <>
-                    {session && (
-                        <Chatroom
-                            chat={chatToMsg}
-                            token={session.access_token}
-                        />
-                    )}
-                </>
+                <Chatroom chat={chatToMsg} token={session.access_token} />
             )}
-            {session && (
-                <CreateChatDialog
-                    open={openCreateChat}
-                    onClose={() => setOpenCreateChat(false)}
-                    token={session.access_token}
-                />
-            )}
+            <CreateChatDialog
+                open={openCreateChat}
+                onClose={() => setOpenCreateChat(false)}
+                token={session.access_token}
+            />
         </Box>
     );
 };

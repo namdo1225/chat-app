@@ -11,16 +11,13 @@ import { useAuth } from "@/context/AuthProvider";
 import Home from "@/components/pages/Home";
 
 const MainRoutes = () => {
-    const { user } = useAuth();
+    const { user, session } = useAuth();
 
     return (
         <>
             <Navbar />
             <Routes>
-                <Route
-                    path="/"
-                    element={<Home />}
-                />
+                <Route path="/" element={<Home />} />
                 <Route element={<NonUserRoutes user={user} />}>
                     {authRoutes.map((route) => (
                         <Route
@@ -30,7 +27,11 @@ const MainRoutes = () => {
                         />
                     ))}
                 </Route>
-                <Route element={<PrivateRoutes user={user} />}>
+                <Route
+                    element={
+                        <PrivateRoutes user={!!user} session={!!session} />
+                    }
+                >
                     {routes.map((route) => (
                         <Route
                             path={route.path}

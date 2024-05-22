@@ -24,7 +24,7 @@ import toast from "react-hot-toast";
 import ChatAvatarEditor from "@/components/ChatAvatarEditor";
 import Message from "@/components/pages/chat/Message";
 import { CHAT_THEMES_KEY, ChatThemeKey, PALETTE_COLORS } from "@/types/theme";
-import { optionalStr, setRequiredStr } from "@/types/yup";
+import { optionalStr } from "@/types/yup";
 
 const fields = [
     {
