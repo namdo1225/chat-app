@@ -8,6 +8,7 @@
     "dev": "set NODE_ENV=development && tsx watch src/index.ts",
     "build": "tsc",
     "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "npm run lint -- --fix",
     "test": "set NODE_ENV=test && jest --verbose"
   },
   "keywords": [],
