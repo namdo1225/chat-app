@@ -7,9 +7,13 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * Code from: https://frontendshape.com/post/create-a-chat-ui-in-react-with-mui-5
+ * Chat component in /home page.
+ * Code modified originally from:
+ * https://frontendshape.com/post/create-a-chat-ui-in-react-with-mui-5
+ * @param {string} props.chatter The chatter's name.
+ * @returns {JSX.Element} The React component.
  */
-const HomeChat = ({ chatter }: { chatter: string }) => {
+const HomeChat = ({ chatter }: { chatter: string }): JSX.Element => {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<HomeMsg[]>([]);
     const [socketUrl] = useState("ws://localhost:8080/homechat");
@@ -34,7 +38,7 @@ const HomeChat = ({ chatter }: { chatter: string }) => {
     }, [readyState]);
 
     useEffect(() => {
-        const recvMsg = async () => {
+        const recvMsg = async (): Promise<void> => {
             if (lastMessage) {
                 const msg = await HomeMsgSchema.validate(
                     JSON.parse(lastMessage.data)
@@ -44,9 +48,10 @@ const HomeChat = ({ chatter }: { chatter: string }) => {
         };
 
         void recvMsg();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [lastMessage]);
 
-    const handleClickSendMessage = () => {
+    const handleClickSendMessage = (): void => {
         if (input.trim() !== "") {
             const msg = {
                 id: uuidv4(),

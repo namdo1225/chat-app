@@ -6,11 +6,16 @@ interface UserProfileDialogProps extends SimpleDialogProps {
     profile: Profile;
 }
 
+/**
+ * Component to check a user's profile.
+ * Check {@link UserProfileDialogProps} for prop info.
+ * @returns {JSX.Element} The React component.
+ */
 const UserProfileDialog = ({
     onClose,
     open,
     profile,
-}: UserProfileDialogProps) => {
+}: UserProfileDialogProps): JSX.Element => {
     return (
         <Dialog onClose={onClose} open={open}>
             <Box

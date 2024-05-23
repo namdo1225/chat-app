@@ -3,6 +3,12 @@ import Typography from "@mui/material/Typography";
 import { forwardRef } from "react";
 import AvatarEditor from "react-avatar-editor";
 
+/**
+ * Wrapper route to provide the avatar editor with
+ * additional functionality
+ * @param {File} props.file The image for the avatar.
+ * @returns The React component.
+ */
 const ChatAvatarEditor = forwardRef<AvatarEditor, { file: File }>(
     ({ file }, ref) => {
         return (

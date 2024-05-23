@@ -26,26 +26,34 @@ import {
     useRemoveFriend,
     useVerifyFriend,
 } from "@/hooks/useFriend";
-import { useAuth } from "@/context/AuthProvider";
-import { Session, User } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { Friend as Friendtype } from "@/types/friend";
 import { Profile } from "@/types/profile";
 import UserProfileDialog from "@/components/UserProfileDialog";
+import useAuth from "@/context/useAuth";
 
+/**
+ * Component to list public users in a table.
+ * @param {User} props.user The logged-in user's information.
+ * @param {string} props.token The user's supabase access token.
+ * @param {Friendtype[]} props.friends Friends' data.
+ * @param {Profile[]} props.friends Profiles' data for reference with friends.
+ * @returns {JSX.Element} The React component.
+ */
 const UserList = ({
     user,
-    session,
+    token,
     friends,
     profiles,
 }: {
     user: User;
-    session: Session;
+    token: string;
     friends: Friendtype[];
     profiles: Profile[];
-}) => {
+}): JSX.Element => {
     const { mutate: mutateAdd } = useAddFriend();
-    const handleAddFriend = async (id: string) => {
-        if (user && session) mutateAdd({ id, token: session.access_token });
+    const handleAddFriend = (id: string): void => {
+        mutateAdd({ id, token });
     };
     const { fetchNextPage, hasNextPage } = useProfiles();
     const [openUserDialog, setOpenUserDialog] = useState(false);
@@ -124,28 +132,36 @@ const UserList = ({
     );
 };
 
+/**
+ * Component to list friends in a table.
+ * @param {User} props.user The logged-in user's information.
+ * @param {string} props.token The user's supabase access token.
+ * @param {Friendtype[]} props.friends Friends' data.
+ * @param {boolean} props.pneding Whether to check pending friend requests.
+ * @returns {JSX.Element} The React component.
+ */
 const FriendList = ({
     user,
-    session,
+    token,
     friends,
     pending,
 }: {
     user: User;
-    session: Session;
+    token: string;
     friends: Friendtype[];
     pending: boolean;
-}) => {
+}): JSX.Element => {
     const { mutate: mutateRemove } = useRemoveFriend();
     const { mutate: mutateVerify } = useVerifyFriend();
-    const { fetchNextPage, hasNextPage } = useFriends(session.access_token);
+    const { fetchNextPage, hasNextPage } = useFriends(token);
     const [openUserDialog, setOpenUserDialog] = useState(false);
 
-    const handleRemoveFriend = async (id: string) => {
-        if (user && session) mutateRemove({ id, token: session.access_token });
+    const handleRemoveFriend = (id: string): void => {
+        mutateRemove({ id, token });
     };
 
-    const handleVerifyFriend = async (id: string) => {
-        if (user && session) mutateVerify({ id, token: session.access_token });
+    const handleVerifyFriend = (id: string): void => {
+        mutateVerify({ id, token });
     };
 
     return (
@@ -192,19 +208,19 @@ const FriendList = ({
                                     <TableCell>
                                         {profile.pending &&
                                             profile.requestee === user?.id && (
-                                            <Tooltip title="Accept friend request">
-                                                <IconButton
-                                                    onClick={() =>
-                                                        void handleVerifyFriend(
-                                                            profile.id
-                                                        )
-                                                    }
-                                                    children={
-                                                        <PersonAddIcon />
-                                                    }
-                                                />
-                                            </Tooltip>
-                                        )}
+                                                <Tooltip title="Accept friend request">
+                                                    <IconButton
+                                                        onClick={() =>
+                                                            void handleVerifyFriend(
+                                                                profile.id
+                                                            )
+                                                        }
+                                                        children={
+                                                            <PersonAddIcon />
+                                                        }
+                                                    />
+                                                </Tooltip>
+                                            )}
                                         <Tooltip title="Remove friend">
                                             <IconButton
                                                 onClick={() =>
@@ -234,7 +250,12 @@ const FriendList = ({
     );
 };
 
-const Friend = () => {
+/**
+ * Component for /friend page to show list of friends
+ * and modify friendship status.
+ * @returns {JSX.Element} The React component.
+ */
+const Friend = (): JSX.Element => {
     const { user, session } = useAuth();
     const [searchPublic, setSearchPublic] = useState(false);
     const [pending, setPending] = useState(false);
@@ -247,7 +268,7 @@ const Friend = () => {
     const { data: profiles, isLoading } = useProfiles(searchPublic);
     const { mutate: mutateAdd } = useAddFriend();
 
-    const handleAddFriend = async (id: string) => {
+    const handleAddFriend = (id: string): void => {
         if (user && session) mutateAdd({ id, token: session.access_token });
     };
 
@@ -257,19 +278,19 @@ const Friend = () => {
     const filteredFriends =
         searchStr && !searchPublic
             ? friends.filter(
-                (friend) =>
-                    friend.first_name.includes(searchStr) ||
+                  (friend) =>
+                      friend.first_name.includes(searchStr) ||
                       friend.last_name.includes(searchStr)
-            )
+              )
             : friends;
 
     const filteredProfiles =
         searchStr && searchPublic && profiles
             ? profiles.filter(
-                (profile) =>
-                    profile.first_name.includes(searchStr) ||
+                  (profile) =>
+                      profile.first_name.includes(searchStr) ||
                       profile.last_name.includes(searchStr)
-            )
+              )
             : profiles ?? [];
 
     return (
@@ -304,7 +325,7 @@ const Friend = () => {
                         </Button>
                     )}
                 </Box>
-                {!searchPublic && (
+                {!searchPublic ? (
                     <>
                         <Box display="flex" flexWrap="wrap">
                             <Typography>Pending request:</Typography>
@@ -316,14 +337,13 @@ const Friend = () => {
                         {session && user && (
                             <FriendList
                                 user={user}
-                                session={session}
+                                token={session.access_token}
                                 pending={pending}
                                 friends={filteredFriends}
                             />
                         )}
                     </>
-                )}
-                {searchPublic && (
+                ) : (
                     <>
                         <Typography>
                             Search for people to add as friends. If their
@@ -333,7 +353,7 @@ const Friend = () => {
                         {session && user && (
                             <UserList
                                 user={user}
-                                session={session}
+                                token={session.access_token}
                                 profiles={filteredProfiles}
                                 friends={filteredFriends}
                             />

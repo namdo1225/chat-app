@@ -15,7 +15,7 @@ import { supabase } from "@/config/supabase";
 export const useMessages = (
     token: string,
     chatID: string,
-    limit: number = 7
+    limit: number = 10
 ) => {
     const curTime = new Date().toISOString();
     const [currentMessages, setCurrentMessages] = useState<ChatMsg[]>([]);

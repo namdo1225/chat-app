@@ -11,16 +11,16 @@ import {
 import { FrontendMsg } from "@/types/message";
 import * as y from "yup";
 import { useDeleteMessage, useEditMessage } from "@/hooks/useMessages";
-import { useAuth } from "@/context/AuthProvider";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import Loading from "@/components/Loading";
-import { DialogProps } from "@/types/prop";
+import { AuthDialogProps } from "@/types/prop";
 import { useState } from "react";
 import { Profile } from "@/types/profile";
 import { parseSupabaseDate } from "@/utils/date";
+import useAuth from "@/context/useAuth";
 
-interface EditMessageDialogProps extends DialogProps {
+interface EditMessageDialogProps extends AuthDialogProps {
     msg: FrontendMsg;
 }
 
@@ -29,12 +29,12 @@ const EditMessageDialog = ({
     open,
     token,
     msg,
-}: EditMessageDialogProps) => {
+}: EditMessageDialogProps): JSX.Element => {
     const { mutate, isPending } = useEditMessage();
     const [text, setText] = useState(msg.text);
-    if (isPending) return;
+    if (isPending) return <Loading />;
 
-    const handleEdit = () => {
+    const handleEdit = (): void => {
         try {
             mutate({ token, msgID: msg.id, text });
             onClose();
@@ -92,7 +92,7 @@ const Message = ({
     fromUser: boolean;
     fromServer?: boolean;
     profile?: Profile | null;
-}) => {
+}): JSX.Element => {
     const { mutate: mutateDelete } = useDeleteMessage();
     const { session, user } = useAuth();
     const [openEditMessage, setOpenEditMessage] = useState(false);
@@ -109,13 +109,15 @@ const Message = ({
                 : parseSupabaseDate(msg.sent_at)
     );
 
-    const handleDeleteMsg = (token: string) => {
+    const handleDeleteMsg = (token: string): void => {
         try {
             mutateDelete({ token, msgID: msg.id });
         } catch (e) {
             console.error(e);
         }
     };
+
+    const endStart = {justifyContent: fromUser ? "flex-end" : "flex-start"} as const;
 
     return (
         <Box
@@ -125,7 +127,7 @@ const Message = ({
             <Typography
                 sx={{
                     display: "flex",
-                    justifyContent: fromUser ? "flex-end" : "flex-start",
+                    ...endStart,
                 }}
             >
                 {msg.chatter && msg.chatter.length > 10
@@ -135,7 +137,7 @@ const Message = ({
             <Box
                 sx={{
                     display: "flex",
-                    justifyContent: fromUser ? "flex-end" : "flex-start",
+                    ...endStart,
                     mb: 2,
                 }}
             >
@@ -187,7 +189,7 @@ const Message = ({
             <Box
                 sx={{
                     display: "flex",
-                    justifyContent: fromUser ? "flex-end" : "flex-start",
+                    ...endStart,
                     fontSize: 12,
                 }}
             >

@@ -16,8 +16,13 @@ import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { sendEmail } from "@/services/contact";
 import axios from "axios";
 import Logo from "@/components/branding/Logo";
+import { unknownError } from "@/utils/string";
 
-const ContactUs = () => {
+/**
+ * Component for /contact page.
+ * @returns {JSX.Element} The React component.
+ */
+const ContactUs = (): JSX.Element => {
     const [message, setMessage] = useState<string>("");
     const [captchaToken, setCaptchaToken] = useState("");
     const captcha = useRef<HCaptcha>(null);
@@ -41,9 +46,7 @@ const ContactUs = () => {
                     setMessage("Your message is successfully sent.");
             } catch (e) {
                 if (axios.isAxiosError(e))
-                    setMessage(
-                        e.response?.data.error ?? "An unknown error occured."
-                    );
+                    setMessage(e.response?.data ?? unknownError);
                 console.error(e);
             }
             setCaptchaToken("");

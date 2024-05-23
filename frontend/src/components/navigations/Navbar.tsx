@@ -1,9 +1,7 @@
 import { routes, profileRoutes } from "@/routes";
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-
 import MenuIcon from "@mui/icons-material/Menu";
-
 import {
     MenuItem,
     AppBar,
@@ -18,10 +16,14 @@ import {
     Tooltip,
     Switch,
 } from "@mui/material";
-import { useAuth } from "@/context/AuthProvider";
 import Logo from "@/components/branding/Logo";
+import useAuth from "@/context/useAuth";
 
-const Navbar = () => {
+/**
+ * Navigation bar component for the website.
+ * @returns {JSX.Element} The React component.
+ */
+const Navbar = (): JSX.Element => {
     const { user, signOut, profile, themeMode, setThemeMode } = useAuth();
     const anchorNav = useRef<HTMLButtonElement>(null);
     const anchorUser = useRef<HTMLButtonElement>(null);
@@ -29,22 +31,22 @@ const Navbar = () => {
     const [mainOpen, setMainOpen] = useState(false);
     const [userOpen, setUserOpen] = useState(false);
 
-    const handleOpenNavMenu = () => {
+    const handleOpenNavMenu = (): void => {
         setMainOpen(true);
     };
-    const handleOpenUserMenu = () => {
+    const handleOpenUserMenu = (): void => {
         setUserOpen(true);
     };
 
-    const handleCloseNavMenu = () => {
+    const handleCloseNavMenu = (): void => {
         setMainOpen(false);
     };
 
-    const handleCloseUserMenu = () => {
+    const handleCloseUserMenu = (): void => {
         setUserOpen(false);
     };
 
-    const changeTheme = () => {
+    const changeTheme = (): void => {
         const newTheme = themeMode === "light" ? "dark" : "light";
         setThemeMode(newTheme);
         localStorage.setItem("theme", newTheme);
@@ -53,6 +55,13 @@ const Navbar = () => {
     useEffect(() => {
         setUserOpen(false);
     }, [user]);
+
+    const showMD = { display: { xs: "none", md: "flex" } } as const;
+    const transform = {
+        vertical: "top",
+        horizontal: "right",
+    } as const;
+    const size = { xs: 18, md: 24 } as const;
 
     return (
         <AppBar
@@ -68,11 +77,7 @@ const Navbar = () => {
                     }}
                     disableGutters
                 >
-                    <Logo
-                        onNav={true}
-                        display={{ xs: "none", md: "flex" }}
-                        link="/"
-                    />
+                    <Logo {...showMD} onNav={true} link="/" />
                     <Typography
                         variant="h6"
                         noWrap
@@ -159,7 +164,7 @@ const Navbar = () => {
                     </Box>
                     <Tooltip
                         sx={{
-                            display: { xs: "none", md: "flex" },
+                            showMD,
                         }}
                         title="Toggle dark mode"
                     >
@@ -195,7 +200,7 @@ const Navbar = () => {
                     <Box
                         sx={{
                             flexGrow: 1,
-                            display: { xs: "none", md: "flex" },
+                            display: showMD.display,
                         }}
                     >
                         {routes.map(({ path, name }) => (
@@ -216,32 +221,31 @@ const Navbar = () => {
                     </Box>
 
                     {user ? (
-                        <Box sx={{ flexGrow: 0 }}>
+                        <Box sx={{ display: "flex", flexGrow: 0 }}>
+                            <Typography
+                                sx={{
+                                    mx: 2,
+                                    display: {
+                                        xs: "none",
+                                        sm: "block",
+                                    },
+                                }}
+                                color="white"
+                            >
+                                {`${user.user_metadata.first_name} ${user.user_metadata.last_name}`}
+                            </Typography>
                             <Tooltip title="Open settings">
                                 <IconButton
                                     ref={anchorUser}
                                     onClick={handleOpenUserMenu}
                                     sx={{ p: 0 }}
                                 >
-                                    <Typography
-                                        sx={{
-                                            mx: 2,
-                                            display: {
-                                                xs: "none",
-                                                sm: "block",
-                                            },
-                                        }}
-                                        color="white"
-                                    >
-                                        {user.user_metadata.first_name}{" "}
-                                        {user.user_metadata.last_name}
-                                    </Typography>
                                     <Avatar
                                         alt="User Avatar"
                                         src={profile?.profile_photo}
                                         sx={{
-                                            width: { xs: 18, md: 24 },
-                                            height: { xs: 18, md: 24 },
+                                            width: size,
+                                            height: size,
                                         }}
                                     />
                                 </IconButton>
@@ -258,15 +262,9 @@ const Navbar = () => {
                                     anchorEl={() =>
                                         anchorUser.current as HTMLButtonElement
                                     }
-                                    anchorOrigin={{
-                                        vertical: "top",
-                                        horizontal: "right",
-                                    }}
+                                    anchorOrigin={transform}
                                     keepMounted
-                                    transformOrigin={{
-                                        vertical: "top",
-                                        horizontal: "right",
-                                    }}
+                                    transformOrigin={transform}
                                     open={userOpen}
                                     onClose={handleCloseUserMenu}
                                 >

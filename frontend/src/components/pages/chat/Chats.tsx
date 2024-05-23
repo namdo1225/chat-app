@@ -25,7 +25,6 @@ import {
 import { Dispatch, Fragment, SetStateAction, useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import AddIcon from "@mui/icons-material/Add";
-import { useAuth } from "@/context/AuthProvider";
 import { useFormik } from "formik";
 import { CreateChatSchema } from "@/types/chat";
 import axios from "axios";
@@ -62,6 +61,7 @@ import AvatarWrapper from "../AvatarWrapper";
 import { differentDays, formatSupabaseDate } from "@/utils/date";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { ChatMember } from "@/types/chat_members";
+import useAuth from "@/context/useAuth";
 
 /**
  * Component to create a chat in a dialog.
@@ -132,7 +132,7 @@ const CreateChatDialog = ({
     return (
         <Dialog disableScrollLock={true} onClose={handleClose} open={open}>
             {isPending ? (
-                <Loading padding message="Creating chat..." />
+                <Loading padding={5} message="Creating chat..." />
             ) : (
                 <form onSubmit={formik.handleSubmit}>
                     <Box

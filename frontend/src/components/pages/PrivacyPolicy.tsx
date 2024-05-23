@@ -1,6 +1,10 @@
 import { Box, Typography } from "@mui/material";
 
-const PrivacyPolicy = () => {
+/**
+ * Component for /privacy page.
+ * @returns {JSX.Element} The React component.
+ */
+const PrivacyPolicy = (): JSX.Element => {
     return (
         <Box
             sx={{

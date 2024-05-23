@@ -1,43 +1,33 @@
 import { getUser, getUsers } from "@/services/users";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Profile } from "@/types/profile";
-import { User } from "@supabase/supabase-js";
+import { Session, User } from "@supabase/supabase-js";
 import * as y from "yup";
 
 const OWN = ["OWN_PROFILE"];
 const ALL = ["ALL_PROFILEs"];
 
-export const useOwnProfile = (user: User | null | undefined) => {
+export const useOwnProfile = (
+    user: User | null | undefined,
+    session: Session | null | undefined
+) => {
     return useQuery<Profile | null>({
         queryKey: OWN,
         queryFn: () => {
-            if (user && user.id) return getUser(user.id);
+            if (user && user.id && session)
+                return getUser(user.id, session.access_token);
             return null;
         },
         refetchOnWindowFocus(_query) {
             return false;
         },
-        enabled: !!user && !!user.id,
+        enabled: !!user && !!user.id && !!session,
     });
 };
-
-/*
-NON-PAGINATION VERSION
-export const useProfiles = (enabled: boolean = true) => {
-    return useQuery<Profile[] | undefined>({
-        queryKey: ALL,
-        queryFn: () => getUsers(),
-        refetchOnWindowFocus(_query) {
-            return false;
-        },
-        enabled
-    });
-};
-*/
 
 export const useProfiles = (
     enabled: boolean = true,
-    inclusiveLimit: number = 1
+    inclusiveLimit: number = 10
 ) => {
     const infiniteProfiles = useInfiniteQuery<Profile[], Error>({
         queryKey: ALL,

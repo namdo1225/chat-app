@@ -23,6 +23,7 @@ import AvatarEditor from "react-avatar-editor";
 import Dropzone from "react-dropzone";
 import Logo from "@/components/branding/Logo";
 import ChatAvatarEditor from "../../ChatAvatarEditor";
+import { unknownError } from "@/utils/string";
 
 const fields = [
     {
@@ -50,7 +51,11 @@ const fields = [
     },
 ];
 
-const Register = () => {
+/**
+ * Component for the /register page.
+ * @returns {JSX.Element} The React component.
+ */
+const Register = (): JSX.Element => {
     const ref = useRef<HTMLInputElement>(null);
     const editorRef = useRef<AvatarEditor>(null);
     const navigate = useNavigate();
@@ -58,7 +63,7 @@ const Register = () => {
     const captcha = useRef<HCaptcha>(null);
     const [registerError, setRegisterError] = useState<string>("");
 
-    const clearUpload = () => {
+    const clearUpload = (): void => {
         if (ref.current) {
             formik.setFieldValue("files", undefined);
             ref.current.value = "";
@@ -112,7 +117,7 @@ const Register = () => {
             } catch (e) {
                 if (axios.isAxiosError(e))
                     setRegisterError(
-                        e.response?.data.error ?? "An unknown error occured."
+                        e.response?.data ?? unknownError
                     );
                 console.error(e);
             }
@@ -125,7 +130,7 @@ const Register = () => {
         target,
     }: {
         target: EventTarget & HTMLInputElement;
-    }) => {
+    }): Promise<void> => {
         const error = await formik.setFieldValue(
             "files",
             target.files ? target.files[0] : undefined
@@ -133,7 +138,7 @@ const Register = () => {
         if (error && "files" in error) clearUpload();
     };
 
-    const handleDrop = async (dropped: File[]) => {
+    const handleDrop = async (dropped: File[]): Promise<void> => {
         const error = await formik.setFieldValue(
             "files",
             dropped ? dropped[0] : undefined

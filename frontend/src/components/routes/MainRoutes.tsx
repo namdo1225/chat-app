@@ -1,16 +1,18 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { routes, authRoutes, supportRoutes, profileRoutes } from "../../routes";
-
 import PrivateRoutes from "@/components/routes/PrivateRoutes";
 import NonUserRoutes from "@/components/routes/NonUserRoutes";
-
 import Navbar from "@/components/navigations/Navbar";
 import Footer from "@/components/navigations/Footer";
 import ResetPassword from "@/components/pages/authentication/ResetPassword";
-import { useAuth } from "@/context/AuthProvider";
 import Home from "@/components/pages/Home";
+import useAuth from "@/context/useAuth";
 
-const MainRoutes = () => {
+/**
+ * Component to handle routing for general (non-user and non-private) routes.
+ * @returns {JSX.Element} The React component.
+ */
+const MainRoutes = (): JSX.Element => {
     const { user, session } = useAuth();
 
     return (
@@ -32,14 +34,7 @@ const MainRoutes = () => {
                         <PrivateRoutes user={!!user} session={!!session} />
                     }
                 >
-                    {routes.map((route) => (
-                        <Route
-                            path={route.path}
-                            key={route.path}
-                            element={route.component}
-                        />
-                    ))}
-                    {profileRoutes.map((route) => (
+                    {[...routes, ...profileRoutes].map((route) => (
                         <Route
                             path={route.path}
                             key={route.path}

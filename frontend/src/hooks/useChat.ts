@@ -1,15 +1,29 @@
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import {
+    UseMutationResult,
+    useInfiniteQuery,
+    useMutation,
+} from "@tanstack/react-query";
 import { createChat, deleteChat, editChat, getChats } from "@/services/chat";
 import { Chat, CreateChat, EditChat } from "@/types/chat";
 import * as y from "yup";
 import queryClient from "@/config/queryClient";
 import toast from "react-hot-toast";
+import { AxiosResponse } from "axios";
 
 const CHATS = ["CHATS"];
 
+/**
+ * Hook to retrieve chats.
+ *
+ * @param {string} token User access token.
+ * @param {number} inclusiveLimit Chat's page range.
+ * @param {boolean} getAllPublic Whether to retrieve
+ * public chats or a user's chats.
+ * @returns {object} The hook.
+ */
 export const useChats = (
     token: string,
-    inclusiveLimit: number = 1,
+    inclusiveLimit: number = 5,
     getAllPublic: boolean = true
 ) => {
     const infiniteChats = useInfiniteQuery<Chat[], Error>({
@@ -37,7 +51,19 @@ export const useChats = (
     return { ...infiniteChats, data: infiniteChats.data?.pages.flat() ?? [] };
 };
 
-export const useDeleteChat = () => {
+/**
+ * Mutation hook to delete a chat.
+ * @returns {object} The hook.
+ */
+export const useDeleteChat = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        chatID: string;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationKey: CHATS,
         mutationFn: ({ chatID, token }: { chatID: string; token: string }) =>
@@ -49,7 +75,19 @@ export const useDeleteChat = () => {
     });
 };
 
-export const useCreateChat = () => {
+/**
+ * Mutation hook to create a chat.
+ * @returns {object} The hook.
+ */
+export const useCreateChat = (): UseMutationResult<
+    Chat,
+    Error,
+    {
+        chat: CreateChat;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationKey: CHATS,
         mutationFn: ({ chat, token }: { chat: CreateChat; token: string }) =>
@@ -61,7 +99,20 @@ export const useCreateChat = () => {
     });
 };
 
-export const useEditChat = () => {
+/**
+ * Mutation hook to edit a chat.
+ * @returns {object} The hook.
+ */
+export const useEditChat = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        chatID: string;
+        chat: EditChat;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationKey: CHATS,
         mutationFn: ({

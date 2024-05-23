@@ -45,13 +45,18 @@ router.get("/", paginationVerifier, async (request, response) => {
         .range(begin, end);
 
     if (error)
-        return response.json({error: "Error retrieving users."});
+        return response.status(400).json({ error: "Error retrieving users." });
 
     const profiles = ProfilesSchema.parse(data);
     return response.json(profiles);
 });
 
-router.get("/:id", async (request, response) => {
+router.get("/:id", tokenExtractor, userExtractor, async (request, response) => {
+    if (request.params.id !== request.user.id)
+        return response
+            .status(400)
+            .json({ error: "You do not authorized to perform this action." });
+
     const data = await cacheData(request.params.id, async () =>
         supabase.from("profiles").select("*").eq("user_id", request.params.id)
     );

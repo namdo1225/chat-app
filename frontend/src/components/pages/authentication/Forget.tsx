@@ -17,12 +17,17 @@ import Captcha from "@/components/Captcha";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import axios from "axios";
 import Logo from "@/components/branding/Logo";
+import { unknownError } from "@/utils/string";
 
 const MSG_INTRO =
     "If your email exists within our system, an email has been sent to ";
 const ACTION_INTRO = "Please click on the link within the email to ";
 
-const Forget = () => {
+/**
+ * Component for /forget page.
+ * @returns {JSX.Element} The React component.
+ */
+const Forget = (): JSX.Element => {
     const [message, setMessage] = useState<string>("");
     const [submit, setSubmit] = useState<string>("reset");
     const [captchaToken, setCaptchaToken] = useState("");
@@ -35,7 +40,7 @@ const Forget = () => {
         validationSchema: y.object().shape({
             email: email,
         }),
-        onSubmit: async (values) => {
+        onSubmit: (values) => {
             try {
                 if (!captchaToken)
                     throw new Error("Captcha needs to be filled out.");
@@ -44,15 +49,9 @@ const Forget = () => {
                 else if (submit === "verify")
                     resendVerify(values.email, captchaToken);
             } catch (e) {
-                if (axios.isAxiosError(e))
-                    setMessage(
-                        e.response?.data.error ??
-                            "An unknown error occured while trying to process your request."
-                    );
-                else
-                    setMessage(
-                        "An unknown error occured while trying to process your request."
-                    );
+                setMessage(
+                    axios.isAxiosError(e) ? e.response?.data : unknownError
+                );
                 console.error(e);
             }
 
