@@ -1,3 +1,7 @@
+/**
+ * Contains general yup schema declaration.
+*/
+
 import { MAX_FILE_SIZE, VALID_IMAGE_TYPES } from "@/config/config";
 import * as y from "yup";
 import { InferType } from "yup";

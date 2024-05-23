@@ -1,3 +1,7 @@
+/**
+ * Contains routes information for the whole website.
+*/
+
 import Login from "@/components/pages/authentication/Login";
 import Register from "@/components/pages/authentication/Register";
 import Forget from "@/components/pages/authentication/Forget";

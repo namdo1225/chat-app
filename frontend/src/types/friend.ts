@@ -1,3 +1,7 @@
+/**
+ * Yup schemas for a friend data.
+*/
+
 import { InferType } from "yup";
 import { ProfileSchema } from "./profile";
 import { setRequiredStr } from "./yup";

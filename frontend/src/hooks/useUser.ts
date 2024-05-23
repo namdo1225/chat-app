@@ -16,7 +16,7 @@ const ALL = ["ALL_PROFILEs"];
  *
  * @param {User | null | undefined} user User access token.
  * @param {Session | null | undefined} session User's website session.
- * @returns {object} The hook.
+ * @returns {UseQueryResult<Profile | null, Error>} The hook.
  */
 export const useOwnProfile = (
     user: User | null | undefined,
@@ -67,5 +67,8 @@ export const useProfiles = (
         enabled: !!enabled,
     });
 
-    return { ...infiniteProfiles, data: infiniteProfiles.data?.pages.flat() };
+    return {
+        ...infiniteProfiles,
+        data: infiniteProfiles.data?.pages.flat() ?? [],
+    };
 };

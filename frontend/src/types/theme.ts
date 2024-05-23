@@ -1,3 +1,7 @@
+/**
+ * Theme definition for MaterialUI.
+*/
+
 import { PaletteColor, SimplePaletteColorOptions } from "@mui/material";
 import { blue, blueGrey } from "@mui/material/colors";
 

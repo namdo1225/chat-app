@@ -1,3 +1,7 @@
+/**
+ * Yup schemas for a message data.
+*/
+
 import { InferType } from "yup";
 import { optionalStr, requiredStr } from "./yup";
 import * as y from "yup";

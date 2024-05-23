@@ -1,6 +1,6 @@
 import { RegistrationType } from "@/types/yup";
 import {
-    EditProfileType,
+    EditProfile,
     Profile,
     ProfileSchema,
     ProfilesSchema,
@@ -73,13 +73,13 @@ const register = async (
 /**
  * Edits a user's profile.
  * @param {string} id User's id.
- * @param {EditProfileType} newProfile User's edited profile
+ * @param {EditProfile} newProfile User's edited profile
  * @param {string} token User access token.
  * @returns {Promise<AxiosResponse<unknown, unknown>>} Axios response promise.
  */
 const editProfile = async (
     id: string,
-    newProfile: EditProfileType,
+    newProfile: EditProfile,
     token: string
 ): Promise<AxiosResponse<unknown, unknown>> => {
     const form = new FormData();
