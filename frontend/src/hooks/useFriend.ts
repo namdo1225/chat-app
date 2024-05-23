@@ -1,4 +1,8 @@
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import {
+    UseMutationResult,
+    useInfiniteQuery,
+    useMutation,
+} from "@tanstack/react-query";
 import {
     addFriend,
     getFriends,
@@ -8,9 +12,17 @@ import {
 import { Friend } from "@/types/friend";
 import queryClient from "@/config/queryClient";
 import * as y from "yup";
+import { AxiosResponse } from "axios";
 
 const FRIENDS = ["FRIENDS"];
 
+/**
+ * Hook to retrieve friends.
+ *
+ * @param {string} token User access token.
+ * @param {number} inclusiveLimit Number of entries to retrieve.
+ * @returns {object} The hook.
+ */
 export const useFriends = (token: string, inclusiveLimit: number = 10) => {
     const infiniteFriends = useInfiniteQuery<Friend[], Error>({
         queryKey: FRIENDS,
@@ -38,7 +50,19 @@ export const useFriends = (token: string, inclusiveLimit: number = 10) => {
     };
 };
 
-export const useAddFriend = () => {
+/**
+ * Mutation hook to add a friend.
+ * @returns {object} The hook.
+ */
+export const useAddFriend = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        id: string;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationKey: FRIENDS,
         mutationFn: ({ id, token }: { id: string; token: string }) =>
@@ -47,7 +71,19 @@ export const useAddFriend = () => {
     });
 };
 
-export const useRemoveFriend = () => {
+/**
+ * Mutation hook to remove a friend.
+ * @returns {object} The hook.
+ */
+export const useRemoveFriend = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        id: string;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationKey: FRIENDS,
         mutationFn: ({ id, token }: { id: string; token: string }) =>
@@ -56,7 +92,19 @@ export const useRemoveFriend = () => {
     });
 };
 
-export const useVerifyFriend = () => {
+/**
+ * Mutation hook to verify a friend's request.
+ * @returns {object} The hook.
+ */
+export const useVerifyFriend = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        id: string;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationKey: FRIENDS,
         mutationFn: ({ id, token }: { id: string; token: string }) =>

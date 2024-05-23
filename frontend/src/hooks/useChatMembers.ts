@@ -1,4 +1,8 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+    useQuery,
+    useMutation,
+    UseMutationResult,
+} from "@tanstack/react-query";
 import {
     getChatMembers,
     joinChatMember,
@@ -8,7 +12,16 @@ import {
 import { ChatMember, ChatMemberProfile } from "@/types/chat_members";
 import toast from "react-hot-toast";
 import queryClient from "@/config/queryClient";
+import { AxiosResponse } from "axios";
 
+/**
+ * Hook to retrieve chat members from a chat.
+ *
+ * @param {string} chatID The chat's ID.
+ * @param {string} token User access token.
+ * @param {boolean} chatMemberExist Whether a chat member exist.
+ * @returns {object} The hook.
+ */
 export const useChatMembers = (
     chatID: string,
     token: string,
@@ -23,6 +36,13 @@ export const useChatMembers = (
     return { ...chatMembers, data: chatMembers.data ?? [] };
 };
 
+/**
+ * Hook to retrieve chat members with profile info from a chat.
+ *
+ * @param {string} chatID The chat's ID.
+ * @param {string} token User access token.
+ * @returns {object} The hook.
+ */
 export const useChatMembersProfile = (chatID: string, token: string) => {
     const chatMembers = useQuery<ChatMemberProfile[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}_PROFILES`],
@@ -33,7 +53,19 @@ export const useChatMembersProfile = (chatID: string, token: string) => {
     return { ...chatMembers, data: chatMembers.data ?? [] };
 };
 
-export const useJoinChatMember = () => {
+/**
+ * Mutation hook to join a chat.
+ * @returns {object} The hook.
+ */
+export const useJoinChatMember = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        chatID: string;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationFn: ({ chatID, token }: { chatID: string; token: string }) =>
             joinChatMember(chatID, token),
@@ -48,7 +80,19 @@ export const useJoinChatMember = () => {
     });
 };
 
-export const useDeleteChatMember = () => {
+/**
+ * Mutation hook to leave a chat.
+ * @returns {object} The hook.
+ */
+export const useDeleteChatMember = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        chatID: string;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationFn: ({ chatID, token }: { chatID: string; token: string }) =>
             deleteChatMember(chatID, token),

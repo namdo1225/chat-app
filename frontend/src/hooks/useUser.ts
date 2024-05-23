@@ -1,5 +1,9 @@
 import { getUser, getUsers } from "@/services/users";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+    UseQueryResult,
+    useInfiniteQuery,
+    useQuery,
+} from "@tanstack/react-query";
 import { Profile } from "@/types/profile";
 import { Session, User } from "@supabase/supabase-js";
 import * as y from "yup";
@@ -17,7 +21,7 @@ const ALL = ["ALL_PROFILEs"];
 export const useOwnProfile = (
     user: User | null | undefined,
     session: Session | null | undefined
-) => {
+): UseQueryResult<Profile | null, Error> => {
     return useQuery<Profile | null>({
         queryKey: OWN,
         queryFn: () => {
