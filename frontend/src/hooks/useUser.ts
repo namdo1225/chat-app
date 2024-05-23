@@ -7,6 +7,13 @@ import * as y from "yup";
 const OWN = ["OWN_PROFILE"];
 const ALL = ["ALL_PROFILEs"];
 
+/**
+ * Hook to retrieve a user's own profile.
+ *
+ * @param {User | null | undefined} user User access token.
+ * @param {Session | null | undefined} session User's website session.
+ * @returns {object} The hook.
+ */
 export const useOwnProfile = (
     user: User | null | undefined,
     session: Session | null | undefined
@@ -25,6 +32,13 @@ export const useOwnProfile = (
     });
 };
 
+/**
+ * Hook to retrieve profiles.
+ *
+ * @param {boolean} enabled Whether to enable the retrieval of data.
+ * @param {number} inclusiveLimit User's page limit.
+ * @returns {object} The hook.
+ */
 export const useProfiles = (
     enabled: boolean = true,
     inclusiveLimit: number = 10
