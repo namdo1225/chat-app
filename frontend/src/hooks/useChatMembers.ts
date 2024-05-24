@@ -44,6 +44,7 @@ export const useChatMembers = (
  * @param {string} token User access token.
  * @returns {object} The hook.
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
 export const useChatMembersProfile = (chatID: string, token: string) => {
     const chatMembers = useQuery<ChatMemberProfile[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}_PROFILES`],
