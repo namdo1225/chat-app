@@ -1,3 +1,7 @@
+/**
+ * Zod schemas for a friend member data.
+*/
+
 import { z } from "zod";
 import { ProfileSchema } from "./profile";
 import { setRequiredStr } from "./zod";

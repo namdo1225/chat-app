@@ -1,3 +1,7 @@
+/**
+ * Provides /contact with a function definition to handle POST requests.
+ */
+
 import "express-async-errors";
 import { Router } from "express";
 import { hcaptchaVerifier } from "@/utils/middleware";
@@ -8,7 +12,7 @@ const router = Router();
 
 router.post("/", hcaptchaVerifier, async (request, response) => {
     const { email, body } = EmailSchema.parse(request.body);
-    const {data, error} = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
         from: "onboarding@resend.dev",
         to: "namdo1204@gmail.com",
         subject: "CA: Chat App Contact Form Email",
@@ -19,10 +23,8 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
         </p>`,
     });
 
-    if (error)
-        return response.status(400);
+    if (error) return response.status(400);
     return response.status(200).send(data);
 });
-
 
 export default router;

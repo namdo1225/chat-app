@@ -1,3 +1,7 @@
+/**
+ * Zod schemas for a profile data.
+*/
+
 import { z } from "zod";
 import { first_name, last_name, setRequiredStr } from "./zod";
 

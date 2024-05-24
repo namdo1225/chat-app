@@ -1,3 +1,7 @@
+/**
+ * Provides /resend with a function definition to handle POST HTTP requests.
+ */
+
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
@@ -13,34 +17,38 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
 
     if (action === "CONFIRMATION") {
         const { data, error } = await supabase.auth.resend({
-            type: 'signup',
+            type: "signup",
             email,
             options: {
-                emailRedirectTo: REDIRECT_URL
-            }
+                emailRedirectTo: REDIRECT_URL,
+            },
         });
 
         if (error) {
             logError(error);
-            return response.status(404).json({error: "Error occured"});
+            return response.status(404).json({ error: "Error occured" });
         }
-    
-        return response.status(200).json({message: data});
+
+        return response.status(200).json({ message: data });
     } else if (action === "RESET PASSWORD") {
-        const { data, error } =
-        await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${REDIRECT_URL}/resetpassword`
-        });
+        const { data, error } = await supabase.auth.resetPasswordForEmail(
+            email,
+            {
+                redirectTo: `${REDIRECT_URL}/resetpassword`,
+            }
+        );
 
         if (error) {
             logError(error);
-            return response.status(404).json({error: "Error occured"});
+            return response.status(404).json({ error: "Error occured" });
         }
-    
-        return response.status(200).json({message: data});
+
+        return response.status(200).json({ message: data });
     }
 
-    return response.status(400).json({error: "action field must be defined in request body."});
+    return response
+        .status(400)
+        .json({ error: "action field must be defined in request body." });
 });
 
 export default router;

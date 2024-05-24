@@ -1,3 +1,7 @@
+/**
+ * Provides /users with function definitions to handle HTTP request.
+ */
+
 import "express-async-errors";
 import { Router } from "express";
 import {
@@ -17,14 +21,10 @@ import {
 } from "@/utils/middleware";
 import { cacheData } from "@/utils/cache";
 import redisClient from "@/utils/redis";
-import z from "zod";
 
 const router = Router();
 
 router.get("/", paginationVerifier, async (request, response) => {
-    const begin = z.coerce.number().parse(request.query.begin);
-    const end = z.coerce.number().parse(request.query.end);
-
     /*const data = await cacheData(
         "ALL_PROFILES",
         async () =>
@@ -42,7 +42,7 @@ router.get("/", paginationVerifier, async (request, response) => {
         .select("*")
         .is("public_profile", true)
         .order("last_name")
-        .range(begin, end);
+        .range(request.begin, request.end);
 
     if (error)
         return response.status(400).json({ error: "Error retrieving users." });

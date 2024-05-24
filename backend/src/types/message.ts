@@ -1,3 +1,7 @@
+/**
+ * Zod schemas for a message data.
+*/
+
 import { setRequiredStr } from "./zod";
 import z from "zod";
 

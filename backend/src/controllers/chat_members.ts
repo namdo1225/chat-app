@@ -1,3 +1,7 @@
+/**
+ * Provides /chat-members with function definitions to handle HTTP request.
+ */
+
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
@@ -42,7 +46,6 @@ router.get(
                 .select("id,chat_id,profiles(*)")
                 .eq("chat_id", chatID)
                 .neq("user_id", request.user.id);
-
 
             if (error) return response.status(400).json(error);
 

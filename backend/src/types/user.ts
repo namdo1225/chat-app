@@ -1,6 +1,19 @@
+/**
+ * Zod schemas for user forms.
+ */
+
 import { z } from "zod";
-import { email, first_name, last_name, password, passwordRefine, posSize } from "./zod";
+import {
+    email,
+    first_name,
+    last_name,
+    password,
+    passwordRefine,
+    posSize,
+} from "./zod";
 import { ProfileSchema } from "./profile";
+
+const posAndSize = { x: posSize, y: posSize, width: posSize, height: posSize };
 
 export const UserRegisterSchema = z
     .object({
@@ -8,10 +21,7 @@ export const UserRegisterSchema = z
         last_name,
         email,
         password,
-        x: posSize,
-        y: posSize,
-        width: posSize,
-        height: posSize,
+        ...posAndSize,
     })
     .superRefine(passwordRefine);
 
@@ -22,10 +32,7 @@ export const UserChangeSchema = z
         email: email.optional(),
         password: password.optional(),
         public_profile: z.coerce.boolean().optional(),
-        x: posSize,
-        y: posSize,
-        width: posSize,
-        height: posSize,
+        ...posAndSize,
     })
     .superRefine(passwordRefine);
 
