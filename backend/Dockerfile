@@ -8,4 +8,4 @@ RUN npm ci --only=production --legacy-peer-deps
 
 ENV DEBUG=express:*
 
-CMD npm build && npm start
+CMD npm run build && npm start
