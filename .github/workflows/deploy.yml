@@ -22,5 +22,4 @@ jobs:
         with:
           service-id: ${{ secrets.FRONTEND_RENDER_SERVICE_ID }}
           api-key: ${{ secrets.RENDER_API_KEY }}
-          wait-for-success: true
         if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip')}}
