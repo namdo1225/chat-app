@@ -1,3 +1,4 @@
+import { logError } from "./logger";
 import redisClient from "./redis";
 
 /**
@@ -27,7 +28,7 @@ const cacheData = async <T>(
             return results;
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         return null;
     }
 };
