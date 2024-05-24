@@ -1,4 +1,10 @@
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import {
+    InfiniteData,
+    UseInfiniteQueryResult,
+    UseMutationResult,
+    useInfiniteQuery,
+    useMutation,
+} from "@tanstack/react-query";
 import * as y from "yup";
 import toast from "react-hot-toast";
 //import queryClient from "@/config/queryClient";
@@ -11,17 +17,32 @@ import {
 import { ChatMsg, ChatMsgSchema, ChatMsgsSchema } from "@/types/message";
 import { useEffect, useState } from "react";
 import { supabase } from "@/config/supabase";
+import { AxiosResponse } from "axios";
 
+type UseMessages = {
+    infinite: UseInfiniteQueryResult<InfiniteData<ChatMsg[], unknown>, Error>;
+    finalData: ChatMsg[];
+};
+
+/**
+ * Hook to retrieve messages.
+ *
+ * @param {string} token User access token.
+ * @param {string} chatID Chat's ID.
+ * @param {number} limit Number of messages to get.
+ * public chats or a user's chats.
+ * @returns {UseMessages} The hook.
+ */
 export const useMessages = (
     token: string,
     chatID: string,
-    limit: number = 7
-) => {
+    limit: number = 10
+): UseMessages => {
     const curTime = new Date().toISOString();
     const [currentMessages, setCurrentMessages] = useState<ChatMsg[]>([]);
 
     useEffect(() => {
-        const listen = () => {
+        const listen = (): (() => Promise<"error" | "ok" | "timed out">) => {
             const msgListener = supabase
                 .channel("custom-all-channel")
                 .on(
@@ -43,6 +64,7 @@ export const useMessages = (
         };
 
         return void listen();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const infiniteMessages = useInfiniteQuery<ChatMsg[], Error>({
@@ -70,7 +92,19 @@ export const useMessages = (
     };
 };
 
-export const useDeleteMessage = () => {
+/**
+ * Mutation hook to delete a message.
+ * @returns {object} The hook.
+ */
+export const useDeleteMessage = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        token: string;
+        msgID: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationFn: ({ token, msgID }: { token: string; msgID: string }) =>
             deleteMessage(token, msgID),
@@ -80,7 +114,26 @@ export const useDeleteMessage = () => {
     });
 };
 
-export const useSendMessage = () => {
+/**
+ * Mutation hook to send a message.
+ * @returns {object} The hook.
+ */
+export const useSendMessage = (): UseMutationResult<
+    {
+        id: string;
+        sent_at: string;
+        text: string;
+        chat_id: string;
+        from_user_id: string;
+    },
+    Error,
+    {
+        token: string;
+        text: string;
+        chatID: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationFn: ({
             token,
@@ -97,7 +150,20 @@ export const useSendMessage = () => {
     });
 };
 
-export const useEditMessage = () => {
+/**
+ * Mutation hook to edit a message.
+ * @returns {object} The hook.
+ */
+export const useEditMessage = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        token: string;
+        msgID: string;
+        text: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationFn: ({
             token,

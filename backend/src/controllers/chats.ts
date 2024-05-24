@@ -1,3 +1,7 @@
+/**
+ * Provides /chats with function definitions to handle HTTP request.
+ */
+
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
@@ -8,7 +12,6 @@ import {
     ChatsSchema,
 } from "@/types/chat";
 import { logError } from "@/utils/logger";
-import z from "zod";
 import {
     tokenExtractor,
     userExtractor,
@@ -21,8 +24,6 @@ const router = Router();
 
 router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (request, response) => {
     const getAllPublic = request.query.getAllPublic === "true";
-    const begin = z.coerce.number().parse(request.query.begin);
-    const end = z.coerce.number().parse(request.query.end);
 
     if (getAllPublic) {
         const { data: chats, error } = await supabase
@@ -30,7 +31,7 @@ router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (reques
             .select("*")
             .eq("public", true)
             .order("name", { ascending: true })
-            .range(begin, end);
+            .range(request.begin, request.end);
 
         if (error) return response.status(400).json(error);
         return response.json(ChatsSchema.parse(chats));
@@ -40,7 +41,7 @@ router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (reques
             .select("*,chats(*)")
             .eq("user_id", request.user.id)
             .order("name", { referencedTable: "chats", ascending: true })
-            .range(begin, end);
+            .range(request.begin, request.end);
 
         const formattedChats = ChatMemberSchema.array().parse(chats);
         const returnedChats = formattedChats.map((member) => member.chats);

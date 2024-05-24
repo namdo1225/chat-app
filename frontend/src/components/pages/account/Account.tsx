@@ -1,4 +1,3 @@
-import { useAuth } from "@/context/AuthProvider";
 import {
     TextField,
     Button,
@@ -19,21 +18,30 @@ import { useFormik } from "formik";
 import * as y from "yup";
 import { email, password } from "@/types/yup";
 import { EditProfileSchema } from "@/types/profile";
-import { SimpleDialogProps } from "@/types/prop";
+import { AuthDialogProps } from "@/types/prop";
+import useAuth from "@/context/useAuth";
 
-const DeleteAccountDialog = ({ onClose, open }: SimpleDialogProps) => {
+/**
+ * Component to delete a user account in a dialog.
+ * Check {@link AuthDialogProps} for prop info.
+ * @returns {JSX.Element} The React component.
+ */
+const DeleteAccountDialog = ({
+    onClose,
+    open,
+    token,
+}: AuthDialogProps): JSX.Element => {
     const [email, setEmail] = useState("");
-    const { user, setNull, session } = useAuth();
+    const { user, setNull } = useAuth();
 
-    const handleClose = () => {
+    const handleClose = (): void => {
         setEmail("");
         onClose();
     };
 
-    const deleteAccount = async () => {
+    const deleteAccount = async (): Promise<void> => {
         try {
-            const token = session?.access_token;
-            if (token && user?.id) {
+            if (user) {
                 const response = await userService.deleteAccount(
                     user.id,
                     token
@@ -94,11 +102,15 @@ const DeleteAccountDialog = ({ onClose, open }: SimpleDialogProps) => {
     );
 };
 
-const Account = () => {
+/**
+ * Component for /account page.
+ * @returns {JSX.Element} The React component.
+ */
+const Account = (): JSX.Element => {
     const [open, setOpen] = useState(false);
     const [passwordChecked, setPasswordChecked] = useState(true);
     const { user, session, signOut } = useAuth();
-    const handleClickOpen = () => {
+    const handleClickOpen = (): void => {
         setOpen(true);
     };
 
@@ -156,8 +168,7 @@ const Account = () => {
                 );
                 if (response.status === 201) {
                     toast.success("You password updated successfully.");
-                    if (passwordChecked)
-                        signOut();
+                    if (passwordChecked) signOut();
                 }
             } catch (e) {
                 console.error(e);
@@ -295,22 +306,26 @@ const Account = () => {
                     </form>
                 </Box>
             </Paper>
-            <Paper sx={{ m: 2, p: 2 }}>
-                <Box className="flex flex-col p-50 m-50">
-                    <Button
-                        onClick={handleClickOpen}
-                        variant="contained"
-                        color="error"
-                        sx={{ my: 2 }}
-                    >
-                        Delete Account
-                    </Button>
-                    <DeleteAccountDialog
-                        open={open}
-                        onClose={() => setOpen(false)}
-                    />
-                </Box>
-            </Paper>
+
+            {session && (
+                <Paper sx={{ m: 2, p: 2 }}>
+                    <Box className="flex flex-col p-50 m-50">
+                        <Button
+                            onClick={handleClickOpen}
+                            variant="contained"
+                            color="error"
+                            sx={{ my: 2 }}
+                        >
+                            Delete Account
+                        </Button>
+                        <DeleteAccountDialog
+                            open={open}
+                            onClose={() => setOpen(false)}
+                            token={session.access_token}
+                        />
+                    </Box>
+                </Paper>
+            )}
         </Box>
     );
 };

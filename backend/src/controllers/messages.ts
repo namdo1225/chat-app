@@ -1,3 +1,7 @@
+/**
+ * Provides /messages with function definitions to handle HTTP request.
+ */
+
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";

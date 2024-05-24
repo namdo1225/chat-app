@@ -1,18 +1,19 @@
+/**
+ * Provides /friends with function definitions to handle HTTP request.
+ */
+
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
 import { logError } from "@/utils/logger";
 import { tokenExtractor, userExtractor, paginationVerifier } from "@/utils/middleware";
 import { BaseFriendSchema, FriendsSchema } from "@/types/friend";
-import z from "zod";
 
 const router = Router();
 const FRIENDS = "friends";
 
 router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (request, response) => {
     const id = request.user.id;
-    const begin = z.coerce.number().parse(request.query.begin);
-    const end = z.coerce.number().parse(request.query.end);
 
     const { data: requestee, error: requesteeError } = await supabase
         .from(FRIENDS)
@@ -21,7 +22,7 @@ router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (reques
         )
         .eq("requester", id)
         .order("last_name", { referencedTable: "profiles", ascending: true })
-        .range(begin, end);
+        .range(request.begin, request.end);
 
     if (requesteeError)
         return response.status(400).json({ error: requesteeError });
@@ -33,7 +34,7 @@ router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (reques
         )
         .eq("requestee", id)
         .order("last_name", { referencedTable: "profiles", ascending: true })
-        .range(begin, end);
+        .range(request.begin, request.end);
 
     if (requesterError)
         return response.status(400).json({ error: requesterError });

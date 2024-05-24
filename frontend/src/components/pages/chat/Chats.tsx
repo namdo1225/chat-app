@@ -25,12 +25,11 @@ import {
 import { Dispatch, Fragment, SetStateAction, useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import AddIcon from "@mui/icons-material/Add";
-import { useAuth } from "@/context/AuthProvider";
 import { useFormik } from "formik";
 import { CreateChatSchema } from "@/types/chat";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { DialogProps } from "@/types/prop";
+import { AuthDialogProps } from "@/types/prop";
 import { EditChatSchema, Chat } from "@/types/chat";
 import InfiniteScroll from "react-infinite-scroll-component";
 import {
@@ -40,7 +39,6 @@ import {
     useEditChat,
 } from "@/hooks/useChat";
 import Loading from "@/components/Loading";
-import { Session } from "@supabase/supabase-js";
 import ReadMoreIcon from "@mui/icons-material/ReadMore";
 import EditIcon from "@mui/icons-material/Edit";
 import { useFriends } from "@/hooks/useFriend";
@@ -63,8 +61,18 @@ import AvatarWrapper from "../AvatarWrapper";
 import { differentDays, formatSupabaseDate } from "@/utils/date";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { ChatMember } from "@/types/chat_members";
+import useAuth from "@/context/useAuth";
 
-const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
+/**
+ * Component to create a chat in a dialog.
+ * Check {@link AuthDialogProps} for prop info.
+ * @returns {JSX.Element} The React component.
+ */
+const CreateChatDialog = ({
+    onClose,
+    open,
+    token,
+}: AuthDialogProps): JSX.Element => {
     const { mutate, isPending } = useCreateChat();
     const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
     const [searchStr, setSearchStr] = useState("");
@@ -100,12 +108,12 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
         },
     });
 
-    const handleClose = () => {
+    const handleClose = (): void => {
         formik.resetForm();
         onClose();
     };
 
-    const addMember = (friendID: string) => {
+    const addMember = (friendID: string): void => {
         if (!formik.values.members.includes(friendID))
             formik.setFieldValue(
                 "members",
@@ -113,7 +121,7 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
             );
     };
 
-    const removeMember = (friendID: string) => {
+    const removeMember = (friendID: string): void => {
         if (formik.values.members.includes(friendID))
             formik.setFieldValue(
                 "members",
@@ -123,8 +131,9 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
 
     return (
         <Dialog disableScrollLock={true} onClose={handleClose} open={open}>
-            {isPending && <Loading padding message="Creating chat..." />}
-            {!isPending && (
+            {isPending ? (
+                <Loading padding={5} message="Creating chat..." />
+            ) : (
                 <form onSubmit={formik.handleSubmit}>
                     <Box
                         sx={{
@@ -204,63 +213,60 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {filteredFriends.map(
-                                        (profile) =>
-                                            !profile.pending && (
-                                                <TableRow key={profile.user_id}>
-                                                    <TableCell
-                                                        sx={{
-                                                            display: "flex",
-                                                            alignItems:
-                                                                "center",
-                                                            gap: 2,
-                                                        }}
-                                                    >
-                                                        <AvatarWrapper
-                                                            profile={profile}
-                                                        />
-                                                        {profile.first_name}{" "}
-                                                        {profile.last_name}
+                                    {filteredFriends.map((profile) => {
+                                        const isMember =
+                                            formik.values.members.includes(
+                                                profile.user_id
+                                            );
+
+                                        return (
+                                            <TableRow key={profile.user_id}>
+                                                <TableCell
+                                                    sx={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: 2,
+                                                    }}
+                                                >
+                                                    <AvatarWrapper
+                                                        profile={profile}
+                                                    />
+                                                    {`${profile.first_name} ${profile.last_name}`}
+                                                </TableCell>
+                                                {!isMember ? (
+                                                    <TableCell>
+                                                        <Tooltip title="Add friend to group">
+                                                            <IconButton
+                                                                onClick={() =>
+                                                                    addMember(
+                                                                        profile.user_id
+                                                                    )
+                                                                }
+                                                                children={
+                                                                    <PersonAddIcon />
+                                                                }
+                                                            />
+                                                        </Tooltip>
                                                     </TableCell>
-                                                    {!formik.values.members.includes(
-                                                        profile.user_id
-                                                    ) && (
-                                                        <TableCell>
-                                                            <Tooltip title="Add friend to group">
-                                                                <IconButton
-                                                                    onClick={() =>
-                                                                        addMember(
-                                                                            profile.user_id
-                                                                        )
-                                                                    }
-                                                                    children={
-                                                                        <PersonAddIcon />
-                                                                    }
-                                                                />
-                                                            </Tooltip>
-                                                        </TableCell>
-                                                    )}
-                                                    {formik.values.members.includes(
-                                                        profile.user_id
-                                                    ) && (
-                                                        <TableCell>
-                                                            <Tooltip title="Remove friend from group">
-                                                                <IconButton
-                                                                    onClick={() =>
-                                                                        removeMember(
-                                                                            profile.user_id
-                                                                        )
-                                                                    }
-                                                                    children={
-                                                                        <PersonRemoveIcon />
-                                                                    }
-                                                                />
-                                                            </Tooltip>
-                                                        </TableCell>
-                                                    )}
-                                                </TableRow>
-                                            )
-                                    )}
+                                                ) : (
+                                                    <TableCell>
+                                                        <Tooltip title="Remove friend from group">
+                                                            <IconButton
+                                                                onClick={() =>
+                                                                    removeMember(
+                                                                        profile.user_id
+                                                                    )
+                                                                }
+                                                                children={
+                                                                    <PersonRemoveIcon />
+                                                                }
+                                                            />
+                                                        </Tooltip>
+                                                    </TableCell>
+                                                )}
+                                            </TableRow>
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
                         </InfiniteScroll>
@@ -287,18 +293,27 @@ const CreateChatDialog = ({ onClose, open, token }: DialogProps) => {
     );
 };
 
-interface EditChatDialogProps extends DialogProps {
+/**
+ * Interface for edit chat dialog props.
+ * Check {@link AuthDialogProps} for more prop info.
+ */
+interface ChatDialogProps extends AuthDialogProps {
     chat: Chat;
     chatMembers?: ChatMember[];
 }
 
+/**
+ * Component to edit a chat in a dialog.
+ * Check {@link ChatDialogProps} for prop info.
+ * @returns {JSX.Element} The React component.
+ */
 const EditChatDialog = ({
     onClose,
     open,
     token,
     chat,
     chatMembers,
-}: EditChatDialogProps) => {
+}: ChatDialogProps): JSX.Element => {
     const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
     const { mutate } = useDeleteChat();
     const { mutate: mutateEdit } = useEditChat();
@@ -329,7 +344,7 @@ const EditChatDialog = ({
         },
         validationSchema: EditChatSchema,
         enableReinitialize: true,
-        onSubmit: async (values) => {
+        onSubmit: (values) => {
             try {
                 mutateEdit({
                     chatID: chat.id,
@@ -340,10 +355,7 @@ const EditChatDialog = ({
                 handleClose();
             } catch (e) {
                 if (axios.isAxiosError(e))
-                    toast.error(
-                        e.response?.data.error ??
-                            "An unknown error occured while editing chat."
-                    );
+                    toast.error("An unknown error occured while editing chat.");
                 console.error(e);
             }
 
@@ -351,12 +363,12 @@ const EditChatDialog = ({
         },
     });
 
-    const handleClose = () => {
+    const handleClose = (): void => {
         formik.resetForm();
         onClose();
     };
 
-    const handleDelete = async () => {
+    const handleDelete = (): void => {
         try {
             if (window.confirm("Do you really want to delete this chat?"))
                 mutate({ chatID: chat.id, token });
@@ -368,7 +380,7 @@ const EditChatDialog = ({
         onClose();
     };
 
-    const addMember = (friendID: string) => {
+    const addMember = (friendID: string): void => {
         if (formik.values.removeMembers.includes(friendID)) {
             formik.setFieldValue(
                 "removeMembers",
@@ -382,7 +394,7 @@ const EditChatDialog = ({
         }
     };
 
-    const removeMember = (friendID: string) => {
+    const removeMember = (friendID: string): void => {
         if (formik.values.addMembers.includes(friendID)) {
             formik.setFieldValue(
                 "addMembers",
@@ -625,15 +637,20 @@ const EditChatDialog = ({
     );
 };
 
+/**
+ * Component to view a chat's details in a dialog.
+ * Check {@link ChatDialogProps} for prop info.
+ * @returns {JSX.Element} The React component.
+ */
 const ChatDetailDialog = ({
     onClose,
     open,
     token,
     chat,
-}: EditChatDialogProps) => {
+}: ChatDialogProps): JSX.Element => {
     const { mutate, isPending } = useDeleteChatMember();
 
-    const handleLeave = async () => {
+    const handleLeave = (): void => {
         try {
             if (window.confirm("Do you really want to leave this chat?"))
                 mutate({ chatID: chat.id, token });
@@ -693,15 +710,24 @@ const ChatDetailDialog = ({
     );
 };
 
+/**
+ * Component to view all of a user's chats and
+ * actions that can be performed on them.
+ * @param {string} props.token The user's supabase access token.
+ * @param {Chat} props.chatToMsg The chat currently selected.
+ * @param {Dispatch<SetStateAction<Chat | null>>} props.setChatToMSg
+ * Setter for selected chat.
+ * @returns {JSX.Element} The React component.
+ */
 const ChatScroll = ({
-    session,
+    token,
     chatToMsg,
     setChatToMSg,
 }: {
-    session: Session;
+    token: string;
     chatToMsg: Chat | null;
     setChatToMSg: Dispatch<SetStateAction<Chat | null>>;
-}) => {
+}): JSX.Element => {
     const { user } = useAuth();
     const [openEditChat, setOpenEditChat] = useState(false);
     const [openViewChat, setOpenViewChat] = useState(false);
@@ -711,7 +737,7 @@ const ChatScroll = ({
         isLoading: loadingChat,
         hasNextPage,
         fetchNextPage,
-    } = useChats(session.access_token, 1, false);
+    } = useChats(token, 1, false);
     const [searchStr, setSearchStr] = useState("");
     const filteredChats = searchStr
         ? chats.filter((chat) => chat.name.includes(searchStr))
@@ -719,20 +745,21 @@ const ChatScroll = ({
 
     if (loadingChat) return <Loading />;
 
-    const closeDialog = () => {
+    const closeDialog = (): void => {
         setOpenEditChat(false);
         setSelectedChat(null);
     };
 
-    const selectEditChat = (chat: Chat) => {
+    const selectEditChat = (chat: Chat): void => {
         setSelectedChat(chat);
         setOpenEditChat(true);
     };
 
-    const selectViewChat = (chat: Chat) => {
+    const selectViewChat = (chat: Chat): void => {
         setSelectedChat(chat);
         setOpenViewChat(true);
     };
+    const canSelect = !!selectedChat && !!user;
 
     return (
         <>
@@ -762,7 +789,7 @@ const ChatScroll = ({
                                     ? chat.description.length < 50
                                         ? chat.description
                                         : `${chat.description.slice(0, 50)}...`
-                                    : "Click on icon to read chat's messages"
+                                    : "Click on the eye icon to read chat's messages"
                             }
                         >
                             <ListItem>
@@ -794,42 +821,39 @@ const ChatScroll = ({
                                 >
                                     <VisibilityIcon />
                                 </IconButton>
-                                {user?.id === chat.owner_id && (
-                                    <IconButton
-                                        sx={{ mx: 2 }}
-                                        onClick={() => selectEditChat(chat)}
-                                        edge="end"
-                                    >
+                                <IconButton
+                                    sx={{ mx: 2 }}
+                                    onClick={() =>
+                                        user?.id === chat.owner_id
+                                            ? selectEditChat(chat)
+                                            : selectViewChat(chat)
+                                    }
+                                    edge="end"
+                                >
+                                    {user?.id === chat.owner_id ? (
                                         <EditIcon />
-                                    </IconButton>
-                                )}
-                                {user?.id !== chat.owner_id && (
-                                    <IconButton
-                                        sx={{ mx: 2 }}
-                                        onClick={() => selectViewChat(chat)}
-                                        edge="end"
-                                    >
+                                    ) : (
                                         <ReadMoreIcon />
-                                    </IconButton>
-                                )}
+                                    )}
+                                </IconButton>
                             </ListItem>
                         </Tooltip>
                     ))}
                 </List>
             </InfiniteScroll>
-            {session && selectedChat && (
+            {canSelect && user.id === selectedChat.owner_id && (
                 <EditChatDialog
                     open={openEditChat}
                     onClose={closeDialog}
-                    token={session.access_token}
+                    token={token}
                     chat={selectedChat}
                 />
             )}
-            {session && selectedChat && (
+            {canSelect && user.id !== selectedChat.owner_id && (
                 <ChatDetailDialog
                     open={openViewChat}
                     onClose={closeDialog}
-                    token={session.access_token}
+                    token={token}
                     chat={selectedChat}
                 />
             )}
@@ -837,6 +861,15 @@ const ChatScroll = ({
     );
 };
 
+/**
+ * Component containing the actual chat portion, messages, and messaging UIs.
+ * @param {string} props.userID The user's ID.
+ * @param {Chat} props.chat The chat currently selected.
+ * @param {string} props.token The user's supabase access token.
+ * @param {string} props.searchStr The search string to filter messages content.
+ * Setter for selected chat.
+ * @returns {JSX.Element} The React component.
+ */
 const ChattingScreen = ({
     userID,
     chat,
@@ -847,7 +880,7 @@ const ChattingScreen = ({
     chat: Chat;
     token: string;
     searchStr: string;
-}) => {
+}): JSX.Element => {
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
     const { finalData, infinite } = useMessages(token, chat.id);
@@ -858,7 +891,7 @@ const ChattingScreen = ({
         ? finalData.filter((msg) => msg.text.includes(searchStr))
         : finalData;
 
-    const sendMessage = () => {
+    const sendMessage = (): void => {
         try {
             mutate({ token, text, chatID: chat.id });
             setText("");
@@ -967,7 +1000,19 @@ const ChattingScreen = ({
     );
 };
 
-const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
+/**
+ * Component containing the chatroom and all standard chatroom UIs.
+ * @param {Chat} props.chat The chat currently selected.
+ * @param {string} props.token The user's supabase access token.
+ * @returns {JSX.Element} The React component.
+ */
+const Chatroom = ({
+    chat,
+    token,
+}: {
+    chat: Chat;
+    token: string;
+}): JSX.Element => {
     const { session } = useAuth();
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const [hideMembers, setHideMembers] = useState(false);
@@ -976,7 +1021,7 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
     const [searchStr, setSearchStr] = useState("");
     const { user } = useAuth();
     const { mutate } = useEditChat();
-    const deleteMember = (userID: string) => {
+    const deleteMember = (userID: string): void => {
         try {
             mutate({
                 chatID: chat.id,
@@ -1136,12 +1181,18 @@ const Chatroom = ({ chat, token }: { chat: Chat; token: string }) => {
     );
 };
 
-const Chats = () => {
+/**
+ * Component containing the main page for /chats.
+ * @returns {JSX.Element} The React component.
+ */
+const Chats = (): JSX.Element => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [openCreateChat, setOpenCreateChat] = useState(false);
     const [chatToMsg, setChatToMSg] = useState<Chat | null>(null);
 
     const { session } = useAuth();
+
+    if (!session) return <Loading />;
 
     return (
         <Box>
@@ -1182,23 +1233,19 @@ const Chats = () => {
                         overflow: "auto",
                     }}
                 >
-                    {session && (
-                        <>
-                            <Typography>Chats</Typography>
-                            <ChatScroll
-                                chatToMsg={chatToMsg}
-                                setChatToMSg={setChatToMSg}
-                                session={session}
-                            />
-                            <Divider />
-                            <Button
-                                onClick={() => setOpenCreateChat(true)}
-                                endIcon={<AddIcon />}
-                            >
-                                Create a chat
-                            </Button>
-                        </>
-                    )}
+                    <Typography>Chats</Typography>
+                    <ChatScroll
+                        chatToMsg={chatToMsg}
+                        setChatToMSg={setChatToMSg}
+                        token={session.access_token}
+                    />
+                    <Divider />
+                    <Button
+                        onClick={() => setOpenCreateChat(true)}
+                        endIcon={<AddIcon />}
+                    >
+                        Create a chat
+                    </Button>
                     <Button
                         onClick={() => setOpenDrawer(false)}
                         endIcon={<ExitToAppIcon />}
@@ -1229,22 +1276,13 @@ const Chats = () => {
                     </Typography>
                 </Paper>
             ) : (
-                <>
-                    {session && (
-                        <Chatroom
-                            chat={chatToMsg}
-                            token={session.access_token}
-                        />
-                    )}
-                </>
+                <Chatroom chat={chatToMsg} token={session.access_token} />
             )}
-            {session && (
-                <CreateChatDialog
-                    open={openCreateChat}
-                    onClose={() => setOpenCreateChat(false)}
-                    token={session.access_token}
-                />
-            )}
+            <CreateChatDialog
+                open={openCreateChat}
+                onClose={() => setOpenCreateChat(false)}
+                token={session.access_token}
+            />
         </Box>
     );
 };

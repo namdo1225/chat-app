@@ -6,13 +6,18 @@ export {};
 
 declare global {
     namespace Express {
+        /**
+         * Additional fields are declared for this application.
+         */
         interface Request {
             token: string | null | undefined;
             user: User;
             fileData: Readable;
             fileExtension: string;
-            chat: Chat
-            profile: Profile,
+            chat: Chat;
+            profile: Profile;
+            begin: number;
+            end: number;
         }
     }
 }

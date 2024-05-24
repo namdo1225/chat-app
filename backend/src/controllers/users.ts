@@ -1,3 +1,7 @@
+/**
+ * Provides /users with function definitions to handle HTTP request.
+ */
+
 import "express-async-errors";
 import { Router } from "express";
 import {
@@ -17,14 +21,10 @@ import {
 } from "@/utils/middleware";
 import { cacheData } from "@/utils/cache";
 import redisClient from "@/utils/redis";
-import z from "zod";
 
 const router = Router();
 
 router.get("/", paginationVerifier, async (request, response) => {
-    const begin = z.coerce.number().parse(request.query.begin);
-    const end = z.coerce.number().parse(request.query.end);
-
     /*const data = await cacheData(
         "ALL_PROFILES",
         async () =>
@@ -42,16 +42,21 @@ router.get("/", paginationVerifier, async (request, response) => {
         .select("*")
         .is("public_profile", true)
         .order("last_name")
-        .range(begin, end);
+        .range(request.begin, request.end);
 
     if (error)
-        return response.json({error: "Error retrieving users."});
+        return response.status(400).json({ error: "Error retrieving users." });
 
     const profiles = ProfilesSchema.parse(data);
     return response.json(profiles);
 });
 
-router.get("/:id", async (request, response) => {
+router.get("/:id", tokenExtractor, userExtractor, async (request, response) => {
+    if (request.params.id !== request.user.id)
+        return response
+            .status(400)
+            .json({ error: "You do not authorized to perform this action." });
+
     const data = await cacheData(request.params.id, async () =>
         supabase.from("profiles").select("*").eq("user_id", request.params.id)
     );

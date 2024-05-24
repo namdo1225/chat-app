@@ -15,8 +15,13 @@ import Notifications from "@mui/icons-material/Notifications";
 import { password } from "@/types/yup";
 import * as y from "yup";
 import Logo from "@/components/branding/Logo";
+import Loading from "@/components/Loading";
 
-const ResetPassword = () => {
+/**
+ * Component for /resetpassword page.
+ * @returns {JSX.Element} The React component.
+ */
+const ResetPassword = (): JSX.Element => {
     const [message, setMessage] = useState<string>("");
     const [reset, setReset] = useState(false);
 
@@ -34,7 +39,8 @@ const ResetPassword = () => {
                 });
 
                 if (data) setMessage("Password updated successfully!");
-                if (error) setMessage("There was an error updating your password.");
+                if (error)
+                    setMessage("There was an error updating your password.");
             } catch (e) {
                 setMessage(
                     "An error occured while trying to reset your password."
@@ -44,14 +50,12 @@ const ResetPassword = () => {
     });
 
     useEffect(() => {
-        supabase.auth.onAuthStateChange(async (event, _session) => {
-            if (event == "PASSWORD_RECOVERY")
-                setReset(true);
+        supabase.auth.onAuthStateChange((event, _session): void => {
+            if (event == "PASSWORD_RECOVERY") setReset(true);
         });
     }, []);
 
-    if (!reset)
-        return <></>
+    if (!reset) return <Loading />;
 
     return (
         <Paper sx={{ m: 2, p: 2 }}>

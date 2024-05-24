@@ -1,29 +1,55 @@
 import { RegistrationType } from "@/types/yup";
 import {
-    EditProfileType,
+    EditProfile,
+    Profile,
     ProfileSchema,
     ProfilesSchema,
 } from "@/types/profile";
 import { createCaptchaHeader, createAuthHeader } from "./common";
 import apiClient from "@/config/apiClient";
+import { AxiosResponse } from "axios";
 
 const api = "users";
 const resendApi = "resend";
 const logoutApi = "logout";
 
-const getUsers = async (begin: number, end: number) => {
+/**
+ * Retrieves users.
+ * @param {number} begin Beginning index for user range.
+ * @param {number} end Inclusive end index for user range.
+ * @returns {Profile[]} The chat members data.
+ */
+const getUsers = async (begin: number, end: number): Promise<Profile[]> => {
     const request = await apiClient.get(`/${api}?begin=${begin}&end=${end}`);
     const profiles = await ProfilesSchema.validate(request.data);
     return profiles;
 };
 
-const getUser = async (id: string) => {
-    const request = await apiClient.get(`/${api}/${id}`);
+/**
+ * Retrieves a user's profile.
+ * @param {string} id The user's id.
+ * @param {string} token User access token.
+ * @returns {Profile} The chat members data.
+ */
+const getUser = async (id: string, token: string): Promise<Profile> => {
+    const request = await apiClient.get(
+        `/${api}/${id}`,
+        createAuthHeader(token)
+    );
     const profile = await ProfileSchema.validate(request.data);
     return profile;
 };
 
-const register = async (newUser: RegistrationType, captchaToken: string) => {
+/**
+ * Registers a user.
+ * @param {RegistrationType} newUser New user's info.
+ * @param {string} captchaToken New user's captcha token.
+ * @returns {Promise<AxiosResponse<unknown, unknown>>} Axios response promise.
+ */
+const register = async (
+    newUser: RegistrationType,
+    captchaToken: string
+): Promise<AxiosResponse<unknown, unknown>> => {
     const form = new FormData();
     form.append("first_name", newUser.firstName);
     form.append("last_name", newUser.lastName);
@@ -44,11 +70,18 @@ const register = async (newUser: RegistrationType, captchaToken: string) => {
     return request;
 };
 
+/**
+ * Edits a user's profile.
+ * @param {string} id User's id.
+ * @param {EditProfile} newProfile User's edited profile
+ * @param {string} token User access token.
+ * @returns {Promise<AxiosResponse<unknown, unknown>>} Axios response promise.
+ */
 const editProfile = async (
     id: string,
-    newProfile: EditProfileType,
+    newProfile: EditProfile,
     token: string
-) => {
+): Promise<AxiosResponse<unknown, unknown>> => {
     const form = new FormData();
 
     if (newProfile.firstName) form.append("first_name", newProfile.firstName);
@@ -62,10 +95,7 @@ const editProfile = async (
 
     if (newProfile.email) form.append("email", newProfile.email);
     if (newProfile.password) form.append("password", newProfile.password);
-    if (
-        newProfile.publicProfile === false ||
-        newProfile.publicProfile === true
-    )
+    if (newProfile.publicProfile === false || newProfile.publicProfile === true)
         form.append("public_profile", String(newProfile.publicProfile));
 
     const request = await apiClient.put(
@@ -76,8 +106,17 @@ const editProfile = async (
     return request;
 };
 
-const resendVerify = async (email: string, captchaToken: string) => {
-    await apiClient.post(
+/**
+ * Resends verification email.
+ * @param {string} email Visitor's email.
+ * @param {string} captchaToken Visitor's captcha token.
+ * @returns {Promise<AxiosResponse<unknown, unknown>>} Axios response promise.
+ */
+const resendVerify = async (
+    email: string,
+    captchaToken: string
+): Promise<AxiosResponse<unknown, unknown>> => {
+    return await apiClient.post(
         `/${resendApi}`,
         {
             action: "CONFIRMATION",
@@ -87,8 +126,17 @@ const resendVerify = async (email: string, captchaToken: string) => {
     );
 };
 
-const resetPassword = async (email: string, captchaToken: string) => {
-    await apiClient.post(
+/**
+ * Resets user's password.
+ * @param {string} email User's email.
+ * @param {string} captchaToken User's captcha token.
+ * @returns {Promise<AxiosResponse<unknown, unknown>>} Axios response promise.
+ */
+const resetPassword = async (
+    email: string,
+    captchaToken: string
+): Promise<AxiosResponse<unknown, unknown>> => {
+    return await apiClient.post(
         `/${resendApi}`,
         {
             action: "RESET PASSWORD",
@@ -98,11 +146,27 @@ const resetPassword = async (email: string, captchaToken: string) => {
     );
 };
 
-const deleteAccount = async (id: string, token: string) => {
+/**
+ * Deletes an account.
+ * @param {string} id User's id.
+ * @param {string} token User access token.
+ * @returns {Promise<AxiosResponse<unknown, unknown>>} Axios response promise.
+ */
+const deleteAccount = async (
+    id: string,
+    token: string
+): Promise<AxiosResponse<unknown, unknown>> => {
     return await apiClient.delete(`/${api}/${id}`, createAuthHeader(token));
 };
 
-const logout = async (token: string) => {
+/**
+ * Logout of the web app.
+ * @param {string} token User access token.
+ * @returns {Promise<AxiosResponse<unknown, unknown>>} Axios response promise.
+ */
+const logout = async (
+    token: string
+): Promise<AxiosResponse<unknown, unknown>> => {
     const response = await apiClient.post(
         `/${logoutApi}`,
         {},

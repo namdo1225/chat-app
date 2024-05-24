@@ -6,15 +6,19 @@ import { Toaster } from "react-hot-toast";
 import { QueryClientProvider } from "@tanstack/react-query";
 import queryClient from "@/config/queryClient";
 
-const App = () => {
+/**
+ * App component serving as the entry component for the web app.
+ * @returns {JSX.Element} The React component.
+ */
+const App = (): JSX.Element => {
     return (
         <QueryClientProvider client={queryClient}>
-                <BrowserRouter>
-                    <Toaster />
-                    <AuthProvider>
-                        <MainRoutes />
-                    </AuthProvider>
-                </BrowserRouter>
+            <BrowserRouter>
+                <Toaster />
+                <AuthProvider>
+                    <MainRoutes />
+                </AuthProvider>
+            </BrowserRouter>
         </QueryClientProvider>
     );
 };

@@ -1,3 +1,7 @@
+/**
+ * Yup schemas for a profile data.
+*/
+
 import { InferType } from "yup";
 import { RegistrationSchema, optionalStr, requiredStr } from "./yup";
 import * as y from "yup";
@@ -9,7 +13,7 @@ export const EditProfileSchema = RegistrationSchema.shape({
     publicProfile: y.bool().optional(),
 });
 
-export type EditProfileType = InferType<typeof EditProfileSchema>;
+export type EditProfile = InferType<typeof EditProfileSchema>;
 
 export const ProfileSchema = y.object().shape({
     // id: requiredStr,
@@ -19,7 +23,7 @@ export const ProfileSchema = y.object().shape({
     profile_photo: requiredStr,
     user_id: requiredStr,
     public_profile: y.bool().required(),
-})
+});
 
 export const ProfilesSchema = y.array().of(ProfileSchema).required();
 

@@ -1,9 +1,7 @@
-import { useState, useEffect, useMemo, Dispatch } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AuthError, Session, User } from "@supabase/supabase-js";
-import { createContext, useContext } from "react";
 import { supabase } from "@/config/supabase";
 import { logout } from "@/services/users";
-import { Profile } from "@/types/profile";
 import { useOwnProfile } from "@/hooks/useUser";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import {
@@ -14,60 +12,26 @@ import {
     PALETTE_COLORS,
     PaletteColors,
 } from "@/types/theme";
-
-const AuthContext = createContext<{
-    session: Session | null | undefined;
-    user: User | null | undefined;
-    profile: Profile | null | undefined;
-    signInWithPassword: (
-        email: string,
-        password: string
-    ) => Promise<AuthError | null>;
-    signOut: () => void;
-    setNull: () => void;
-    refreshToken: () => Promise<void>;
-    setThemeMode: Dispatch<React.SetStateAction<"dark" | "light">>;
-    themeMode: string;
-    chatTheme: ChatMessageTheme;
-    handleChatTheme: () => void;
-}>({
-    session: null,
-    user: null,
-    profile: null,
-    signOut: async () => {},
-    signInWithPassword: async () => {
-        return null;
-    },
-    setNull: () => {},
-    refreshToken: async () => {},
-    setThemeMode: () => {},
-    themeMode: "light",
-    chatTheme: {
-        fromMessageBox: "secondary.main",
-        toMessageBox: "info.main",
-        fromMessageText: undefined,
-        toMessageText: undefined,
-    },
-    handleChatTheme: () => {},
-});
+import { AuthContext, CAAuth } from "./AuthContext";
 
 /**
+ * The auth provider component.
+ * Thank you to:
+ * https://github.com/daniellaera/react-supabase-auth-provider/blob/main/src/hooks/Auth.tsx
  *
- * Thank you to: https://github.com/daniellaera/react-supabase-auth-provider/blob/main/src/hooks/Auth.tsx
- *
- * @param param0
+ * @param {JSX.Element} props.children The children for this component.
  * @returns
  */
-const AuthProvider = ({ children }: { children: JSX.Element }) => {
+const AuthProvider = ({ children }: { children: JSX.Element }): JSX.Element => {
     const [user, setUser] = useState<User | null>();
     const [session, setSession] = useState<Session | null>();
-    const { data: profile } = useOwnProfile(user);
+    const { data: profile } = useOwnProfile(user, session);
     const [themeMode, setThemeMode] = useState<"light" | "dark">(() => {
         const theme = localStorage.getItem("theme");
         return theme === "light" || theme === "dark" ? theme : "light";
     });
 
-    const handleChatTheme = () => {
+    const handleChatTheme = (): void => {
         const fromMessageBox = PALETTE_COLORS.includes(
             localStorage.getItem("fromMessageBox") as PaletteColors
         )
@@ -119,15 +83,17 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
                     ...color,
                 },
             }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [themeMode]
     );
 
-    const signOut = async () => {
+    const signOut = async (): Promise<void> => {
         try {
             let token = null;
             if (session) token = session.access_token;
 
             setNull();
+            localStorage.clear();
             if (token) await logout(token);
             await supabase.auth.signOut();
         } catch (e) {
@@ -135,12 +101,15 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
         }
     };
 
-    const setNull = () => {
+    const setNull = (): void => {
         setUser(null);
         setSession(null);
     };
 
-    const signIn = async (email: string, password: string) => {
+    const signIn = async (
+        email: string,
+        password: string
+    ): Promise<AuthError | null> => {
         try {
             const { error } = await supabase.auth.signInWithPassword({
                 email,
@@ -152,7 +121,7 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
         }
     };
 
-    const refreshToken = async () => {
+    const refreshToken = async (): Promise<void> => {
         try {
             const { data, error } = await supabase.auth.refreshSession();
             const { session: newSession, user: newUser } = data;
@@ -165,7 +134,7 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
     };
 
     useEffect(() => {
-        const getSupabase = () => {
+        const getSupabase = (): (() => void) => {
             supabase.auth
                 .getSession()
                 .then(({ data: { session }, error: supabaseError }) => {
@@ -194,7 +163,7 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
         return undefined;
     }, []);
 
-    const value = {
+    const value: CAAuth = {
         session,
         user,
         profile,
@@ -217,10 +186,6 @@ const AuthProvider = ({ children }: { children: JSX.Element }) => {
             </CssBaseline>
         </ThemeProvider>
     );
-};
-
-export const useAuth = () => {
-    return useContext(AuthContext);
 };
 
 export default AuthProvider;

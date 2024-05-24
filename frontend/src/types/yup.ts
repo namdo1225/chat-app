@@ -1,10 +1,17 @@
+/**
+ * Contains general yup schema declaration.
+*/
+
 import { MAX_FILE_SIZE, VALID_IMAGE_TYPES } from "@/config/config";
 import * as y from "yup";
 import { InferType } from "yup";
 
 export const email = y.string().email().required("An email is required");
-export const setRequiredStr = (msg: string = "This field is required") => y.string().required(msg);
-export const optionalStr = y.string().optional();
+export const setRequiredStr = (
+    msg: string = "This field is required"
+): y.StringSchema<string, y.AnyObject, undefined, ""> =>
+    y.string().required(msg);
+export const optionalStr = y.string().optional().nullable();
 export const requiredStr = y.string().required();
 
 export const password = setRequiredStr("A password is required").matches(

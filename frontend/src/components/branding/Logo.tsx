@@ -1,6 +1,14 @@
 import { Box } from "@mui/material";
 import { Link } from "react-router-dom";
 
+/**
+ * Logo component for CAChat
+ * @param {boolean | undefined} props.onNav Whether the logo
+ * is on the navigation bar.
+ * @param {object | undefined} props.display The MaterialUI style for the logo.
+ * @param {string | undefined} props.link The link for the navigation bar.
+ * @returns {JSX.Element} The React component.
+ */
 const Logo = ({
     onNav = false,
     display,
@@ -9,7 +17,7 @@ const Logo = ({
     onNav?: boolean;
     display?: object;
     link?: string;
-}) => {
+}): JSX.Element => {
     const content = (
         <Box
             component="img"

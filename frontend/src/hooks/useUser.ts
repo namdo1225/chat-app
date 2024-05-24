@@ -1,43 +1,52 @@
 import { getUser, getUsers } from "@/services/users";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+    UseQueryResult,
+    useInfiniteQuery,
+    useQuery,
+} from "@tanstack/react-query";
 import { Profile } from "@/types/profile";
-import { User } from "@supabase/supabase-js";
+import { Session, User } from "@supabase/supabase-js";
 import * as y from "yup";
 
 const OWN = ["OWN_PROFILE"];
 const ALL = ["ALL_PROFILEs"];
 
-export const useOwnProfile = (user: User | null | undefined) => {
+/**
+ * Hook to retrieve a user's own profile.
+ *
+ * @param {User | null | undefined} user User access token.
+ * @param {Session | null | undefined} session User's website session.
+ * @returns {UseQueryResult<Profile | null, Error>} The hook.
+ */
+export const useOwnProfile = (
+    user: User | null | undefined,
+    session: Session | null | undefined
+): UseQueryResult<Profile | null, Error> => {
     return useQuery<Profile | null>({
         queryKey: OWN,
         queryFn: () => {
-            if (user && user.id) return getUser(user.id);
+            if (user && user.id && session)
+                return getUser(user.id, session.access_token);
             return null;
         },
         refetchOnWindowFocus(_query) {
             return false;
         },
-        enabled: !!user && !!user.id,
+        enabled: !!user && !!user.id && !!session,
     });
 };
 
-/*
-NON-PAGINATION VERSION
-export const useProfiles = (enabled: boolean = true) => {
-    return useQuery<Profile[] | undefined>({
-        queryKey: ALL,
-        queryFn: () => getUsers(),
-        refetchOnWindowFocus(_query) {
-            return false;
-        },
-        enabled
-    });
-};
-*/
-
+/**
+ * Hook to retrieve profiles.
+ *
+ * @param {boolean} enabled Whether to enable the retrieval of data.
+ * @param {number} inclusiveLimit User's page limit.
+ * @returns {object} The hook.
+ */
 export const useProfiles = (
     enabled: boolean = true,
-    inclusiveLimit: number = 1
+    inclusiveLimit: number = 10
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
 ) => {
     const infiniteProfiles = useInfiniteQuery<Profile[], Error>({
         queryKey: ALL,
@@ -59,5 +68,8 @@ export const useProfiles = (
         enabled: !!enabled,
     });
 
-    return { ...infiniteProfiles, data: infiniteProfiles.data?.pages.flat() };
+    return {
+        ...infiniteProfiles,
+        data: infiniteProfiles.data?.pages.flat() ?? [],
+    };
 };

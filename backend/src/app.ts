@@ -1,3 +1,7 @@
+/**
+ * Contains the express application and its API routings.
+*/
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";

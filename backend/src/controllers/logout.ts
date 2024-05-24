@@ -1,3 +1,7 @@
+/**
+ * Provides /logout with a function definition to handle POST requests.
+ */
+
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";

@@ -1,3 +1,7 @@
+/**
+ * Zod schemas for general purpose parsing.
+*/
+
 import { z } from "zod";
 
 export const setRequiredStr = (
@@ -38,10 +42,10 @@ export const passwordRefine = (
         else if (containsSpecialChar(ch)) countOfSpecialChar++;
     }
     if (
-        countOfLowerCase < 1 ||
-        countOfUpperCase < 1 ||
-        countOfSpecialChar < 1 ||
-        countOfNumbers < 1
+        !countOfLowerCase ||
+        !countOfUpperCase ||
+        !countOfSpecialChar ||
+        !countOfNumbers
     ) {
         checkPassComplexity.addIssue({
             code: "custom",

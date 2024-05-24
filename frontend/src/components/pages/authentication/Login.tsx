@@ -11,16 +11,29 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
-import { useAuth } from "@/context/AuthProvider";
 import { useState } from "react";
-import { LoginSchema } from "@/types/yup";
+import { LoginSchema, optionalStr } from "@/types/yup";
 import { useFormik } from "formik";
 import Logo from "@/components/branding/Logo";
+import * as y from "yup";
+import useAuth from "@/context/useAuth";
 
-const Login = () => {
+/**
+ * Component for the /login page.
+ * @returns {JSX.Element} The React component.
+ */
+const Login = (): JSX.Element => {
     const { signInWithPassword } = useAuth();
     const { state } = useLocation();
-    const email: string = state?.email || null;
+
+    const email = state
+        ? y
+              .object()
+              .shape({ email: optionalStr })
+              .nullable()
+              .validateSync(state)?.email
+        : "";
+
     const [loginError, setLoginError] = useState<string>("");
     const navigate = useNavigate();
 

@@ -12,22 +12,29 @@ import { useProfiles } from "@/hooks/useUser";
 import Loading from "@/components/Loading";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useAuth } from "@/context/AuthProvider";
-import { Session, User } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { useChats } from "@/hooks/useChat";
 import { Chat } from "@/types/chat";
 import { useJoinChatMember } from "@/hooks/useChatMembers";
+import useAuth from "@/context/useAuth";
 
+/**
+ * Component to view all public chats in a grid.
+ * @param {User} props.user The user's info.
+ * @param {string} props.token The user's supabase access token.
+ * @param {Chat[]} props.chats The chats info for the grid.
+ * @returns {JSX.Element} The React component.
+ */
 const GroupGrid = ({
     user,
-    session,
+    token,
     chats,
 }: {
     user: User;
-    session: Session;
+    token: string;
     chats: Chat[];
-}) => {
-    const { fetchNextPage, hasNextPage } = useChats(session.access_token);
+}): JSX.Element => {
+    const { fetchNextPage, hasNextPage } = useChats(token);
     const { mutate, isPending } = useJoinChatMember();
 
     return (
@@ -46,7 +53,7 @@ const GroupGrid = ({
             <Grid container p={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
                 {chats.map(
                     (chat) =>
-                        chat.owner_id !== user?.id && (
+                        chat.owner_id !== user.id && (
                             <Grid item key={chat.id} sx={{ my: 2 }}>
                                 <Paper sx={{ p: 2 }}>
                                     <Typography
@@ -63,9 +70,9 @@ const GroupGrid = ({
                                             {chat.description.length < 50
                                                 ? chat.description
                                                 : `${chat.description.slice(
-                                                      0,
-                                                      50
-                                                  )}...`}
+                                                    0,
+                                                    50
+                                                )}...`}
                                         </Typography>
                                     )}
                                     {!isPending && (
@@ -74,7 +81,7 @@ const GroupGrid = ({
                                                 onClick={() =>
                                                     mutate({
                                                         chatID: chat.id,
-                                                        token: session.access_token,
+                                                        token,
                                                     })
                                                 }
                                                 children={<PersonAddIcon />}
@@ -90,7 +97,11 @@ const GroupGrid = ({
     );
 };
 
-const Discover = () => {
+/**
+ * Component for /discover page that contains info about public chats.
+ * @returns {JSX.Element} The React component.
+ */
+const Discover = (): JSX.Element => {
     const { user, session } = useAuth();
     const [searchStr, setSearchStr] = useState("");
 
@@ -122,7 +133,7 @@ const Discover = () => {
                 {user && session && filteredChats && (
                     <GroupGrid
                         user={user}
-                        session={session}
+                        token={session.access_token}
                         chats={filteredChats}
                     />
                 )}

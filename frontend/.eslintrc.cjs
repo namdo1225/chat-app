@@ -9,9 +9,9 @@ module.exports = {
     ignorePatterns: ["dist", ".eslintrc.cjs"],
     parser: "@typescript-eslint/parser",
     parserOptions: {
-        project: ["./tsconfig.json"]
+        project: ["./tsconfig.json"],
     },
-    plugins: ["react-refresh", "@typescript-eslint"],
+    plugins: ["react-refresh", "@typescript-eslint", "@stylistic/js"],
     rules: {
         "react-refresh/only-export-components": [
             "warn",
@@ -22,6 +22,9 @@ module.exports = {
         "new-cap": "error",
         "no-unused-vars": "off",
         "require-jsdoc": "error",
+        "@stylistic/js/no-multi-spaces": ["error"],
+        "@stylistic/js/no-multiple-empty-lines": ["error"],
+        "@stylistic/js/no-trailing-spaces": ["error"],
         "@typescript-eslint/semi": ["error"],
         "@typescript-eslint/require-await": "error",
         "@typescript-eslint/explicit-function-return-type": "error",
@@ -34,7 +37,6 @@ module.exports = {
             { argsIgnorePattern: "^_" },
         ],
         "no-case-declarations": "off",
-        indent: ["error", 4],
         "max-len": [
             "warn",
             {

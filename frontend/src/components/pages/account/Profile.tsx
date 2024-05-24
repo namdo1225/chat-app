@@ -19,12 +19,13 @@ import * as userService from "@/services/users";
 import axios from "axios";
 import AvatarEditor from "react-avatar-editor";
 import Dropzone from "react-dropzone";
-import { useAuth } from "@/context/AuthProvider";
 import toast from "react-hot-toast";
 import ChatAvatarEditor from "@/components/ChatAvatarEditor";
 import Message from "@/components/pages/chat/Message";
 import { CHAT_THEMES_KEY, ChatThemeKey, PALETTE_COLORS } from "@/types/theme";
-import { optionalStr, setRequiredStr } from "@/types/yup";
+import { optionalStr } from "@/types/yup";
+import { camelCaseToWords } from "@/utils/string";
+import useAuth from "@/context/useAuth";
 
 const fields = [
     {
@@ -37,18 +38,17 @@ const fields = [
     },
 ];
 
-const camelCaseToWords = (s: string) => {
-    const result = s.replace(/([A-Z])/g, " $1");
-    return result.charAt(0).toUpperCase() + result.slice(1);
-};
-
-const Profile = () => {
+/**
+ * Component for /profile page.
+ * @returns {JSX.Element} The React component.
+ */
+const Profile = (): JSX.Element => {
     const ref = useRef<HTMLInputElement>(null);
     const editorRef = useRef<AvatarEditor>(null);
     const { session, user, refreshToken, profile, chatTheme, handleChatTheme } =
         useAuth();
 
-    const clearUpload = () => {
+    const clearUpload = (): void => {
         if (ref.current) {
             formik.setFieldValue("files", undefined);
             ref.current.value = "";
@@ -101,9 +101,7 @@ const Profile = () => {
                 }
             } catch (e) {
                 if (axios.isAxiosError(e))
-                    toast.error(
-                        e.response?.data.error ?? "An unknown error occured."
-                    );
+                    toast.error("An unknown error occured.");
                 console.error(e);
             }
         },
@@ -113,7 +111,7 @@ const Profile = () => {
         target,
     }: {
         target: EventTarget & HTMLInputElement;
-    }) => {
+    }): Promise<void> => {
         const error = await formik.setFieldValue(
             "files",
             target.files ? target.files[0] : undefined
@@ -121,7 +119,7 @@ const Profile = () => {
         if (error && "files" in error) clearUpload();
     };
 
-    const handleDrop = async (dropped: File[]) => {
+    const handleDrop = async (dropped: File[]): Promise<void> => {
         const error = await formik.setFieldValue(
             "files",
             dropped ? dropped[0] : undefined
@@ -129,12 +127,10 @@ const Profile = () => {
         if (error && "files" in error) clearUpload();
     };
 
-    const handleChatThemeChange = (value: unknown, key: ChatThemeKey) => {
+    const handleChatThemeChange = (value: unknown, key: ChatThemeKey): void => {
         const finalValue = optionalStr.validateSync(value);
-        if (finalValue)
-            localStorage.setItem(key, finalValue);
-        else
-            localStorage.removeItem(key);
+        if (finalValue) localStorage.setItem(key, finalValue);
+        else localStorage.removeItem(key);
 
         handleChatTheme();
     };

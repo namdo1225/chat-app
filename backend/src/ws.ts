@@ -2,6 +2,7 @@ import * as WebSocket from "ws";
 import * as http from "http";
 import app from "./app";
 import { HomeMsg, HomeMsgSchema } from "./types/message";
+import { logError } from "./utils/logger";
 
 export const server = http.createServer(app);
 
@@ -21,7 +22,7 @@ wss.on("connection", (ws: WebSocket) => {
             const msg = HomeMsgSchema.parse(JSON.parse(message));
             broadcast(msg, ws);
         } catch (error) {
-            console.error(error);
+            logError(error);
         }
     });
 });

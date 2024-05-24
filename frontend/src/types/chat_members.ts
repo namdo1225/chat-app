@@ -1,3 +1,7 @@
+/**
+ * Yup schemas for a chat member data.
+*/
+
 import { InferType } from "yup";
 import { requiredStr } from "./yup";
 import * as y from "yup";

@@ -4,7 +4,11 @@ import { useRef, useState } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import Captcha from "../Captcha";
 
-const Home = () => {
+/**
+ * Component for /home page.
+ * @returns {JSX.Element} The React component.
+ */
+const Home = (): JSX.Element => {
     const [tempChatter, setTempChatter] = useState("");
     const [chatter, setChatter] = useState("");
     const [captcha, setCaptchaToken] = useState("");

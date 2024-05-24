@@ -1,4 +1,8 @@
-import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import {
+    UseMutationResult,
+    useInfiniteQuery,
+    useMutation,
+} from "@tanstack/react-query";
 import {
     addFriend,
     getFriends,
@@ -8,199 +12,19 @@ import {
 import { Friend } from "@/types/friend";
 import queryClient from "@/config/queryClient";
 import * as y from "yup";
+import { AxiosResponse } from "axios";
 
 const FRIENDS = ["FRIENDS"];
 
-/*
-const TEST = ["TEST"];
-const test_friends: Friend[] = [
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Nam",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "1",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Nam",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "2",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Naam",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "3",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Naaam",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "4",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Naaaaam",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "5",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Naaaaam",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "6",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Nim",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "7",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Nam",
-        last_name: "Du",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "8",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Nam",
-        last_name: "Du",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "9",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Name",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "10",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Nameq",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "11",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-    {
-        created_at: new Date().toDateString(),
-        first_name: "Namp",
-        last_name: "Do",
-        profile_photo:
-            "https://as1.ftcdn.net/v2/jpg/03/65/42/00/1000_F_365420014_xjsSDkKzrhq4gr9GFzP6S97H7MJyNI5B.jpg",
-        public_profile: true,
-        id: "12",
-        requestee: "1",
-        requester: "2",
-        pending: false,
-        user_id: "1",
-    },
-];
-
-export const useTestFriends = () => {
-    return useInfiniteQuery<Friend[], Error>({
-        queryKey: TEST,
-        initialPageParam: 0,
-        queryFn: ({ pageParam }) =>
-            test_friends.slice(pageParam as number, (pageParam as number) + 4),
-        getNextPageParam: (lastPage, allPages) => {
-            if (test_friends.length > allPages.length * 4)
-                return allPages.length * 4;
-        },
-    });
-};
-
-
-export const useFriends = (token: string | undefined | null) => {
-    return useQuery<Friend[] | null | undefined>({
-        queryKey: FRIENDS,
-        queryFn: () => {
-            return token ? getFriends(token) : null;
-        },
-        refetchOnWindowFocus(_query) {
-            return false;
-        },
-        enabled: !!token,
-    });
-};
-*/
-
-export const useFriends = (token: string, inclusiveLimit: number = 1) => {
+/**
+ * Hook to retrieve friends.
+ *
+ * @param {string} token User access token.
+ * @param {number} inclusiveLimit Number of entries to retrieve.
+ * @returns {object} The hook.
+ */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
+export const useFriends = (token: string, inclusiveLimit: number = 10) => {
     const infiniteFriends = useInfiniteQuery<Friend[], Error>({
         queryKey: FRIENDS,
         initialPageParam: 0,
@@ -221,10 +45,25 @@ export const useFriends = (token: string, inclusiveLimit: number = 1) => {
         enabled: !!token,
     });
 
-    return { ...infiniteFriends, data: infiniteFriends.data?.pages.flat() ?? [] };
+    return {
+        ...infiniteFriends,
+        data: infiniteFriends.data?.pages.flat() ?? [],
+    };
 };
 
-export const useAddFriend = () => {
+/**
+ * Mutation hook to add a friend.
+ * @returns {object} The hook.
+ */
+export const useAddFriend = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        id: string;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationKey: FRIENDS,
         mutationFn: ({ id, token }: { id: string; token: string }) =>
@@ -233,7 +72,19 @@ export const useAddFriend = () => {
     });
 };
 
-export const useRemoveFriend = () => {
+/**
+ * Mutation hook to remove a friend.
+ * @returns {object} The hook.
+ */
+export const useRemoveFriend = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        id: string;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationKey: FRIENDS,
         mutationFn: ({ id, token }: { id: string; token: string }) =>
@@ -242,7 +93,19 @@ export const useRemoveFriend = () => {
     });
 };
 
-export const useVerifyFriend = () => {
+/**
+ * Mutation hook to verify a friend's request.
+ * @returns {object} The hook.
+ */
+export const useVerifyFriend = (): UseMutationResult<
+    AxiosResponse<unknown, unknown>,
+    Error,
+    {
+        id: string;
+        token: string;
+    },
+    unknown
+> => {
     return useMutation({
         mutationKey: FRIENDS,
         mutationFn: ({ id, token }: { id: string; token: string }) =>
