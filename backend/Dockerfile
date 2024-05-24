@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN npm ci --only=production --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 ENV DEBUG=express:*
 
