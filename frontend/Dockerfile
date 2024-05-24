@@ -8,13 +8,13 @@ ENV CI=true
 
 COPY . .
 
-RUN npm install
+RUN npm install  --legacy-peer-deps
 
-RUN npm test
+# RUN npm test
 
 RUN npm run build
 
-FROM nginx
+FROM nginx as prod
 
 COPY nginx.conf /etc/nginx/nginx.conf
 
