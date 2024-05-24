@@ -1,4 +1,4 @@
-name: Push Image to Docker and Deploy to Render
+name: Push Backend Image to Docker and Deploy Full-Stack to Render
 
 on:
   push:
