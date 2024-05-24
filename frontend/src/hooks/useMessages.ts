@@ -19,6 +19,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/config/supabase";
 import { AxiosResponse } from "axios";
 
+type UseMessages = {
+    infinite: UseInfiniteQueryResult<InfiniteData<ChatMsg[], unknown>, Error>;
+    finalData: ChatMsg[];
+};
+
 /**
  * Hook to retrieve messages.
  *
@@ -26,16 +31,13 @@ import { AxiosResponse } from "axios";
  * @param {string} chatID Chat's ID.
  * @param {number} limit Number of messages to get.
  * public chats or a user's chats.
- * @returns {object} The hook.
+ * @returns {UseMessages} The hook.
  */
 export const useMessages = (
     token: string,
     chatID: string,
     limit: number = 10
-): {
-    infinite: UseInfiniteQueryResult<InfiniteData<ChatMsg[], unknown>, Error>;
-    finalData: ChatMsg[];
-} => {
+): UseMessages => {
     const curTime = new Date().toISOString();
     const [currentMessages, setCurrentMessages] = useState<ChatMsg[]>([]);
 
@@ -62,7 +64,7 @@ export const useMessages = (
         };
 
         return void listen();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const infiniteMessages = useInfiniteQuery<ChatMsg[], Error>({

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import {
     UseMutationResult,
     useInfiniteQuery,
@@ -25,6 +26,7 @@ export const useChats = (
     token: string,
     inclusiveLimit: number = 5,
     getAllPublic: boolean = true
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) => {
     const infiniteChats = useInfiniteQuery<Chat[], Error>({
         queryKey: CHATS,

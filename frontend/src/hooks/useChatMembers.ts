@@ -26,6 +26,7 @@ export const useChatMembers = (
     chatID: string,
     token: string,
     chatMemberExist: boolean = false
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
 ) => {
     const chatMembers = useQuery<ChatMember[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}`],

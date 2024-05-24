@@ -23,6 +23,7 @@ const FRIENDS = ["FRIENDS"];
  * @param {number} inclusiveLimit Number of entries to retrieve.
  * @returns {object} The hook.
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
 export const useFriends = (token: string, inclusiveLimit: number = 10) => {
     const infiniteFriends = useInfiniteQuery<Friend[], Error>({
         queryKey: FRIENDS,
