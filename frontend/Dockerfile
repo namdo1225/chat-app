@@ -1,4 +1,4 @@
-FROM node AS build-stage
+FROM node as prod
 
 WORKDIR /usr/src/app
 
@@ -13,9 +13,3 @@ RUN npm install  --legacy-peer-deps
 # RUN npm test
 
 RUN npm run build
-
-FROM nginx as prod
-
-COPY nginx.conf /etc/nginx/nginx.conf
-
-COPY --from=build-stage /usr/src/app/build /usr/share/nginx/html
