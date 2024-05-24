@@ -6,7 +6,8 @@
   "scripts": {
     "start": "set NODE_ENV=production && node dist/index.js",
     "dev": "set NODE_ENV=development && tsx watch src/index.ts",
-    "build": "NODE_OPTIONS=--max-old-space-size=512 tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "build:prod": "NODE_OPTIONS=--max-old-space-size=512 npm run build:local",
+    "build:local": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "npm run lint -- --fix",
     "test": "set NODE_ENV=test && jest --verbose"
@@ -55,6 +56,7 @@
     "streamifier": "^0.1.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "ws": "^8.17.0",
     "zod": "^3.22.4"
   },
   "engines": {
