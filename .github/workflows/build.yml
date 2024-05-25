@@ -26,7 +26,9 @@ jobs:
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
     - name: Install backend dependencies
-      run: npm i --legacy-peer-deps
+      run: |
+        npm i --legacy-peer-deps
+        npm install -g wait-on
     - name: Build backend
       run: npm run build --if-present
     - name: Start service and wait for backend to respond
@@ -48,7 +50,9 @@ jobs:
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
     - name: Install frontend dependencies
-      run: npm i --legacy-peer-deps
+      run: |
+        npm i --legacy-peer-deps
+        npm install -g wait-on
     - name: Build frontend
       run: npm run build --if-present
     - name: Start service and wait for frontend to respond
