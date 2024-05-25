@@ -25,10 +25,23 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
+    - name: Create .env file
+      env:
+        PROD_ENV_FILE: ${{ secrets.BACKEND_PROD_ENV }}
+      run: echo $PROD_ENV_FILE | base64 --decode > .env
     - name: Install backend dependencies
       run: npm i --legacy-peer-deps
     - name: Build backend
-      run: npm run build --if-present
+      run: npm run build:local --if-present
+    - name: Start backend
+      run: (npm start&)
+    - name: Check backend status
+      uses: jtalk/url-health-check-action@v4
+      with:
+        url: http://127.0.0.1:3001/health_check
+        follow-redirect: false
+        max-attempts: 3
+        retry-delay: 5s
   build-frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -49,3 +62,12 @@ jobs:
       run: npm i --legacy-peer-deps
     - name: Build frontend
       run: npm run build --if-present
+    - name: Start frontend
+      run: (npm run preview&)
+    - name: Check frontend status
+      uses: jtalk/url-health-check-action@v4
+      with:
+        url: http://localhost:4173/
+        follow-redirect: false
+        max-attempts: 3
+        retry-delay: 5s
