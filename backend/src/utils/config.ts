@@ -17,6 +17,6 @@ export const RESEND_API_KEY = process.env.RESEND_API_KEY;
 export const PROFILE_WIDTH_HEIGHT = 200;
 export const REDIS_URL = (
     NODE_ENV === "production"
-        ? process.env.PROD_REDIRECT_URL
+        ? process.env.PROD_REDIS_URL
         : process.env.DEV_REDIS_URL
 ) as string;
