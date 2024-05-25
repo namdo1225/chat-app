@@ -29,6 +29,8 @@ jobs:
       run: npm i --legacy-peer-deps
     - name: Build backend
       run: npm run build --if-present
+    - name: Start service and wait for backend to respond
+      run: npm start & npx wait-on http://127.0.0.1:3001
   build-frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -49,3 +51,5 @@ jobs:
       run: npm i --legacy-peer-deps
     - name: Build frontend
       run: npm run build --if-present
+    - name: Start service and wait for frontend to respond
+      run: npm run preview & npx wait-on http://127.0.0.1:4173
