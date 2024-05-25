@@ -1,6 +1,6 @@
 export const PORT = process.env.PORT || "3001";
 export const SECRET = process.env.SECRET || "Test";
-export const SUPABASE_URL = "http://192.168.240.3:8000";
+export const SUPABASE_URL = process.env.SUPABASE_URL;
 export const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 export const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 export const HCAPTCHA_SECRET = process.env.HCAPTCHA_SECRET;
