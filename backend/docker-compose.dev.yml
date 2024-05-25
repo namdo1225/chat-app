@@ -11,6 +11,7 @@ services:
       - ./package.json:/usr/src/app/package.json
       - ./package-lock.json:/usr/src/app/package-lock.json
       - ./tsconfig.json:/usr/src/app/tsconfig.json
+      - ./.env:/usr/src/app/.env
     container_name: chat-app-backend-dev
     environment:
       CHOKIDAR_USEPOLLING: "true"
