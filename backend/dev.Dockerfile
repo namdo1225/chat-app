@@ -8,4 +8,4 @@ RUN npm install --legacy-peer-deps
 
 RUN npm install -g wscat
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev:docker"]
