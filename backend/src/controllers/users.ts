@@ -80,15 +80,14 @@ router.post(
         ).data.users.filter((user) => user.email === email);
 
         const { data: newUser, error: newUserError } =
-            await supabase.auth.signUp({
+            await supabase.auth.admin.createUser({
                 email,
                 password,
-                options: {
-                    data: {
-                        first_name,
-                        last_name,
-                    },
-                },
+                email_confirm: false,
+                user_metadata: {
+                    first_name,
+                    last_name
+                }
             });
 
         if (newUserError || !newUser.user)
