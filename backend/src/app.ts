@@ -1,10 +1,8 @@
 /**
  * Contains the express application and its API routings.
-*/
+ */
 
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
+import app from "./expressApp";
 import {
     requestLogger,
     unknownEndpoint,
@@ -22,7 +20,7 @@ import messagesRouter from "./controllers/messages";
 import healthCheckRouter from "./controllers/health_check";
 
 import { slowDown } from "express-slow-down";
-import { rateLimit } from 'express-rate-limit';
+import { rateLimit } from "express-rate-limit";
 
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 
@@ -38,12 +36,7 @@ const rateLimiter = rateLimit({
     limit: 10, // Limit each IP to 10 requests per windowMs.
 });
 
-const app = express();
-app.use(cors());
-app.use(helmet());
-app.use(express.json());
 app.use(requestLogger);
-app.disable("x-powered-by");
 
 app.use("/logout", logoutRouter);
 app.use("/resend", slow, resendRouter);
