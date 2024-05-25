@@ -38,7 +38,7 @@ jobs:
     - name: Check backend status
       uses: jtalk/url-health-check-action@v4
       with:
-        url: http://127.0.0.1:3001/
+        url: http://127.0.0.1:3001/health_check
         follow-redirect: false
         max-attempts: 3
         retry-delay: 5s
