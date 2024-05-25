@@ -24,7 +24,7 @@
         "_static/types/**/*.ts",
         "**/*.ts",
         "**/*.tsx",
-        "./src"
+        "./src/*.ts"
     ],
     "exclude": ["node_modules", "jest"],
     "types": ["@types/jest"]
