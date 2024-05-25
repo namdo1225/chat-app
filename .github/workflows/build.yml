@@ -33,11 +33,12 @@ jobs:
       run: npm i --legacy-peer-deps
     - name: Build backend
       run: npm run build:local --if-present
-    - name: Start service and wait for backend to respond
-      uses: ./
+    - name: Start backend
+      run: npm start
+    - name: Check backend status
+      uses: jtalk/url-health-check-action@v4
       with:
-        start: npm start
-        wait-on: 'http://127.0.0.1:3001'
+        url: http:127.0.0.1:3001
   build-frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -62,8 +63,9 @@ jobs:
       run: npm i --legacy-peer-deps
     - name: Build frontend
       run: npm run build --if-present
-    - name: Start service and wait for frontend to respond
-      uses: ./
+    - name: Start frontend
+      run: npm run preview
+    - name: Check frontend status
+      uses: jtalk/url-health-check-action@v4
       with:
-        start: npm preview
-        wait-on: 'http://127.0.0.1:4173'
+        url: http:127.0.0.1:4173
