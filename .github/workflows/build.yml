@@ -25,6 +25,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
+    - name: Create .env file
+      env:
+        PROD_ENV_FILE: ${{ secrets.BACKEND_PROD_ENV }}
+      run: echo $PROD_ENV_FILE | base64 --decode > .env
     - name: Install backend dependencies
       run: |
         npm i --legacy-peer-deps
@@ -49,6 +53,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
+    - name: Create .env.production.local file
+      env:
+        PROD_ENV_FILE: ${{ secrets.FRONTEND_PROD_ENV }}
+      run: echo $PROD_ENV_FILE | base64 --decode > .env.production.local
     - name: Install frontend dependencies
       run: |
         npm i --legacy-peer-deps
