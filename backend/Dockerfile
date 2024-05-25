@@ -1,11 +1,11 @@
-FROM node:16
+FROM node
 
 WORKDIR /usr/src/app
 
 COPY . .
 
-RUN npm ci --only=production
+RUN npm install --legacy-peer-deps
 
 ENV DEBUG=express:*
 
-CMD npm start
+CMD npm run build:prod && npm start

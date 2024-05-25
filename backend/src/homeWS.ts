@@ -1,13 +1,13 @@
-import * as WebSocket from "ws";
 import * as http from "http";
 import app from "./app";
 import { HomeMsg, HomeMsgSchema } from "./types/message";
 import { logError } from "./utils/logger";
+import { WebSocketServer, WebSocket } from "ws";
 
 export const server = http.createServer(app);
 
 //initialize the WebSocket server instance
-const wss = new WebSocket.Server({ server, path: "/homechat" });
+const wss = new WebSocketServer({ server, path: "/homechat" });
 
 const broadcast = (data: HomeMsg, sender: WebSocket): void => {
     wss.clients.forEach((client) => {
