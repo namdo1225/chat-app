@@ -30,7 +30,7 @@ jobs:
         npm i --legacy-peer-deps
         npm install -g wait-on
     - name: Build backend
-      run: npm run build --if-present
+      run: npm run build:local --if-present
     - name: Start service and wait for backend to respond
       run: npm start & npx wait-on http://127.0.0.1:3001
   build-frontend:
