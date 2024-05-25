@@ -58,9 +58,9 @@ jobs:
     - name: Install frontend dependencies
       run: npm i --legacy-peer-deps
     - name: Build frontend
-      run: npm run build --if-present &
+      run: npm run build --if-present
     - name: Start frontend
-      run: npm run preview
+      run: npm run preview &
     - name: Check frontend status
       uses: jtalk/url-health-check-action@v4
       with:
