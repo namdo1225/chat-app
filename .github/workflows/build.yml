@@ -34,11 +34,14 @@ jobs:
     - name: Build backend
       run: npm run build:local --if-present
     - name: Start backend
-      run: npm start
+      run: (npm start&)
     - name: Check backend status
       uses: jtalk/url-health-check-action@v4
       with:
-        url: http:127.0.0.1:3001
+        url: http://127.0.0.1:3001/
+        follow-redirect: false
+        max-attempts: 3
+        retry-delay: 5s
   build-frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -60,7 +63,7 @@ jobs:
     - name: Build frontend
       run: npm run build --if-present
     - name: Start frontend
-      run: npm run preview &
+      run: (npm run preview&)
     - name: Check frontend status
       uses: jtalk/url-health-check-action@v4
       with:
