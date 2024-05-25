@@ -30,9 +30,7 @@ jobs:
         PROD_ENV_FILE: ${{ secrets.BACKEND_PROD_ENV }}
       run: echo $PROD_ENV_FILE | base64 --decode > .env
     - name: Install backend dependencies
-      run: |
-        npm i --legacy-peer-deps
-        npm install -g wait-on
+      run: npm i --legacy-peer-deps
     - name: Build backend
       run: npm run build:local --if-present
     - name: Start service and wait for backend to respond
@@ -60,9 +58,7 @@ jobs:
         PROD_ENV_FILE: ${{ secrets.FRONTEND_PROD_ENV }}
       run: echo $PROD_ENV_FILE | base64 --decode > .env.production.local
     - name: Install frontend dependencies
-      run: |
-        npm i --legacy-peer-deps
-        npm install -g wait-on
+      run: npm i --legacy-peer-deps
     - name: Build frontend
       run: npm run build --if-present
     - name: Start service and wait for frontend to respond
