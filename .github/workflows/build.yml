@@ -34,7 +34,7 @@ jobs:
     - name: Build backend
       run: npm run build:local --if-present
     - name: Start backend
-      run: (npm start&)
+      run: (npm run start:local&)
     - name: Check backend status
       uses: jtalk/url-health-check-action@v4
       with:
