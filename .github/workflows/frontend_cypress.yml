@@ -1,15 +1,15 @@
-name: Test backend with Jest
+name: Test frontend with Cypress
 
 on:
   push:
     branches: [ "main" ]
-    paths: ["backend/**"]
+    paths: ["backend/**", "frontend/**"]
   pull_request:
     branches: [ "main" ]
-    paths: ["backend/**"]
+    paths: ["backend/**", "frontend/**"]
 
 jobs:
-  test-backend:
+  test-frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,5 +40,14 @@ jobs:
     - run: supabase start
     - name: Install backend dependencies
       run: npm i --legacy-peer-deps
-    - name: Test backend
-      run: npm run test
+    - name: Start backend
+      run: (npm run dev:native&)
+    - name: Install frontend dependencies
+      working-direcotry: ./frontend
+      run: npm i --legacy-peer-deps
+    - name: Start frontend
+      working-direcotry: ./frontend
+      run: (npm run dev:native&)
+    - name: Test frontend
+      working-direcotry: ./frontend
+      run: (npm run cy:run)

@@ -42,6 +42,12 @@ Prerequisites:
 4a. In the chat-app folder, you can use ./dev.sh to run the dev environment in Docker.
 4b. Otherwise, you can manually go to chat-app/frontend and chat-app/backend on separate terminals to run: npm run dev.
 
+### Docker
+To containerize and abstract many services of this app, I use Docker to improve development.
+
+Some facts:
+- The Redis service is always behind Docker, regardless of whether the web application is running natively or in Docker. Use redis-dev as the URl if you're in the same container stack as the web application. Otherwise, use localhost.
+
 ## Why I am not using Next.js or other higher-level frameworks?
 
 This is meant to be a basic demonstration of everything I have learnt in full-stack web development. Next.js provides useful routing and navigation utility, but I want to get into the lower level to see how it works. It is important these tools before moving on to more advanced technology.

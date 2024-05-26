@@ -7,7 +7,7 @@
     "start": "set NODE_ENV=production&& dotenvx run -- node dist/index.js",
     "start:local": "set NODE_ENV=production&& dotenvx run -f .env.production.local -- node dist/index.js",
     "dev:docker": "set NODE_ENV=development&& dotenvx run -f .env -- tsx watch src/index.ts",
-    "dev:native": "set NODE_ENV=development&& dotenvx run -f .env.dev.local -- tsx watch src/index.ts",
+    "dev:native": "set NODE_ENV=development&& dotenvx run -f .env.test.local -- tsx watch src/index.ts",
     "build:prod": "NODE_OPTIONS=--max-old-space-size=512 npm run build:local",
     "build:local": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "lint": "eslint src --ext .ts,.tsx",
