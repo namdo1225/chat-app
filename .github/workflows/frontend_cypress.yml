@@ -30,7 +30,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
-    - name: Create .env file
+    - name: Create backend .env file
       env:
         TEST_ENV_FILE: ${{ secrets.BACKEND_TEST_ENV }}
       run: echo $TEST_ENV_FILE | base64 --decode > .env.test.local
@@ -42,6 +42,11 @@ jobs:
       run: npm i --legacy-peer-deps
     - name: Start backend
       run: (npm run dev:native&)
+    - name: Create frontend .env file
+      working-direcotry: ./frontend
+      env:
+        DEV_ENV_FILE: ${{ secrets.FRONTEND_DEV_ENV }}
+      run: echo $DEV_ENV_FILE | base64 --decode > .env
     - name: Install frontend dependencies
       working-direcotry: ./frontend
       run: npm i --legacy-peer-deps
