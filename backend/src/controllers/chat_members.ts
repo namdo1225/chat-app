@@ -34,7 +34,7 @@ router.get(
                 .eq("chat_id", chatID)
                 .neq("user_id", request.user.id);
 
-            if (error) return response.status(500).json(error);
+            if (error) return response.status(500).json({ error });
 
             const formattedChatMembers =
                 ChatMemberOnlySchema.array().parse(chatMembers);
@@ -47,7 +47,7 @@ router.get(
                 .eq("chat_id", chatID)
                 .neq("user_id", request.user.id);
 
-            if (error) return response.status(400).json(error);
+            if (error) return response.status(500).json({ error });
 
             const formattedChatMembers =
                 ChatMemberProfilesSchema.parse(chatMembers);
@@ -73,7 +73,7 @@ router.post(
                 .select();
 
         if (foundMembershipError)
-            return response.status(500).json(foundMembershipError);
+            return response.status(500).json({ error: foundMembershipError });
 
         if (foundMembership) {
             ChatMemberOnlySchema.array().parse(foundMembership[0]);
@@ -90,7 +90,7 @@ router.post(
             .eq("public", true)
             .select();
 
-        if (error) return response.status(500).json(error);
+        if (error) return response.status(500).json{( error });
 
         const formattedChatMembers =
             ChatMemberOnlySchema.array().parse(chatMembers);
@@ -111,7 +111,7 @@ router.delete(
             .select("*")
             .eq("id", chatID);
 
-        if (chatError) return response.status(500).json(chatError);
+        if (chatError) return response.status(500).json({ error: chatError });
 
         const formattedChat = ChatSchema.parse(chat[0]);
         if (formattedChat.owner_id === request.user.id)
@@ -128,7 +128,7 @@ router.delete(
         if (deleteMemberError)
             return response.status(500).json({ error: deleteMemberError });
 
-        return response.status(200).json({});
+        return response.status(200).json({ message: "Membership deleted." });
     }
 );
 
