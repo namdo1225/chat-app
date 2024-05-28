@@ -1,15 +1,12 @@
-name: Test backend with Jest
+name: Build Backend with NodeJS
 
 on:
-  push:
-    branches: [ "main" ]
-    paths: ["backend/**"]
   pull_request:
     branches: [ "main" ]
     paths: ["backend/**"]
 
 jobs:
-  test-backend:
+  build-backend:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -17,11 +14,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20.x]
-    services:
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }} for backend
@@ -32,13 +24,18 @@ jobs:
         cache-dependency-path: '**/package-lock.json'
     - name: Create .env file
       env:
-        TEST_ENV_FILE: ${{ secrets.BACKEND_TEST_ENV }}
-      run: echo $TEST_ENV_FILE | base64 --decode > .env.test.local
-    - uses: supabase/setup-cli@v1
-      with:
-        version: latest
-    - run: supabase start
+        PROD_ENV_FILE: ${{ secrets.BACKEND_PROD_ENV }}
+      run: echo $PROD_ENV_FILE | base64 --decode > .env.production.local
     - name: Install backend dependencies
       run: npm i --legacy-peer-deps
-    - name: Test backend
-      run: npm run test
+    - name: Build backend
+      run: npm run build:local --if-present
+    - name: Start backend
+      run: (npm run start:local&)
+    - name: Check backend status
+      uses: jtalk/url-health-check-action@v4
+      with:
+        url: http://127.0.0.1:3001/health_check
+        follow-redirect: false
+        max-attempts: 3
+        retry-delay: 5s

@@ -1,9 +1,6 @@
-name: Test frontend with Cypress
+name: Test Frontend with Cypress
 
 on:
-  push:
-    branches: [ "main" ]
-    paths: ["backend/**", "frontend/**"]
   pull_request:
     branches: [ "main" ]
     paths: ["backend/**", "frontend/**"]
@@ -43,22 +40,14 @@ jobs:
     - name: Start backend
       working-directory: ./backend
       run: (npm run dev:native&)
-    - name: Use Node.js ${{ matrix.node-version }} for frontend
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: 'frontend/package-lock.json'
     - name: Create frontend .env file
       working-directory: ./frontend
       env:
         DEV_ENV_FILE: ${{ secrets.FRONTEND_DEV_ENV }}
       run: echo $DEV_ENV_FILE | base64 --decode > .env
-    - name: Install frontend dependencies
-      working-directory: ./frontend
-      run: npm i --legacy-peer-deps
     - name: Test frontend
       uses: cypress-io/github-action@v6
       with:
         start: npm run dev:native
+        install: npm i --legacy-peer-deps
         working-directory: ./frontend
