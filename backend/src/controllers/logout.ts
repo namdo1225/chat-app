@@ -18,7 +18,7 @@ router.post("/", tokenExtractor, async (request, response) => {
             .status(500)
             .json({ error: "Cannot invalidate session token" });
 
-    return response.status(200).json("");
+    return response.status(200).json({ message: "User logged out successfully." });
 });
 
 export default router;
