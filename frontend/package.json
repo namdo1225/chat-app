@@ -11,7 +11,11 @@
         "lint:fix": "npm run lint -- --fix",
         "preview": "vite preview",
         "cy:open": "cypress open",
-        "cy:run": "cypress run"
+        "cy:open-e2e": "npm run cy:open --e2e --browser chrome",
+        "cy:open-unit": "npm run cy:open --component --browser chrome",
+        "cy:run": "cypress run",
+        "cy:run-e2e": "npm cy:run --e2e",
+        "cy:run-unit": "npm cy:run --component"
     },
     "dependencies": {
         "@emotion/react": "^11.11.4",
@@ -52,6 +56,7 @@
         "@types/react": "^18.2.64",
         "@types/react-avatar-editor": "^13.0.2",
         "@types/react-dom": "^18.2.21",
+        "@types/testing-library__cypress": "^5.0.13",
         "@types/uuid": "^9.0.8",
         "@typescript-eslint/eslint-plugin": "^7.1.1",
         "@typescript-eslint/parser": "^7.1.1",
