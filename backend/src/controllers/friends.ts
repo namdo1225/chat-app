@@ -5,52 +5,67 @@
 import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
-import { logError } from "@/utils/logger";
-import { tokenExtractor, userExtractor, paginationVerifier } from "@/utils/middleware";
+import {
+    tokenExtractor,
+    userExtractor,
+    paginationVerifier,
+} from "@/utils/middleware";
 import { BaseFriendSchema, FriendsSchema } from "@/types/friend";
 
 const router = Router();
 const FRIENDS = "friends";
 
-router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (request, response) => {
-    const id = request.user.id;
+router.get(
+    "/",
+    tokenExtractor,
+    userExtractor,
+    paginationVerifier,
+    async (request, response) => {
+        const id = request.user.id;
 
-    const { data: requestee, error: requesteeError } = await supabase
-        .from(FRIENDS)
-        .select(
-            "*,profiles!friends_requestee_fkey(first_name, last_name, profile_photo, user_id, created_at, public_profile)"
-        )
-        .eq("requester", id)
-        .order("last_name", { referencedTable: "profiles", ascending: true })
-        .range(request.begin, request.end);
+        const { data: requestee, error: requesteeError } = await supabase
+            .from(FRIENDS)
+            .select(
+                "*,profiles!friends_requestee_fkey(first_name, last_name, profile_photo, user_id, created_at, public_profile)"
+            )
+            .eq("requester", id)
+            .order("last_name", {
+                referencedTable: "profiles",
+                ascending: true,
+            })
+            .range(request.begin, request.end);
 
-    if (requesteeError)
-        return response.status(500).json({ error: requesteeError });
+        if (requesteeError)
+            return response.status(500).json({ error: requesteeError });
 
-    const { data: requestor, error: requesterError } = await supabase
-        .from(FRIENDS)
-        .select(
-            "*,profiles!friends_requester_fkey(first_name, last_name, profile_photo, user_id, created_at, public_profile)"
-        )
-        .eq("requestee", id)
-        .order("last_name", { referencedTable: "profiles", ascending: true })
-        .range(request.begin, request.end);
+        const { data: requestor, error: requesterError } = await supabase
+            .from(FRIENDS)
+            .select(
+                "*,profiles!friends_requester_fkey(first_name, last_name, profile_photo, user_id, created_at, public_profile)"
+            )
+            .eq("requestee", id)
+            .order("last_name", {
+                referencedTable: "profiles",
+                ascending: true,
+            })
+            .range(request.begin, request.end);
 
-    if (requesterError)
-        return response.status(500).json({ error: requesterError });
+        if (requesterError)
+            return response.status(500).json({ error: requesterError });
 
-    const allRequests = FriendsSchema.parse(requestee.concat(requestor));
-    const formattedRequests = allRequests.map((data) => {
-        return {
-            id: data.id,
-            pending: data.pending,
-            requester: data.requester,
-            requestee: data.requestee,
-            ...data.profiles,
-        };
-    });
-    return response.status(200).json(formattedRequests);
-});
+        const allRequests = FriendsSchema.parse(requestee.concat(requestor));
+        const formattedRequests = allRequests.map((data) => {
+            return {
+                id: data.id,
+                pending: data.pending,
+                requester: data.requester,
+                requestee: data.requestee,
+                ...data.profiles,
+            };
+        });
+        return response.status(200).json(formattedRequests);
+    }
+);
 
 router.post(
     "/:id",
@@ -93,19 +108,18 @@ router.post(
                 error: foundError,
             });
 
-        const { error } = await supabase
-            .from(FRIENDS)
-            .insert([
-                {
-                    requester: userID,
-                    requestee: friendID,
-                },
-            ]);
-        
-        if (error)
-            return response.status(500).json({ error });
+        const { error } = await supabase.from(FRIENDS).insert([
+            {
+                requester: userID,
+                requestee: friendID,
+            },
+        ]);
 
-        return response.status(200).json({message: "Friends request sent successfully."});
+        if (error) return response.status(500).json({ error });
+
+        return response
+            .status(200)
+            .json({ message: "Friends request sent successfully." });
     }
 );
 
@@ -138,7 +152,9 @@ router.delete(
                 if (deleteError)
                     return response.status(500).json({ error: deleteError });
 
-                return response.status(200).json({ message: "Friend request deleted." });
+                return response
+                    .status(200)
+                    .json({ message: "Friend request deleted." });
             }
         }
 
@@ -168,7 +184,9 @@ router.put("/:id", tokenExtractor, userExtractor, async (request, response) => {
             if (verifyError)
                 return response.status(500).json({ error: verifyError });
 
-            return response.status(200).json({ message: "Accepted pending friend request." });
+            return response
+                .status(200)
+                .json({ message: "Accepted pending friend request." });
         }
     }
 

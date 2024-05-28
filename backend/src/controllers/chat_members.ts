@@ -90,7 +90,7 @@ router.post(
             .eq("public", true)
             .select();
 
-        if (error) return response.status(500).json{( error });
+        if (error) return response.status(500).json({ error });
 
         const formattedChatMembers =
             ChatMemberOnlySchema.array().parse(chatMembers);

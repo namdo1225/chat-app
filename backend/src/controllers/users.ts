@@ -63,7 +63,8 @@ router.get("/:id", tokenExtractor, userExtractor, async (request, response) => {
     );
 
     const profiles = ProfilesSchema.parse(data?.data);
-    if (profiles && profiles.length === 1) return response.status(200).json(profiles[0]);
+    if (profiles && profiles.length === 1)
+        return response.status(200).json(profiles[0]);
     return response.status(400).json({ error: "No user found." });
 });
 
@@ -87,8 +88,8 @@ router.post(
                 email_confirm: NODE_ENV !== "production",
                 user_metadata: {
                     first_name,
-                    last_name
-                }
+                    last_name,
+                },
             });
 
         if (newUserError || !newUser.user)
@@ -132,7 +133,9 @@ router.post(
             if (error) return response.status(500).json({ error });
             return response.status(201).json(newProfile);
         }
-        return response.status(400).json({ error: "You cannot create an account." });
+        return response
+            .status(400)
+            .json({ error: "You cannot create an account." });
     }
 );
 
@@ -177,7 +180,9 @@ router.put(
                     );
 
                 if (updateUserError)
-                    return response.status(500).json({ error: updateUserError });
+                    return response
+                        .status(500)
+                        .json({ error: updateUserError });
             }
 
             if (request.file) {
@@ -242,12 +247,14 @@ router.delete(
                 if (error) return response.status(500).json({ error });
             }
 
-            const { data, error } = await supabase.auth.admin.deleteUser(
+            const { error } = await supabase.auth.admin.deleteUser(
                 request.user.id
             );
 
             if (error) return response.status(500).json({ error });
-            return response.status(200).json({ message: "User profile deleted." });
+            return response
+                .status(200)
+                .json({ message: "User profile deleted." });
         }
         return response.status(400).json({ error: "user id not found" });
     }

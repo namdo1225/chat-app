@@ -105,7 +105,7 @@ router.delete(
             .eq("from_user_id", request.user.id);
 
         if (deleteMessageError)
-            return response.status(500).json(deleteMessageError);
+            return response.status(500).json({ error: deleteMessageError });
 
         return response.status(200).json({ message: "Message deleted." });
     }
