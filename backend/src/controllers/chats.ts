@@ -33,7 +33,7 @@ router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (reques
             .order("name", { ascending: true })
             .range(request.begin, request.end);
 
-        if (error) return response.status(500).json(error);
+        if (error) return response.status(500).json({ error });
         return response.json(ChatsSchema.parse(chats));
     } else {
         const { data: chats, error } = await supabase
@@ -46,9 +46,9 @@ router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (reques
         const formattedChats = ChatMemberSchema.array().parse(chats);
         const returnedChats = formattedChats.map((member) => member.chats);
 
-        if (error) return response.status(500).json(error);
+        if (error) return response.status(500).json({ error });
 
-        return response.json(returnedChats);
+        return response.status(200).json(returnedChats);
     }
 });
 
@@ -100,7 +100,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
             );
 
         if (friendError)
-            return response.status(500).json(friendError);
+            return response.status(500).json({ error: friendError});
 
         if (friends.length !== members.length)
             return response.status(400).json({
@@ -114,7 +114,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         .select();
 
     if (error)
-        return response.status(500).json(error);
+        return response.status(500).json({ error });
 
     const createdChat = ChatSchema.parse(newCreatedChat[0]);
 
@@ -132,20 +132,16 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
             ])
             .select();
 
-        if (memberError) {
-            logError(memberError);
-            return response.status(500).json(memberError);
-        }
+        if (memberError)
+            return response.status(500).json({ error: memberError });
     } else {
         const { error: memberSelfError } = await supabase
             .from("chat_members")
             .insert([{ user_id: request.user.id, chat_id: createdChat.id }])
             .select();
 
-        if (memberSelfError) {
-            logError(memberSelfError);
-            return response.status(500).json(memberSelfError);
-        }
+        if (memberSelfError)
+            return response.status(500).json({ error: memberSelfError });
     }
 
     return response.status(201).json(createdChat);
@@ -179,10 +175,8 @@ router.put(
                 .eq("chat_id", request.chat.id)
                 .eq("user_id", owner_id);
 
-            if (chatMemberError) {
-                logError(chatMemberError);
-                return response.status(400).json(chatMemberError);
-            }
+            if (chatMemberError)
+                return response.status(500).json({ error: chatMemberError });
 
             if (!chatMembers || chatMembers.length === 0)
                 return response.status(400).json({
@@ -215,7 +209,7 @@ router.put(
                 .in("user_id", addMembers);
 
             if (chatMemberError)
-                return response.status(500).json(chatMemberError);
+                return response.status(500).json({ error: chatMemberError });
 
             if (chatMembers.length !== 0)
                 return response.status(400).json({
@@ -249,7 +243,7 @@ router.put(
                 .select();
 
             if (memberError)
-                return response.status(500).json(memberError);
+                return response.status(500).json({ error: memberError });
         }
 
         // remove members:
@@ -261,7 +255,7 @@ router.put(
                 .eq("chat_id", request.chat.id);
 
             if (deleteError)
-                return response.status(500).json(deleteError);
+                return response.status(500).json({ error: deleteError });
         }
 
         if (editedData) {
@@ -272,7 +266,7 @@ router.put(
                 .select();
 
             if (error)
-                return response.status(500).json(error);
+                return response.status(500).json({ error });
             return response.status(201).json(ChatSchema.parse(editedChat[0]));
         }
 
@@ -292,7 +286,7 @@ router.delete(
             .eq("id", request.chat.id);
 
         if (deleteError)
-            return response.status(500).json(deleteErrot);
+            return response.status(500).json({ error: deleteError });
 
         const { error: deleteMemberError } = await supabase
             .from("chat_members")
@@ -300,9 +294,9 @@ router.delete(
             .eq("chat_id", request.chat.id);
 
         if (deleteError)
-            return response.status(500).json(deleteMemberError);
+            return response.status(500).json({ error: deleteMemberError });
 
-        return response.status(200).json({});
+        return response.status(200).json({ message: "Chat deleted." });
     }
 );
 
