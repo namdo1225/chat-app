@@ -21,6 +21,7 @@ import {
 } from "@/utils/middleware";
 import { cacheData } from "@/utils/cache";
 import redisClient from "@/utils/redis";
+import { NODE_ENV } from "@/utils/config";
 
 const router = Router();
 
@@ -83,7 +84,7 @@ router.post(
             await supabase.auth.admin.createUser({
                 email,
                 password,
-                email_confirm: false,
+                email_confirm: NODE_ENV !== "production",
                 user_metadata: {
                     first_name,
                     last_name

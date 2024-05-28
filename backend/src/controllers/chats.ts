@@ -16,41 +16,47 @@ import {
     tokenExtractor,
     userExtractor,
     chatExtractor,
-    paginationVerifier
+    paginationVerifier,
 } from "@/utils/middleware";
 import { ChatMemberSchema } from "@/types/chat_members";
 
 const router = Router();
 
-router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (request, response) => {
-    const getAllPublic = request.query.getAllPublic === "true";
+router.get(
+    "/",
+    tokenExtractor,
+    userExtractor,
+    paginationVerifier,
+    async (request, response) => {
+        const getAllPublic = request.query.getAllPublic === "true";
 
-    if (getAllPublic) {
-        const { data: chats, error } = await supabase
-            .from("chats")
-            .select("*")
-            .eq("public", true)
-            .order("name", { ascending: true })
-            .range(request.begin, request.end);
+        if (getAllPublic) {
+            const { data: chats, error } = await supabase
+                .from("chats")
+                .select("*")
+                .eq("public", true)
+                .order("name", { ascending: true })
+                .range(request.begin, request.end);
 
-        if (error) return response.status(400).json(error);
-        return response.json(ChatsSchema.parse(chats));
-    } else {
-        const { data: chats, error } = await supabase
-            .from("chat_members")
-            .select("*,chats(*)")
-            .eq("user_id", request.user.id)
-            .order("name", { referencedTable: "chats", ascending: true })
-            .range(request.begin, request.end);
+            if (error) return response.status(400).json(error);
+            return response.json(ChatsSchema.parse(chats));
+        } else {
+            const { data: chats, error } = await supabase
+                .from("chat_members")
+                .select("*,chats(*)")
+                .eq("user_id", request.user.id)
+                .order("name", { referencedTable: "chats", ascending: true })
+                .range(request.begin, request.end);
 
-        const formattedChats = ChatMemberSchema.array().parse(chats);
-        const returnedChats = formattedChats.map((member) => member.chats);
+            const formattedChats = ChatMemberSchema.array().parse(chats);
+            const returnedChats = formattedChats.map((member) => member.chats);
 
-        if (error) return response.status(400).json(error);
+            if (error) return response.status(400).json(error);
 
-        return response.json(returnedChats);
+            return response.json(returnedChats);
+        }
     }
-});
+);
 
 router.get(
     "/:id",
@@ -87,7 +93,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
             .status(400)
             .json({ error: "A chat name must be included." });
 
-    if (!description) delete newChat.description;
+    if (!description) newChat.description = "";
 
     if (members.length !== 0) {
         const memberStr = members.toString();

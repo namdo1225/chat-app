@@ -7,7 +7,7 @@ import z from "zod";
 
 export const ChatCreateSchema = z.object({
     name: setRequiredStr(),
-    description: setRequiredStr(),
+    description: z.string().optional(),
     public: z.boolean(),
     members: z.string().array(),
 });

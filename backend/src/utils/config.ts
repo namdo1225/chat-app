@@ -9,3 +9,4 @@ export const REDIRECT_URL = process.env.REDIRECT_URL as string;
 export const RESEND_API_KEY = process.env.RESEND_API_KEY;
 export const PROFILE_WIDTH_HEIGHT = 200;
 export const REDIS_URL = process.env.REDIS_URL as string;
+console.log(SUPABASE_URL);

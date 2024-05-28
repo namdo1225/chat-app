@@ -13,7 +13,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "npm run lint -- --fix",
     "test": "set NODE_ENV=test&& dotenvx run -f .env.test.local -- jest",
-    "test:coverage": "npm run test --coverage"
+    "test:coverage": "npm run test -- --coverage --collectCoverageFrom='./src/**' "
   },
   "keywords": [],
   "author": "namdo1225",
