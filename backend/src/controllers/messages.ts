@@ -44,9 +44,9 @@ router.get(
 
         const formattedMessages = ChatMsgSchema.array().parse(messages);
 
-        if (error) return response.status(400).json(error);
+        if (error) return response.status(500).json({ error });
 
-        return response.json(formattedMessages);
+        return response.status(200).json(formattedMessages);
     }
 );
 
@@ -69,7 +69,7 @@ router.post(
             ])
             .select();
 
-        if (error) return response.status(400).json(error);
+        if (error) return response.status(500).json({ error });
 
         return response.status(201).json(ChatMsgSchema.parse(newMessage[0]));
     }
@@ -85,7 +85,7 @@ router.put("/:id", tokenExtractor, userExtractor, async (request, response) => {
         .eq("from_user_id", request.user.id)
         .select();
 
-    if (error) return response.status(400).json(error);
+    if (error) return response.status(500).json(error);
 
     if (editedMessage && editedMessage.length === 1)
         return response.status(201).json(ChatMsgSchema.parse(editedMessage[0]));
@@ -105,9 +105,9 @@ router.delete(
             .eq("from_user_id", request.user.id);
 
         if (deleteMessageError)
-            return response.status(400).json(deleteMessageError);
+            return response.status(500).json(deleteMessageError);
 
-        return response.status(200).json({});
+        return response.status(200).json({ message: "Message deleted." });
     }
 );
 
