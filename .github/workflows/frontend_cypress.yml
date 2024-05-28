@@ -58,7 +58,7 @@ jobs:
       working-directory: ./frontend
       run: npm i --legacy-peer-deps
     - name: Test frontend
-      working-directory: ./frontend
       uses: cypress-io/github-action@v6
       with:
         start: npm run dev:native
+        working-directory: ./frontend
