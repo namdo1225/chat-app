@@ -33,7 +33,7 @@ router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (reques
             .order("name", { ascending: true })
             .range(request.begin, request.end);
 
-        if (error) return response.status(400).json(error);
+        if (error) return response.status(500).json(error);
         return response.json(ChatsSchema.parse(chats));
     } else {
         const { data: chats, error } = await supabase
@@ -46,7 +46,7 @@ router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (reques
         const formattedChats = ChatMemberSchema.array().parse(chats);
         const returnedChats = formattedChats.map((member) => member.chats);
 
-        if (error) return response.status(400).json(error);
+        if (error) return response.status(500).json(error);
 
         return response.json(returnedChats);
     }
@@ -84,7 +84,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
 
     if (!name)
         return response
-            .status(400)
+            .status(500)
             .json({ error: "A chat name must be included." });
 
     if (!description) delete newChat.description;
@@ -99,10 +99,8 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
                 `and(requestee.eq.${request.user.id},requester.in.(${memberStr})),and(requester.eq.${request.user.id},requestee.in.(${memberStr}))`
             );
 
-        if (friendError) {
-            logError(friendError);
-            return response.status(400).json(friendError);
-        }
+        if (friendError)
+            return response.status(500).json(friendError);
 
         if (friends.length !== members.length)
             return response.status(400).json({
@@ -117,7 +115,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
 
     if (error) {
         logError(error);
-        return response.status(400).json(error);
+        return response.status(500).json(error);
     }
 
     const createdChat = ChatSchema.parse(newCreatedChat[0]);
@@ -138,7 +136,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
 
         if (memberError) {
             logError(memberError);
-            return response.status(400).json(memberError);
+            return response.status(500).json(memberError);
         }
     } else {
         const { error: memberSelfError } = await supabase
@@ -148,7 +146,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
 
         if (memberSelfError) {
             logError(memberSelfError);
-            return response.status(400).json(memberSelfError);
+            return response.status(500).json(memberSelfError);
         }
     }
 
@@ -218,10 +216,8 @@ router.put(
                 .eq("chat_id", request.chat.id)
                 .in("user_id", addMembers);
 
-            if (chatMemberError) {
-                logError(chatMemberError);
-                return response.status(400).json(chatMemberError);
-            }
+            if (chatMemberError)
+                return response.status(500).json(chatMemberError);
 
             if (chatMembers.length !== 0)
                 return response.status(400).json({
@@ -236,20 +232,13 @@ router.put(
                     `and(requestee.eq.${request.user.id},requester.in.(${memberStr})), and(requester.eq.${request.user.id},requestee.in.(${memberStr}))`
                 );
 
-            if (friendError) {
-                console.log("HI 2");
-                logError(friendError);
-                return response.status(400).json(friendError);
-            }
-
-            console.log("HI 7");
+            if (friendError)
+                return response.status(500).json(friendError);
 
             if (friends.length !== addMembers.length)
                 return response.status(400).json({
                     error: "You can only add non-pending friends to private chats.",
                 });
-
-            console.log("HI 3");
 
             const membersData = addMembers.map((member) => ({
                 user_id: member,
@@ -261,13 +250,8 @@ router.put(
                 .insert(membersData)
                 .select();
 
-            if (memberError) {
-                console.log("HI 4");
-                logError(memberError);
-                return response.status(400).json(memberError);
-            }
-
-            console.log("HI 5");
+            if (memberError)
+                return response.status(500).json(memberError);
         }
 
         // remove members:
@@ -278,10 +262,8 @@ router.put(
                 .in("user_id", removeMembers)
                 .eq("chat_id", request.chat.id);
 
-            if (deleteError) {
-                logError(deleteError);
-                return response.status(400).json(deleteError);
-            }
+            if (deleteError)
+                return response.status(500).json(deleteError);
         }
 
         if (editedData) {
@@ -291,11 +273,8 @@ router.put(
                 .eq("id", request.chat.id)
                 .select();
 
-            if (error) {
-                logError(error);
-                return response.status(404).json(error);
-            }
-
+            if (error)
+                return response.status(500).json(error);
             return response.status(201).json(ChatSchema.parse(editedChat[0]));
         }
 
@@ -315,7 +294,7 @@ router.delete(
             .eq("id", request.chat.id);
 
         if (deleteError)
-            return response.status(400).json({ error: deleteError });
+            return response.status(500).json(deleteErrot);
 
         const { error: deleteMemberError } = await supabase
             .from("chat_members")
@@ -323,7 +302,7 @@ router.delete(
             .eq("chat_id", request.chat.id);
 
         if (deleteError)
-            return response.status(400).json({ error: deleteMemberError });
+            return response.status(500).json(deleteMemberError);
 
         return response.status(200).json({});
     }
