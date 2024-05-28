@@ -27,7 +27,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: 'backend/package-lock.json'
-      working-directory: ./backend
     - name: Create backend .env file
       working-directory: ./backend
       env:
