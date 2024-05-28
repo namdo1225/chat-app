@@ -8,10 +8,10 @@ export default defineConfig({
     plugins: [
         react(),
         tsconfigPaths(),
-        /*istanbul({
+        istanbul({
             cypress: true,
             requireEnv: false,
-        }),*/
+        }),
     ],
     server: {
         host: true,

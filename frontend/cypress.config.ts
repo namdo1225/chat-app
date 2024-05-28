@@ -1,4 +1,5 @@
 import { defineConfig } from "cypress";
+import codeCoverage from "@cypress/code-coverage/task";
 
 export default defineConfig({
     env: {
@@ -14,10 +15,10 @@ export default defineConfig({
             framework: "react",
             bundler: "vite",
         },
-        /*setupNodeEvents(on, config) {
-            require("@cypress/code-coverage/task")(on, config);
+        setupNodeEvents(on, config) {
+            codeCoverage(on, config);
 
             return config;
-        },*/
+        },
     },
 });
