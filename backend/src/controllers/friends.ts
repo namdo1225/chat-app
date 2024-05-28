@@ -49,7 +49,7 @@ router.get("/", tokenExtractor, userExtractor, paginationVerifier, async (reques
             ...data.profiles,
         };
     });
-    return response.json(formattedRequests);
+    return response.status(200).json(formattedRequests);
 });
 
 router.post(
@@ -103,7 +103,7 @@ router.post(
             ]);
         
         if (error)
-            return response.status(500).json(error);
+            return response.status(500).json({ error });
 
         return response.status(200).json({message: "Friends request sent successfully."});
     }
