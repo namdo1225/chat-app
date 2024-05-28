@@ -24,7 +24,7 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
     });
 
     if (error) return response.status(500).json({error: "Unknown error while trying to send contact email."});
-    return response.status(200).send(data);
+    return response.status(200).send({ message: "Contact email sent successfully." });
 });
 
 export default router;
