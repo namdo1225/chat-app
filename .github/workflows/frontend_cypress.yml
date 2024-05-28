@@ -11,9 +11,6 @@ on:
 jobs:
   test-frontend:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: 'backend'
     strategy:
       matrix:
         node-version: [20.x]
@@ -25,12 +22,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }} for backend
+      working-directory: ./backend
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: '**/package-lock.json'
+        cache-dependency-path: 'backend/package-lock.json'
     - name: Create backend .env file
+      working-directory: ./backend
       env:
         TEST_ENV_FILE: ${{ secrets.BACKEND_TEST_ENV }}
       run: echo $TEST_ENV_FILE | base64 --decode > .env.test.local
@@ -38,21 +37,23 @@ jobs:
       with:
         version: latest
     - run: supabase start
+      working-directory: ./backend
     - name: Install backend dependencies
+      working-directory: ./backend
       run: npm i --legacy-peer-deps
     - name: Start backend
+      working-directory: ./backend
       run: (npm run dev:native&)
     - name: Create frontend .env file
-      working-direcotry: ./frontend
+      working-directory: ./frontend
       env:
         DEV_ENV_FILE: ${{ secrets.FRONTEND_DEV_ENV }}
       run: echo $DEV_ENV_FILE | base64 --decode > .env
     - name: Install frontend dependencies
-      working-direcotry: ./frontend
+      working-directory: ./frontend
       run: npm i --legacy-peer-deps
-    - name: Start frontend
-      working-direcotry: ./frontend
-      run: (npm run dev:native&)
     - name: Test frontend
-      working-direcotry: ./frontend
-      run: (npm run cy:run)
+      working-directory: ./frontend
+      uses: cypress-io/github-action@v6
+      with:
+        start: npm run dev:native
