@@ -46,25 +46,25 @@ router.get("/", paginationVerifier, async (request, response) => {
         .range(request.begin, request.end);
 
     if (error)
-        return response.status(400).json({ error: "Error retrieving users." });
+        return response.status(500).json({ error: "Error retrieving users." });
 
     const profiles = ProfilesSchema.parse(data);
-    return response.json(profiles);
+    return response.status(200).json(profiles);
 });
 
 router.get("/:id", tokenExtractor, userExtractor, async (request, response) => {
     if (request.params.id !== request.user.id)
         return response
             .status(400)
-            .json({ error: "You do not authorized to perform this action." });
+            .json({ error: "You are not authorized to perform this action." });
 
     const data = await cacheData(request.params.id, async () =>
         supabase.from("profiles").select("*").eq("user_id", request.params.id)
     );
 
     const profiles = ProfilesSchema.parse(data?.data);
-    if (profiles && profiles.length === 1) return response.json(profiles[0]);
-    return response.status(404).json({ error: "No user found." });
+    if (profiles && profiles.length === 1) return response.status(200).json(profiles[0]);
+    return response.status(400).json({ error: "No user found." });
 });
 
 router.post(
@@ -92,7 +92,7 @@ router.post(
             });
 
         if (newUserError || !newUser.user)
-            return response.status(404).json(newUserError);
+            return response.status(500).json({ error: newUserError });
 
         const userData: {
             first_name: string;
@@ -129,10 +129,10 @@ router.post(
                 .insert([userData])
                 .select();
 
-            if (error) return response.status(404).json(error);
+            if (error) return response.status(500).json({ error });
             return response.status(201).json(newProfile);
         }
-        return response.status(201).json({ test: "hi" });
+        return response.status(400).json({ error: "You cannot create an account." });
     }
 );
 
@@ -157,18 +157,16 @@ router.put(
             if (last_name) editedData.last_name = last_name;
 
             const editedUser: {
-                email?: string;
                 password?: string;
                 user_metadata?: object;
             } = {};
 
-            if (email) editedUser.email = email;
             if (password) editedUser.password = password;
             if (Object.keys(editedData).length !== 0)
                 editedUser.user_metadata = editedData;
 
             if (email) {
-                return response.status(404).json({
+                return response.status(400).json({
                     error: "You should not use this API to change your email.",
                 });
             } else {
@@ -179,7 +177,7 @@ router.put(
                     );
 
                 if (updateUserError)
-                    return response.status(404).json(updateUserError);
+                    return response.status(500).json({ error: updateUserError });
             }
 
             if (request.file) {
@@ -192,7 +190,7 @@ router.put(
                         duplex: "half",
                     });
 
-                if (error) return response.status(404).json(error);
+                if (error) return response.status(500).json({ error });
                 else {
                     const { data } = supabase.storage
                         .from(PROFILE_IMAGE_BUCKET)
@@ -212,12 +210,12 @@ router.put(
 
             await redisClient.del(request.user.id);
 
-            if (error) return response.status(404).json(error);
+            if (error) return response.status(500).json({ error });
 
             return response.status(201).json(newProfile);
         }
 
-        return response.status(404).json({ error: "user id not found" });
+        return response.status(400).json({ error: "user id not found" });
     }
 );
 
@@ -241,17 +239,17 @@ router.delete(
                 const { error } = await supabase.storage
                     .from(PROFILE_IMAGE_BUCKET)
                     .remove([`${request.user.id}.jpg`]);
-                if (error) return response.status(404).json(error);
+                if (error) return response.status(500).json({ error });
             }
 
             const { data, error } = await supabase.auth.admin.deleteUser(
                 request.user.id
             );
 
-            if (error) return response.status(404).json(error);
-            return response.status(200).json(data);
+            if (error) return response.status(500).json({ error });
+            return response.status(200).json({ message: "User profile deleted." });
         }
-        return response.status(404).json({ error: "user id not found" });
+        return response.status(400).json({ error: "user id not found" });
     }
 );
 
