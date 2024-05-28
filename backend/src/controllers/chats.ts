@@ -84,7 +84,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
 
     if (!name)
         return response
-            .status(500)
+            .status(400)
             .json({ error: "A chat name must be included." });
 
     if (!description) delete newChat.description;
@@ -113,10 +113,8 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         .insert([newChat])
         .select();
 
-    if (error) {
-        logError(error);
+    if (error)
         return response.status(500).json(error);
-    }
 
     const createdChat = ChatSchema.parse(newCreatedChat[0]);
 
