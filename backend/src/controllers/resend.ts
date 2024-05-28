@@ -16,7 +16,7 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
     const { email, action } = ResendPathSchema.parse(request.body);
 
     if (action === "CONFIRMATION") {
-        const { data, error } = await supabase.auth.resend({
+        const { data } = await supabase.auth.resend({
             type: "signup",
             email,
             options: {
@@ -24,26 +24,18 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
             },
         });
 
-        if (error) {
-            logError(error);
-            return response.status(404).json({ error: "Error occured" });
-        }
-
-        return response.status(200).json({ message: data });
+        // Do NOT let frontend know if request failed.
+        return response.status(200).json({ message: "Confirmation email sent if account exists." });
     } else if (action === "RESET PASSWORD") {
-        const { data, error } = await supabase.auth.resetPasswordForEmail(
+        const { data } = await supabase.auth.resetPasswordForEmail(
             email,
             {
                 redirectTo: `${REDIRECT_URL}/resetpassword`,
             }
         );
 
-        if (error) {
-            logError(error);
-            return response.status(404).json({ error: "Error occured" });
-        }
-
-        return response.status(200).json({ message: data });
+        // Do NOT let frontend know if request failed.
+        return response.status(200).json({ message: "Password reset email sent if account exists. });
     }
 
     return response
