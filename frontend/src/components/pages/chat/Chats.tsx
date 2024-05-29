@@ -90,6 +90,8 @@ const CreateChatDialog = ({
             description: "",
             public: false,
             members: [] as string[],
+            encrypted: false,
+            public_key: optionalStr,
         },
         validationSchema: CreateChatSchema,
         enableReinitialize: true,
@@ -129,6 +131,8 @@ const CreateChatDialog = ({
             );
     };
 
+
+    
     return (
         <Dialog disableScrollLock={true} onClose={handleClose} open={open}>
             {isPending ? (
@@ -180,6 +184,18 @@ const CreateChatDialog = ({
                             label="Make your chat discoverable"
                             name="public"
                         />
+                        <FormControlLabel
+                            disabled={!!formik.values.public}
+                            control={
+                                <Checkbox checked={formik.values.encryted} />
+                            }
+                            onChange={formik.handleChange}
+                            label="Encrypt your chat (Available for private chats. You can't change this option once chat is created."
+                            name="encrypted"
+                        />
+                        {formik.values.encrypted && <Typography>
+                            Add friends (non-pending ONLY) to chat:
+                        </Typography>}
                         <Typography>
                             Add friends (non-pending ONLY) to chat:
                         </Typography>
