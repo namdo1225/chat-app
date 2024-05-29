@@ -57,7 +57,6 @@ type InfiniteProfiles = {
 export const useProfiles = (
     enabled: boolean = true,
     inclusiveLimit: number = 10
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
 ): InfiniteProfiles => {
     const infiniteProfiles = useInfiniteQuery<Profile[], Error>({
         queryKey: ALL,

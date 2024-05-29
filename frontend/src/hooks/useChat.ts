@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import {
     InfiniteData,
     UseInfiniteQueryResult,
@@ -33,7 +32,6 @@ export const useChats = (
     token: string,
     inclusiveLimit: number = 5,
     getAllPublic: boolean = true
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ): InfiniteChats => {
     const infiniteChats = useInfiniteQuery<Chat[], Error>({
         queryKey: CHATS,

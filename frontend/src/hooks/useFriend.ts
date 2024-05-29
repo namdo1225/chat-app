@@ -33,7 +33,6 @@ type InfiniteFriends = {
  * @param {number} inclusiveLimit Number of entries to retrieve.
  * @returns {InfiniteFriends} The hook.
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
 export const useFriends = (
     token: string,
     inclusiveLimit: number = 10

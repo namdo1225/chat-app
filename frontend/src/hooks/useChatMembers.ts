@@ -29,7 +29,6 @@ export const useChatMembers = (
     chatID: string,
     token: string,
     chatMemberExist: boolean = false
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
 ): ChatMembersQuery => {
     const chatMembers = useQuery<ChatMember[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}`],
@@ -41,23 +40,27 @@ export const useChatMembers = (
     return chatMembers;
 };
 
+type ChatMemberProfilesQuery = UseQueryResult<ChatMemberProfile[], Error>;
+
 /**
  * Hook to retrieve chat members with profile info from a chat.
  *
  * @param {string} chatID The chat's ID.
  * @param {string} token User access token.
- * @returns {object} The hook.
+ * @returns {ChatMemberProfilesQuery} The hook.
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
-export const useChatMembersProfile = (chatID: string, token: string) => {
+export const useChatMembersProfile = (
+    chatID: string,
+    token: string
+): ChatMemberProfilesQuery => {
     const chatMembers = useQuery<ChatMemberProfile[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}_PROFILES`],
-        queryFn: () => getChatMembersProfile(token, chatID),
+        queryFn: () => getChatMembersProfile(token, chatID) ?? [],
         enabled: !!token,
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
 
-    return { ...chatMembers, data: chatMembers.data ?? [] };
+    return chatMembers;
 };
 
 /**
