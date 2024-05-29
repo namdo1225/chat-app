@@ -5,11 +5,14 @@
 import { optionalStr, setRequiredStr } from "./zod";
 import z from "zod";
 
+// Only show encryption option if chat is private.
 export const ChatCreateSchema = z.object({
     name: setRequiredStr(),
     description: optionalStr,
     public: z.boolean(),
     members: z.string().array(),
+    encrypted: z.boolean().optional(),
+    public_key: optionalStr,
 });
 
 export const ChatEditSchema = z.object({
