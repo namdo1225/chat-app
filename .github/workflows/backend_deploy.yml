@@ -1,4 +1,4 @@
-name: Push Backend Image to Docker and Deploy Backend
+name: Backend - Push Image to Docker and Deploy
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: Deploy Frontend to Render
+name: Frontend - Deploy to Render
 
 on:
   push:

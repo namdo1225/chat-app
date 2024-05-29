@@ -1,4 +1,4 @@
-name: Backend Lint Check
+name: Backend - Lint Check
 
 on:
   pull_request:

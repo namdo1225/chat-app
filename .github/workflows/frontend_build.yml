@@ -1,4 +1,4 @@
-name: Build Frontend with NodeJS
+name: Frontend - Build with NodeJS
 
 on:
   pull_request:

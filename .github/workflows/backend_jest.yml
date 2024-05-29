@@ -1,4 +1,4 @@
-name: Test Backend with Jest
+name: Backend - Test with Jest
 
 on:
   pull_request:
