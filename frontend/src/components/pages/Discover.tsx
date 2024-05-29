@@ -34,14 +34,14 @@ const GroupGrid = ({
     token: string;
     chats: Chat[];
 }): JSX.Element => {
-    const { fetchNextPage, hasNextPage } = useChats(token);
+    const { infiniteChats } = useChats(token);
     const { mutate, isPending } = useJoinChatMember();
 
     return (
         <InfiniteScroll
             dataLength={chats.length}
-            hasMore={hasNextPage}
-            next={fetchNextPage}
+            hasMore={infiniteChats.hasNextPage}
+            next={infiniteChats.fetchNextPage}
             loader={<Loading />}
             endMessage={
                 <Typography sx={{ textAlign: "center", my: 10 }}>
@@ -70,9 +70,9 @@ const GroupGrid = ({
                                             {chat.description.length < 50
                                                 ? chat.description
                                                 : `${chat.description.slice(
-                                                    0,
-                                                    50
-                                                )}...`}
+                                                      0,
+                                                      50
+                                                  )}...`}
                                         </Typography>
                                     )}
                                     {!isPending && (
@@ -105,13 +105,19 @@ const Discover = (): JSX.Element => {
     const { user, session } = useAuth();
     const [searchStr, setSearchStr] = useState("");
 
-    const { data: chats, isLoading: loadingChat } = useChats(
+    const { data: chats, infiniteChats } = useChats(
         session?.access_token as string
     );
 
-    const { data: profiles, isLoading } = useProfiles(true);
+    const { data: profiles, infiniteProfiles } = useProfiles(true);
 
-    if (!profiles || !chats || isLoading || loadingChat) return <Loading />;
+    if (
+        !profiles ||
+        !chats ||
+        infiniteProfiles.isLoading ||
+        infiniteChats.isLoading
+    )
+        return <Loading />;
 
     const filteredChats = searchStr
         ? chats.filter((chat) => chat.name.includes(searchStr))

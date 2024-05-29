@@ -12,7 +12,7 @@ const router = Router();
 
 router.post("/", hcaptchaVerifier, async (request, response) => {
     const { email, body } = EmailSchema.parse(request.body);
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
         from: "onboarding@resend.dev",
         to: "namdo1204@gmail.com",
         subject: "CA: Chat App Contact Form Email",
@@ -23,8 +23,15 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
         </p>`,
     });
 
-    if (error) return response.status(400);
-    return response.status(200).send(data);
+    if (error)
+        return response
+            .status(500)
+            .json({
+                error: "Unknown error while trying to send contact email.",
+            });
+    return response
+        .status(200)
+        .send({ message: "Contact email sent successfully." });
 });
 
 export default router;

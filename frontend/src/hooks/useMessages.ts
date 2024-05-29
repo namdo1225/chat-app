@@ -7,7 +7,6 @@ import {
 } from "@tanstack/react-query";
 import * as y from "yup";
 import toast from "react-hot-toast";
-//import queryClient from "@/config/queryClient";
 import {
     deleteMessage,
     editMessage,
@@ -20,7 +19,10 @@ import { supabase } from "@/config/supabase";
 import { AxiosResponse } from "axios";
 
 type UseMessages = {
-    infinite: UseInfiniteQueryResult<InfiniteData<ChatMsg[], unknown>, Error>;
+    infiniteMessages: UseInfiniteQueryResult<
+        InfiniteData<ChatMsg[], unknown>,
+        Error
+    >;
     finalData: ChatMsg[];
 };
 
@@ -85,7 +87,7 @@ export const useMessages = (
     });
 
     return {
-        infinite: infiniteMessages,
+        infiniteMessages,
         finalData:
             currentMessages.concat(infiniteMessages.data?.pages.flat() ?? []) ??
             [],

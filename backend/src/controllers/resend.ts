@@ -6,7 +6,6 @@ import "express-async-errors";
 import { Router } from "express";
 import { supabase } from "@/supabase";
 import { ResendPathSchema } from "@/types/zod";
-import { logError } from "@/utils/logger";
 import { REDIRECT_URL } from "@/utils/config";
 import { hcaptchaVerifier } from "@/utils/middleware";
 
@@ -16,7 +15,7 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
     const { email, action } = ResendPathSchema.parse(request.body);
 
     if (action === "CONFIRMATION") {
-        const { data, error } = await supabase.auth.resend({
+        await supabase.auth.resend({
             type: "signup",
             email,
             options: {
@@ -24,26 +23,19 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
             },
         });
 
-        if (error) {
-            logError(error);
-            return response.status(404).json({ error: "Error occured" });
-        }
-
-        return response.status(200).json({ message: data });
+        // Do NOT let frontend know if request failed.
+        return response
+            .status(200)
+            .json({ message: "Confirmation email sent if account exists." });
     } else if (action === "RESET PASSWORD") {
-        const { data, error } = await supabase.auth.resetPasswordForEmail(
-            email,
-            {
-                redirectTo: `${REDIRECT_URL}/resetpassword`,
-            }
-        );
+        await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${REDIRECT_URL}/resetpassword`,
+        });
 
-        if (error) {
-            logError(error);
-            return response.status(404).json({ error: "Error occured" });
-        }
-
-        return response.status(200).json({ message: data });
+        // Do NOT let frontend know if request failed.
+        return response
+            .status(200)
+            .json({ message: "Password reset email sent if account exists." });
     }
 
     return response

@@ -1,27 +1,27 @@
 /**
  * Zod schemas for a chat data.
-*/
+ */
 
-import { setRequiredStr } from "./zod";
+import { optionalStr, setRequiredStr } from "./zod";
 import z from "zod";
 
 export const ChatCreateSchema = z.object({
     name: setRequiredStr(),
-    description: setRequiredStr(),
+    description: optionalStr,
     public: z.boolean(),
     members: z.string().array(),
 });
 
 export const ChatEditSchema = z.object({
-    name: z.string().optional(),
-    description: z.string().optional(),
-    owner_id: z.string().optional(),
+    name: optionalStr,
+    description: optionalStr,
+    owner_id: optionalStr,
     public: z.boolean().optional(),
     removeMembers: z.string().array().optional(),
     addMembers: z.string().array().optional(),
 });
 
-export const ChatSchema = ChatCreateSchema.omit({members: true}).extend({
+export const ChatSchema = ChatCreateSchema.omit({ members: true }).extend({
     id: setRequiredStr(),
     created_at: setRequiredStr(),
     owner_id: setRequiredStr(),

@@ -1,19 +1,36 @@
 /**
  * Zod schemas for general purpose parsing.
-*/
+ */
 
-import { z } from "zod";
+import { ZodEffects, z } from "zod";
+import { DOM_PURIFY } from "@/utils/purify";
+
+export const sanitize = <T>(v: T): string | T => {
+    return typeof v === "string" ? DOM_PURIFY.sanitize(v) : v;
+};
 
 export const setRequiredStr = (
-    message: string = "This field has to be filled"
-): z.ZodString => z.string().min(1, { message });
-export const email = z.string().email("This is not a valid email.");
-export const first_name = setRequiredStr("First name has to be filled.");
-export const last_name = setRequiredStr("Last name has to be filled.");
-export const password = z.string().min(8, {
-    message: "The password has to be at least 8 characters long.",
-});
+    required_error: string = "This field has to be filled"
+): ZodEffects<z.ZodString, string, string> =>
+    z.string({ required_error }).transform((v) => sanitize(v));
+export const email = z
+    .string()
+    .email("This is not a valid email.")
+    .transform((v) => sanitize(v));
+export const first_name = setRequiredStr(
+    "First name has to be filled."
+).transform((v) => sanitize(v));
+export const last_name = setRequiredStr(
+    "Last name has to be filled."
+).transform((v) => sanitize(v));
+export const password = z
+    .string()
+    .min(8, {
+        message: "The password has to be at least 8 characters long.",
+    })
+    .transform((v) => sanitize(v));
 
+export const optionalStr = setRequiredStr().optional();
 export const posSize = z.coerce.number().optional();
 
 export const passwordRefine = (

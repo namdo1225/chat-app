@@ -1,10 +1,11 @@
-name: Push Backend Image to Docker and Deploy Full-Stack to Render
+name: Backend - Push Image to Docker and Deploy
 
 on:
   push:
     branches:
       - main
       - CD-Test
+      paths: ["backend/**"]
 
 jobs:
   build:
@@ -26,7 +27,4 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}-backend:latest
       - name: Render deployment for backend
         run: curl https://api.render.com/deploy/srv-${{ secrets.BACKEND_RENDER_SERVICE_ID }}?key=${{ secrets.BACKEND_RENDER_KEY }}
-        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip')}}
-      - name: Render deployment for frontend
-        run: curl https://api.render.com/deploy/srv-${{ secrets.FRONTEND_RENDER_SERVICE_ID }}?key=${{ secrets.FRONTEND_RENDER_KEY }}
         if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip')}}

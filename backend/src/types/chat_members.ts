@@ -1,6 +1,6 @@
 /**
  * Zod schemas for a chat member data.
-*/
+ */
 
 import { setRequiredStr } from "./zod";
 import { ChatSchema } from "./chat";

@@ -10,7 +10,7 @@ export const BaseFriendSchema = z.object({
     id: setRequiredStr(),
     requester: setRequiredStr(),
     requestee: setRequiredStr(),
-    pending: z.boolean(),
+    pending: z.coerce.boolean(),
 });
 
 export const FriendSchema = BaseFriendSchema.extend({

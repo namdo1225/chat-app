@@ -74,7 +74,7 @@ const CreateChatDialog = ({
     token,
 }: AuthDialogProps): JSX.Element => {
     const { mutate, isPending } = useCreateChat();
-    const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
+    const { data: friends, infiniteFriends } = useFriends(token);
     const [searchStr, setSearchStr] = useState("");
     const filteredFriends = searchStr
         ? friends.filter(
@@ -192,8 +192,8 @@ const CreateChatDialog = ({
                         />
                         <InfiniteScroll
                             dataLength={filteredFriends.length}
-                            hasMore={hasNextPage}
-                            next={fetchNextPage}
+                            hasMore={infiniteFriends.hasNextPage}
+                            next={infiniteFriends.fetchNextPage}
                             loader={<Loading />}
                             endMessage={
                                 <Typography
@@ -314,7 +314,7 @@ const EditChatDialog = ({
     chat,
     chatMembers,
 }: ChatDialogProps): JSX.Element => {
-    const { data: friends, fetchNextPage, hasNextPage } = useFriends(token);
+    const { data: friends, infiniteFriends } = useFriends(token);
     const { mutate } = useDeleteChat();
     const { mutate: mutateEdit } = useEditChat();
     const { data: members, isLoading } = useChatMembers(
@@ -331,7 +331,7 @@ const EditChatDialog = ({
           )
         : friends;
 
-    const finalMembers = chatMembers ?? members;
+    const finalMembers = chatMembers ?? members ?? [];
 
     const formik = useFormik({
         initialValues: {
@@ -481,8 +481,8 @@ const EditChatDialog = ({
                     />
                     <InfiniteScroll
                         dataLength={filteredFriends.length}
-                        hasMore={hasNextPage}
-                        next={fetchNextPage}
+                        hasMore={infiniteFriends.hasNextPage}
+                        next={infiniteFriends.fetchNextPage}
                         loader={<Loading />}
                         endMessage={
                             <Typography sx={{ textAlign: "center", my: 10 }}>
@@ -732,18 +732,13 @@ const ChatScroll = ({
     const [openEditChat, setOpenEditChat] = useState(false);
     const [openViewChat, setOpenViewChat] = useState(false);
     const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-    const {
-        data: chats,
-        isLoading: loadingChat,
-        hasNextPage,
-        fetchNextPage,
-    } = useChats(token, 1, false);
+    const { data: chats, infiniteChats } = useChats(token, 1, false);
     const [searchStr, setSearchStr] = useState("");
     const filteredChats = searchStr
         ? chats.filter((chat) => chat.name.includes(searchStr))
         : chats;
 
-    if (loadingChat) return <Loading />;
+    if (infiniteChats.isLoading) return <Loading />;
 
     const closeDialog = (): void => {
         setOpenEditChat(false);
@@ -770,8 +765,8 @@ const ChatScroll = ({
             />
             <InfiniteScroll
                 dataLength={filteredChats.length}
-                hasMore={hasNextPage}
-                next={fetchNextPage}
+                hasMore={infiniteChats.hasNextPage}
+                next={infiniteChats.fetchNextPage}
                 loader={
                     <Loading
                         size={20}
@@ -883,7 +878,7 @@ const ChattingScreen = ({
 }): JSX.Element => {
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
-    const { finalData, infinite } = useMessages(token, chat.id);
+    const { finalData, infiniteMessages } = useMessages(token, chat.id);
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const { profile } = useAuth();
 
@@ -900,7 +895,7 @@ const ChattingScreen = ({
         }
     };
 
-    if (isLoading) return <Loading />;
+    if (isLoading || !members) return <Loading />;
 
     return (
         <Box>
@@ -918,8 +913,8 @@ const ChattingScreen = ({
                     inverse
                     className="flex flex-col-reverse overflow-visible"
                     dataLength={filteredMsgs.length}
-                    hasMore={infinite.hasNextPage}
-                    next={infinite.fetchNextPage}
+                    hasMore={infiniteMessages.hasNextPage}
+                    next={infiniteMessages.fetchNextPage}
                     loader={<Loading />}
                     endMessage={
                         <Typography
@@ -1033,7 +1028,7 @@ const Chatroom = ({
         }
     };
 
-    if (isLoading) return <Loading message="Loading chat..." />;
+    if (isLoading || !members) return <Loading message="Loading chat..." />;
 
     return (
         <Box>
@@ -1278,11 +1273,13 @@ const Chats = (): JSX.Element => {
             ) : (
                 <Chatroom chat={chatToMsg} token={session.access_token} />
             )}
-            <CreateChatDialog
-                open={openCreateChat}
-                onClose={() => setOpenCreateChat(false)}
-                token={session.access_token}
-            />
+            {openCreateChat && (
+                <CreateChatDialog
+                    open={openCreateChat}
+                    onClose={() => setOpenCreateChat(false)}
+                    token={session.access_token}
+                />
+            )}
         </Box>
     );
 };

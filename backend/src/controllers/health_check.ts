@@ -8,7 +8,7 @@ import { Router } from "express";
 const router = Router();
 
 router.get("/", (_request, response) => {
-    response.status(200).json({});
+    return response.status(200).json({});
 });
 
 export default router;

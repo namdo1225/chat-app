@@ -55,14 +55,14 @@ const UserList = ({
     const handleAddFriend = (id: string): void => {
         mutateAdd({ id, token });
     };
-    const { fetchNextPage, hasNextPage } = useProfiles();
+    const { infiniteProfiles } = useProfiles();
     const [openUserDialog, setOpenUserDialog] = useState(false);
 
     return (
         <InfiniteScroll
             dataLength={profiles.length}
-            hasMore={hasNextPage}
-            next={fetchNextPage}
+            hasMore={infiniteProfiles.hasNextPage}
+            next={infiniteProfiles.fetchNextPage}
             loader={<Loading />}
             endMessage={
                 <Typography sx={{ textAlign: "center", my: 10 }}>
@@ -153,7 +153,7 @@ const FriendList = ({
 }): JSX.Element => {
     const { mutate: mutateRemove } = useRemoveFriend();
     const { mutate: mutateVerify } = useVerifyFriend();
-    const { fetchNextPage, hasNextPage } = useFriends(token);
+    const { infiniteFriends } = useFriends(token);
     const [openUserDialog, setOpenUserDialog] = useState(false);
 
     const handleRemoveFriend = (id: string): void => {
@@ -167,8 +167,8 @@ const FriendList = ({
     return (
         <InfiniteScroll
             dataLength={friends.length}
-            hasMore={hasNextPage}
-            next={fetchNextPage}
+            hasMore={infiniteFriends.hasNextPage}
+            next={infiniteFriends.fetchNextPage}
             loader={<Loading />}
             endMessage={
                 <Typography sx={{ textAlign: "center", my: 10 }}>
@@ -261,18 +261,23 @@ const Friend = (): JSX.Element => {
     const [pending, setPending] = useState(false);
     const [searchStr, setSearchStr] = useState("");
 
-    const { data: friends, isLoading: loadingFriend } = useFriends(
+    const { data: friends, infiniteFriends } = useFriends(
         session?.access_token as string
     );
 
-    const { data: profiles, isLoading } = useProfiles(searchPublic);
+    const { data: profiles, infiniteProfiles } = useProfiles(searchPublic);
     const { mutate: mutateAdd } = useAddFriend();
 
     const handleAddFriend = (id: string): void => {
         if (user && session) mutateAdd({ id, token: session.access_token });
     };
 
-    if ((!profiles && searchPublic) || !friends || isLoading || loadingFriend)
+    if (
+        (!profiles && searchPublic) ||
+        !friends ||
+        infiniteProfiles.isLoading ||
+        infiniteFriends.isLoading
+    )
         return <Loading />;
 
     const filteredFriends =

@@ -1,0 +1,41 @@
+name: Backend - Build with NodeJS
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths: ["backend/**"]
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'backend'
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }} for backend
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+    - name: Create .env file
+      env:
+        PROD_ENV_FILE: ${{ secrets.BACKEND_PROD_ENV }}
+      run: echo $PROD_ENV_FILE | base64 --decode > .env.production.local
+    - name: Install backend dependencies
+      run: npm i --legacy-peer-deps
+    - name: Build backend
+      run: npm run build:local --if-present
+    - name: Start backend
+      run: (npm run start:local&)
+    - name: Check backend status
+      uses: jtalk/url-health-check-action@v4
+      with:
+        url: http://127.0.0.1:3001/health_check
+        follow-redirect: false
+        max-attempts: 3
+        retry-delay: 5s

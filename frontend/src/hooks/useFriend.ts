@@ -1,4 +1,6 @@
 import {
+    InfiniteData,
+    UseInfiniteQueryResult,
     UseMutationResult,
     useInfiniteQuery,
     useMutation,
@@ -10,21 +12,31 @@ import {
     verifyFriend,
 } from "@/services/friends";
 import { Friend } from "@/types/friend";
-import queryClient from "@/config/queryClient";
+import { queryClient } from "@/config/queryClient";
 import * as y from "yup";
 import { AxiosResponse } from "axios";
 
 const FRIENDS = ["FRIENDS"];
+
+type InfiniteFriends = {
+    infiniteFriends: UseInfiniteQueryResult<
+        InfiniteData<Friend[], unknown>,
+        Error
+    >;
+    data: Friend[];
+};
 
 /**
  * Hook to retrieve friends.
  *
  * @param {string} token User access token.
  * @param {number} inclusiveLimit Number of entries to retrieve.
- * @returns {object} The hook.
+ * @returns {InfiniteFriends} The hook.
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
-export const useFriends = (token: string, inclusiveLimit: number = 10) => {
+export const useFriends = (
+    token: string,
+    inclusiveLimit: number = 10
+): InfiniteFriends => {
     const infiniteFriends = useInfiniteQuery<Friend[], Error>({
         queryKey: FRIENDS,
         initialPageParam: 0,
@@ -46,7 +58,7 @@ export const useFriends = (token: string, inclusiveLimit: number = 10) => {
     });
 
     return {
-        ...infiniteFriends,
+        infiniteFriends,
         data: infiniteFriends.data?.pages.flat() ?? [],
     };
 };

@@ -1,7 +1,7 @@
 import { User } from "@supabase/supabase-js";
 import { Chat } from "./chat";
 import { Readable } from "stream";
-import { Profile } from "./database.types";
+import { Profile } from "./profile";
 export {};
 
 declare global {

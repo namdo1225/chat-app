@@ -1,5 +1,7 @@
 import { getUser, getUsers } from "@/services/users";
 import {
+    InfiniteData,
+    UseInfiniteQueryResult,
     UseQueryResult,
     useInfiniteQuery,
     useQuery,
@@ -33,7 +35,16 @@ export const useOwnProfile = (
             return false;
         },
         enabled: !!user && !!user.id && !!session,
+        staleTime: 1000 * 60 * 60 * 12, // 12 hours
     });
+};
+
+type InfiniteProfiles = {
+    infiniteProfiles: UseInfiniteQueryResult<
+        InfiniteData<Profile[], unknown>,
+        Error
+    >;
+    data: Profile[];
 };
 
 /**
@@ -41,13 +52,12 @@ export const useOwnProfile = (
  *
  * @param {boolean} enabled Whether to enable the retrieval of data.
  * @param {number} inclusiveLimit User's page limit.
- * @returns {object} The hook.
+ * @returns {InfiniteProfiles} The hook.
  */
 export const useProfiles = (
     enabled: boolean = true,
     inclusiveLimit: number = 10
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
-) => {
+): InfiniteProfiles => {
     const infiniteProfiles = useInfiniteQuery<Profile[], Error>({
         queryKey: ALL,
         initialPageParam: 0,
@@ -66,10 +76,11 @@ export const useProfiles = (
             return null;
         },
         enabled: !!enabled,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 
     return {
-        ...infiniteProfiles,
+        infiniteProfiles,
         data: infiniteProfiles.data?.pages.flat() ?? [],
     };
 };
