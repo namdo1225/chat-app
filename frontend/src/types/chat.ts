@@ -11,6 +11,8 @@ export const CreateChatSchema = y.object().shape({
     description: optionalStr,
     public: y.boolean().required(),
     members: y.array().of(y.string().required()).required(),
+    encrypted: y.boolean().optional(),
+    public_key: optionalStr,
 });
 
 export type CreateChat = InferType<typeof CreateChatSchema>;
