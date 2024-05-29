@@ -54,7 +54,6 @@ jobs:
     - name: Component Tests - Test frontend
       uses: cypress-io/github-action@v6
       with:
-        start: npm run dev:native
         install: false
         component: true
         working-directory: ./frontend
