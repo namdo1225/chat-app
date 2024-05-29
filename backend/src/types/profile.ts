@@ -1,6 +1,6 @@
 /**
  * Zod schemas for a profile data.
-*/
+ */
 
 import { z } from "zod";
 import { first_name, last_name, setRequiredStr } from "./zod";
@@ -11,7 +11,9 @@ export const ProfileSchema = z.object({
     profile_photo: setRequiredStr(),
     user_id: setRequiredStr(),
     created_at: setRequiredStr(),
-    public_profile: z.boolean(),
+    public_profile: z.coerce.boolean(),
 });
 
 export const ProfilesSchema = ProfileSchema.array();
+
+export type Profile = z.infer<typeof ProfileSchema>;

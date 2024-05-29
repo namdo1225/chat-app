@@ -35,6 +35,7 @@ export const useChatMembers = (
         queryKey: [`CHAT_MEMBERS_${chatID}`],
         queryFn: () => getChatMembers(token, chatID) ?? [],
         enabled: !!token && !chatMemberExist,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 
     return chatMembers;
@@ -53,6 +54,7 @@ export const useChatMembersProfile = (chatID: string, token: string) => {
         queryKey: [`CHAT_MEMBERS_${chatID}_PROFILES`],
         queryFn: () => getChatMembersProfile(token, chatID),
         enabled: !!token,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 
     return { ...chatMembers, data: chatMembers.data ?? [] };

@@ -10,6 +10,7 @@ import {
     password,
     passwordRefine,
     posSize,
+    setRequiredStr,
 } from "./zod";
 import { ProfileSchema } from "./profile";
 
@@ -38,7 +39,7 @@ export const UserChangeSchema = z
 
 export const UserLoginSchema = z.object({
     email,
-    password: z.string(),
+    password: setRequiredStr(),
 });
 
 export const UserSchema = ProfileSchema.extend({
