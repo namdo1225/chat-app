@@ -70,9 +70,9 @@ const GroupGrid = ({
                                             {chat.description.length < 50
                                                 ? chat.description
                                                 : `${chat.description.slice(
-                                                    0,
-                                                    50
-                                                )}...`}
+                                                      0,
+                                                      50
+                                                  )}...`}
                                         </Typography>
                                     )}
                                     {!isPending && (
@@ -109,9 +109,10 @@ const Discover = (): JSX.Element => {
         session?.access_token as string
     );
 
-    const { data: profiles, isLoading } = useProfiles(true);
+    const { data: profiles, infiniteProfiles } = useProfiles(true);
 
-    if (!profiles || !chats || isLoading || loadingChat) return <Loading />;
+    if (!profiles || !chats || infiniteProfiles.isLoading || loadingChat)
+        return <Loading />;
 
     const filteredChats = searchStr
         ? chats.filter((chat) => chat.name.includes(searchStr))

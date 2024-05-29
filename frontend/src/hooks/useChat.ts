@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import {
+    InfiniteData,
+    UseInfiniteQueryResult,
     UseMutationResult,
     useInfiniteQuery,
     useMutation,
@@ -7,11 +9,16 @@ import {
 import { createChat, deleteChat, editChat, getChats } from "@/services/chat";
 import { Chat, CreateChat, EditChat } from "@/types/chat";
 import * as y from "yup";
-import queryClient from "@/config/queryClient";
+import { queryClient } from "@/config/queryClient";
 import toast from "react-hot-toast";
 import { AxiosResponse } from "axios";
 
 const CHATS = ["CHATS"];
+
+type InfiniteChats = {
+    infiniteChats: UseInfiniteQueryResult<InfiniteData<Chat[], unknown>, Error>;
+    data: Chat[];
+};
 
 /**
  * Hook to retrieve chats.
@@ -20,14 +27,14 @@ const CHATS = ["CHATS"];
  * @param {number} inclusiveLimit Chat's page range.
  * @param {boolean} getAllPublic Whether to retrieve
  * public chats or a user's chats.
- * @returns {object} The hook.
+ * @returns {InfiniteChats} The hook.
  */
 export const useChats = (
     token: string,
     inclusiveLimit: number = 5,
     getAllPublic: boolean = true
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-) => {
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+): InfiniteChats => {
     const infiniteChats = useInfiniteQuery<Chat[], Error>({
         queryKey: CHATS,
         initialPageParam: 0,
@@ -50,7 +57,7 @@ export const useChats = (
         enabled: !!token,
     });
 
-    return { ...infiniteChats, data: infiniteChats.data?.pages.flat() ?? [] };
+    return { infiniteChats, data: infiniteChats.data?.pages.flat() ?? [] };
 };
 
 /**

@@ -3,8 +3,8 @@ import MainRoutes from "@/components/routes/MainRoutes";
 import AuthProvider from "@/context/AuthProvider";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { QueryClientProvider } from "@tanstack/react-query";
-import queryClient from "@/config/queryClient";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { queryClient, persister } from "@/config/queryClient";
 
 /**
  * App component serving as the entry component for the web app.
@@ -12,14 +12,17 @@ import queryClient from "@/config/queryClient";
  */
 const App = (): JSX.Element => {
     return (
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister }}
+        >
             <BrowserRouter>
                 <Toaster />
                 <AuthProvider>
                     <MainRoutes />
                 </AuthProvider>
             </BrowserRouter>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
     );
 };
 

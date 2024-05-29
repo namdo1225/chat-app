@@ -2,6 +2,7 @@ import {
     useQuery,
     useMutation,
     UseMutationResult,
+    UseQueryResult,
 } from "@tanstack/react-query";
 import {
     getChatMembers,
@@ -11,8 +12,10 @@ import {
 } from "@/services/chat_members";
 import { ChatMember, ChatMemberProfile } from "@/types/chat_members";
 import toast from "react-hot-toast";
-import queryClient from "@/config/queryClient";
+import { queryClient } from "@/config/queryClient";
 import { AxiosResponse } from "axios";
+
+type ChatMembersQuery = UseQueryResult<ChatMember[], Error>;
 
 /**
  * Hook to retrieve chat members from a chat.
@@ -20,21 +23,21 @@ import { AxiosResponse } from "axios";
  * @param {string} chatID The chat's ID.
  * @param {string} token User access token.
  * @param {boolean} chatMemberExist Whether a chat member exist.
- * @returns {object} The hook.
+ * @returns {ChatMembersQuery} The hook.
  */
 export const useChatMembers = (
     chatID: string,
     token: string,
     chatMemberExist: boolean = false
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
-) => {
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
+): ChatMembersQuery => {
     const chatMembers = useQuery<ChatMember[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}`],
-        queryFn: () => getChatMembers(token, chatID),
+        queryFn: () => getChatMembers(token, chatID) ?? [],
         enabled: !!token && !chatMemberExist,
     });
 
-    return { ...chatMembers, data: chatMembers.data ?? [] };
+    return chatMembers;
 };
 
 /**
