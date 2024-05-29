@@ -12,7 +12,7 @@ export const ChatCreateSchema = z.object({
     description: optionalStr,
     public: z.boolean(),
     members: z.string().array(),
-    encrypted: z.boolean().optional(),
+    encrypted: z.boolean(),
     public_key: optionalStr,
 });
 
