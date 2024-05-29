@@ -895,7 +895,7 @@ const ChattingScreen = ({
         }
     };
 
-    if (isLoading) return <Loading />;
+    if (isLoading || !members) return <Loading />;
 
     return (
         <Box>
@@ -1028,7 +1028,7 @@ const Chatroom = ({
         }
     };
 
-    if (isLoading) return <Loading message="Loading chat..." />;
+    if (isLoading || !members) return <Loading message="Loading chat..." />;
 
     return (
         <Box>
