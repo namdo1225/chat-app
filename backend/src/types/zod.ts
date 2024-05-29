@@ -10,12 +10,9 @@ export const sanitize = <T>(v: T): string | T => {
 };
 
 export const setRequiredStr = (
-    message: string = "This field has to be filled"
+    required_error: string = "This field has to be filled"
 ): ZodEffects<z.ZodString, string, string> =>
-    z
-        .string()
-        .min(1, { message })
-        .transform((v) => sanitize(v));
+    z.string({ required_error }).transform((v) => sanitize(v));
 export const email = z
     .string()
     .email("This is not a valid email.")
