@@ -25,6 +25,7 @@
         "@mui/icons-material": "^5.15.14",
         "@mui/material": "^5.15.12",
         "@reduxjs/toolkit": "^2.2.1",
+        "@stablelib/utf8": "^1.0.2",
         "@supabase/supabase-js": "^2.41.1",
         "@tanstack/query-sync-storage-persister": "^5.40.0",
         "@tanstack/react-query": "^5.29.2",
@@ -46,6 +47,7 @@
         "redux": "^5.0.1",
         "resend": "^3.2.0",
         "supabase": "^1.151.1",
+        "tweetnacl": "^1.0.3",
         "uuid": "^9.0.1",
         "web-vitals": "^2.1.4",
         "yup": "^1.4.0"

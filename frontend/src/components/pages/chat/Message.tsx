@@ -180,6 +180,7 @@ const Message = ({
                                     ? chatTheme.fromMessageText
                                     : chatTheme.toMessageText
                             }
+                            sx={{wordBreak: "break-all", hyphens: "auto"}}
                         >
                             {msg.text}
                         </Typography>

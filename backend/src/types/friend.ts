@@ -4,12 +4,12 @@
 
 import { z } from "zod";
 import { ProfileSchema } from "./profile";
-import { setRequiredStr } from "./zod";
+import { setMinStr } from "./zod";
 
 export const BaseFriendSchema = z.object({
-    id: setRequiredStr(),
-    requester: setRequiredStr(),
-    requestee: setRequiredStr(),
+    id: setMinStr(),
+    requester: setMinStr(),
+    requestee: setMinStr(),
     pending: z.coerce.boolean(),
 });
 

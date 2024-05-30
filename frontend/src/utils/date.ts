@@ -31,3 +31,14 @@ export const parseSupabaseDate = (supabaseDate: string): Date => {
 export const formatSupabaseDate = (supabaseDate: string): string => {
     return new Date(`${supabaseDate.slice(0, -6)}Z`).toLocaleDateString();
 };
+
+export const convertDateToUTC = (date: Date): Date => {
+    return new Date(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        date.getUTCHours(),
+        date.getUTCMinutes(),
+        date.getUTCSeconds()
+    );
+};

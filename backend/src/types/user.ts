@@ -7,9 +7,11 @@ import {
     email,
     first_name,
     last_name,
+    optionalStr,
     password,
     passwordRefine,
     posSize,
+    setMinStr,
     setRequiredStr,
 } from "./zod";
 import { ProfileSchema } from "./profile";
@@ -28,8 +30,8 @@ export const UserRegisterSchema = z
 
 export const UserChangeSchema = z
     .object({
-        first_name: first_name.optional(),
-        last_name: last_name.optional(),
+        first_name: optionalStr,
+        last_name: optionalStr,
         email: email.optional(),
         password: password.optional(),
         public_profile: z.coerce.boolean().optional(),
@@ -39,7 +41,7 @@ export const UserChangeSchema = z
 
 export const UserLoginSchema = z.object({
     email,
-    password: setRequiredStr(),
+    password: setMinStr(),
 });
 
 export const UserSchema = ProfileSchema.extend({

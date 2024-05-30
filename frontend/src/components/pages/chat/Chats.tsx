@@ -54,7 +54,12 @@ import {
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import SendIcon from "@mui/icons-material/Send";
-import { useMessages, useSendMessage } from "@/hooks/useMessages";
+import {
+    deletePrivateKey,
+    setPrivateKey,
+    useMessages,
+    useSendMessage,
+} from "@/hooks/useMessages";
 import ChatMsgWrapper from "./ChatMsgWrapper";
 import SearchIcon from "@mui/icons-material/Search";
 import AvatarWrapper from "../AvatarWrapper";
@@ -62,6 +67,8 @@ import { differentDays, formatSupabaseDate } from "@/utils/date";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { ChatMember } from "@/types/chat_members";
 import useAuth from "@/context/useAuth";
+import tweetnacl, { BoxKeyPair } from "tweetnacl";
+import HttpsIcon from "@mui/icons-material/Https";
 
 /**
  * Component to create a chat in a dialog.
@@ -83,7 +90,7 @@ const CreateChatDialog = ({
                   friend.last_name.includes(searchStr)
           )
         : friends;
-
+    const [keyPair, setKeyPair] = useState<BoxKeyPair>(tweetnacl.box.keyPair());
     const formik = useFormik({
         initialValues: {
             name: "",
@@ -91,7 +98,7 @@ const CreateChatDialog = ({
             public: false,
             members: [] as string[],
             encrypted: false,
-            public_key: optionalStr,
+            public_key: null,
         },
         validationSchema: CreateChatSchema,
         enableReinitialize: true,
@@ -131,8 +138,31 @@ const CreateChatDialog = ({
             );
     };
 
+    const handleDiscover = (
+        event: React.SyntheticEvent<Element, Event>,
+        checked: boolean
+    ): void => {
+        if (checked) {
+            formik.setFieldValue("encrypted", false);
+            formik.setFieldValue("public_key", null);
+        }
+        formik.handleChange(event);
+    };
 
-    
+    const handleEncryptChange = (
+        event: React.SyntheticEvent<Element, Event>,
+        checked: boolean
+    ): void => {
+        if (checked) {
+            const pair = tweetnacl.box.keyPair();
+            setKeyPair(pair);
+            formik.setFieldValue("public_key", pair.publicKey.toString());
+        } else {
+            formik.setFieldValue("public_key", null);
+        }
+        formik.handleChange(event);
+    };
+
     return (
         <Dialog disableScrollLock={true} onClose={handleClose} open={open}>
             {isPending ? (
@@ -145,10 +175,11 @@ const CreateChatDialog = ({
                             display: "flex",
                             flexDirection: "column",
                             minWidth: 500,
+                            gap: 2,
                         }}
                     >
-                        <DialogTitle textAlign="center">
-                            Create a chat:
+                        <DialogTitle fontWeight="bold" textAlign="center">
+                            Create Chat
                         </DialogTitle>
                         <TextField
                             color="secondary"
@@ -180,24 +211,43 @@ const CreateChatDialog = ({
                             control={
                                 <Checkbox checked={formik.values.public} />
                             }
-                            onChange={formik.handleChange}
-                            label="Make your chat discoverable"
+                            onChange={handleDiscover}
+                            label="Make your chat discoverable."
                             name="public"
                         />
                         <FormControlLabel
                             disabled={!!formik.values.public}
                             control={
-                                <Checkbox checked={formik.values.encryted} />
+                                <Checkbox checked={formik.values.encrypted} />
                             }
-                            onChange={formik.handleChange}
-                            label="Encrypt your chat (Available for private chats. You can't change this option once chat is created."
+                            onChange={handleEncryptChange}
+                            label="Encrypt your chat (Available for private chats. You can't change this option once chat is created)."
                             name="encrypted"
                         />
-                        {formik.values.encrypted && <Typography>
-                            Add friends (non-pending ONLY) to chat:
-                        </Typography>}
-                        <Typography>
-                            Add friends (non-pending ONLY) to chat:
+                        {formik.values.encrypted && (
+                            <>
+                                <Typography>
+                                    Save this private key and share with your
+                                    friends so they have access to this group
+                                    chat's messages. If anyone loses it, they
+                                    will lose access to the chat's history:
+                                </Typography>
+                                <Typography
+                                    sx={{
+                                        textAlign: "center",
+                                        m: 2,
+                                        border: 2,
+                                        p: 1,
+                                        backgroundColor: "primary.light",
+                                        overflow: "auto",
+                                    }}
+                                >
+                                    {keyPair.secretKey.toString()}
+                                </Typography>
+                            </>
+                        )}
+                        <Typography fontWeight="bold" textAlign="center">
+                            Add friends to chat:
                         </Typography>
                         <TextField
                             placeholder="Search your friend list"
@@ -467,11 +517,17 @@ const EditChatDialog = ({
                         helperText={formik.errors.description}
                     />
                     <FormControlLabel
+                        disabled={chat.encrypted}
                         control={<Checkbox checked={formik.values.public} />}
                         onChange={formik.handleChange}
                         label="Make your chat discoverable"
                         name="public"
                     />
+                    {chat.encrypted && (
+                        <Typography color="error.main">
+                            Encrypted chats cannot be made public
+                        </Typography>
+                    )}
                     <Typography sx={{ fontWeight: "bold", my: 2 }}>
                         New chat owner:
                         {newOwner
@@ -709,7 +765,8 @@ const ChatDetailDialog = ({
                     {chat.description ?? "None"}
                 </Typography>
                 <Typography>
-                    This chat is: {chat.public ? "public" : "[rovate"}
+                    This chat is: {chat.public ? "public" : "private"} and
+                    {`${chat.encrypted ? "" : " not"} encrypted.`}
                 </Typography>
                 <Button onClick={onClose} variant="contained" color="primary">
                     Back
@@ -894,7 +951,7 @@ const ChattingScreen = ({
 }): JSX.Element => {
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
-    const { finalData, infiniteMessages } = useMessages(token, chat.id);
+    const { finalData, infiniteMessages } = useMessages(token, chat);
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const { profile } = useAuth();
 
@@ -904,7 +961,7 @@ const ChattingScreen = ({
 
     const sendMessage = (): void => {
         try {
-            mutate({ token, text, chatID: chat.id });
+            mutate({ token, text, chat });
             setText("");
         } catch (e) {
             console.error(e);
@@ -997,6 +1054,7 @@ const ChattingScreen = ({
                     </Grid>
                     <Grid item xs="auto">
                         <Button
+                            disabled={!text.trim()}
                             color="primary"
                             variant="contained"
                             endIcon={<SendIcon />}
@@ -1029,6 +1087,8 @@ const Chatroom = ({
     const [hideMembers, setHideMembers] = useState(false);
     const [hideSearch, setHideSearch] = useState(true);
     const [hideViewChat, setHideViewChat] = useState(true);
+    const [hideEncrypt, setHideEncrypt] = useState(true);
+    const [tmpKey, setTmpKey] = useState("");
     const [searchStr, setSearchStr] = useState("");
     const { user } = useAuth();
     const { mutate } = useEditChat();
@@ -1045,6 +1105,11 @@ const Chatroom = ({
     };
 
     if (isLoading || !members) return <Loading message="Loading chat..." />;
+
+    const handleSetKey = (): void => {
+        setPrivateKey(chat.id, tmpKey);
+        setTmpKey("");
+    };
 
     return (
         <Box>
@@ -1087,7 +1152,48 @@ const Chatroom = ({
                             <MenuOpenIcon />
                         </IconButton>
                     </Tooltip>
+                    <Tooltip title="Show encryption options">
+                        <IconButton
+                            sx={{}}
+                            onClick={() => setHideEncrypt(!hideEncrypt)}
+                        >
+                            <HttpsIcon />
+                        </IconButton>
+                    </Tooltip>
                 </Box>
+                {!hideEncrypt && (
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                            m: 2,
+                        }}
+                    >
+                        <Typography>
+                            Are you seeing encrypted messages? If so, set your
+                            private key here to decrypt them. If it is correct,
+                            the messages should be readable. If you no longer
+                            have access to the key, you cannot retrieve past
+                            messages.
+                        </Typography>
+                        <TextField
+                            onChange={({ target }) => setTmpKey(target.value)}
+                            placeholder="Enter private key"
+                            value={tmpKey}
+                        />
+                        <Button onClick={handleSetKey} variant="contained">
+                            Set private key
+                        </Button>
+                        <Button
+                            onClick={() => deletePrivateKey(chat.id)}
+                            variant="contained"
+                            color="error"
+                        >
+                            Remove private key from browser
+                        </Button>
+                    </Box>
+                )}
                 {session &&
                     (chat.owner_id === user?.id ? (
                         <EditChatDialog

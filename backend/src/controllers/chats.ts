@@ -72,18 +72,23 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
         description,
         public: publicChat,
         members,
+        encrypted,
+        public_key,
     } = ChatCreateSchema.parse(request.body);
 
     const newChat: {
         name: string;
-        description?: string;
+        description?: string | null | undefined;
         owner_id: string;
         public: boolean;
+        encrypted: boolean;
+        public_key?: string;
     } = {
         name,
         description,
         owner_id: request.user.id,
         public: publicChat,
+        encrypted,
     };
 
     if (!name)
@@ -92,6 +97,7 @@ router.post("/", tokenExtractor, userExtractor, async (request, response) => {
             .json({ error: "A chat name must be included." });
 
     if (!description) newChat.description = "";
+    if (public_key) newChat.public_key = public_key;
 
     if (members.length !== 0) {
         const memberStr = members.toString();
@@ -164,6 +170,11 @@ router.put(
             removeMembers,
             addMembers,
         } = ChatEditSchema.parse(request.body);
+
+        if (publicChat && request.chat.encrypted)
+            return response.status(400).json({
+                error: "You cannot make an encrypted chat public.",
+            });
 
         // ensures new owner is a chat member
         if (owner_id && owner_id !== request.chat.owner_id) {

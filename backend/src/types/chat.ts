@@ -2,13 +2,13 @@
  * Zod schemas for a chat data.
  */
 
-import { optionalStr, setRequiredStr } from "./zod";
+import { optionalStr, setMinStr } from "./zod";
 import z from "zod";
 
 // Only show encryption option if chat is private.
 // Of course, chats can't be made public if it is already encrypted.
 export const ChatCreateSchema = z.object({
-    name: setRequiredStr(),
+    name: setMinStr(),
     description: optionalStr,
     public: z.boolean(),
     members: z.string().array(),
@@ -26,9 +26,9 @@ export const ChatEditSchema = z.object({
 });
 
 export const ChatSchema = ChatCreateSchema.omit({ members: true }).extend({
-    id: setRequiredStr(),
-    created_at: setRequiredStr(),
-    owner_id: setRequiredStr(),
+    id: setMinStr(),
+    created_at: setMinStr(),
+    owner_id: setMinStr(),
 });
 
 export const ChatsSchema = ChatSchema.array();
