@@ -954,7 +954,8 @@ const ChattingScreen = ({
     const { finalData, infiniteMessages } = useMessages(token, chat);
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const { profile } = useAuth();
-
+    const privateKey = !!queryClient.getQueryData([`CHATS_${chat.id}_PRIVATE_KEY`]);
+    
     const filteredMsgs = searchStr
         ? finalData.filter((msg) => msg.text.includes(searchStr))
         : finalData;
@@ -1054,7 +1055,7 @@ const ChattingScreen = ({
                     </Grid>
                     <Grid item xs="auto">
                         <Button
-                            disabled={!text.trim()}
+                            disabled={!text.trim() || (chat.encrypted && !privateKey)}
                             color="primary"
                             variant="contained"
                             endIcon={<SendIcon />}
