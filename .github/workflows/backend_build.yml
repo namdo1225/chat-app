@@ -3,7 +3,7 @@ name: Backend - Build with NodeJS
 on:
   pull_request:
     branches: [ "main" ]
-    paths: ["backend/**"]
+    paths: ["backend/src/**", "backend/package.json", "backend/tsconfig.json", "backend/package-lock.json", "backend/.eslintrc",  "backend/.eslintignore"]
 
 jobs:
   build-backend:
