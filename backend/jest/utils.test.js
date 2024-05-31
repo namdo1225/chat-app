@@ -1,7 +1,4 @@
-
-
 import { describe, test } from "@jest/globals";
-import request from "supertest";
 import { info } from "../src/utils/logger";
 
 describe("Utils Check Tests", () => {
