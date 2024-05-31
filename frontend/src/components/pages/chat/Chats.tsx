@@ -964,7 +964,7 @@ const ChattingScreen = ({
 
     const sendMessage = (): void => {
         try {
-            mutate({ token, text, chat });
+            mutate({ token, text, chat, publicKey, privateKey });
             setText("");
         } catch (e) {
             console.error(e);
@@ -1034,6 +1034,9 @@ const ChattingScreen = ({
                                 )}
                                 userID={userID}
                                 userProfile={profile}
+                                chat={chat}
+                                publicKey={publicKey}
+                                privateKey={privateKey}
                             />
                         </Fragment>
                     ))}
@@ -1355,7 +1358,6 @@ const Chats = (): JSX.Element => {
                         display: "flex",
                         flexDirection: "column",
                         width: { xs: 90, hcaptcha: "unset" },
-                        overflow: "auto",
                     }}
                 >
                     <Typography>Chats</Typography>

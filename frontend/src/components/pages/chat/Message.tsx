@@ -19,9 +19,13 @@ import { useState } from "react";
 import { Profile } from "@/types/profile";
 import { parseSupabaseDate } from "@/utils/date";
 import useAuth from "@/context/useAuth";
+import { Chat } from "@/types/chat";
 
 interface EditMessageDialogProps extends AuthDialogProps {
     msg: FrontendMsg;
+    chat: Chat;
+    publicKey?: Uint8Array | undefined;
+    privateKey?: Uint8Array | undefined;
 }
 
 const EditMessageDialog = ({
@@ -29,6 +33,9 @@ const EditMessageDialog = ({
     open,
     token,
     msg,
+    chat,
+    publicKey,
+    privateKey,
 }: EditMessageDialogProps): JSX.Element => {
     const { mutate, isPending } = useEditMessage();
     const [text, setText] = useState(msg.text);
@@ -36,7 +43,7 @@ const EditMessageDialog = ({
 
     const handleEdit = (): void => {
         try {
-            mutate({ token, msgID: msg.id, text });
+            mutate({ token, msgID: msg.id, text, chat, publicKey, privateKey });
             onClose();
         } catch (e) {
             console.error(e);
@@ -87,11 +94,17 @@ const Message = ({
     fromUser,
     fromServer = false,
     profile = null,
+    chat,
+    publicKey,
+    privateKey,
 }: {
     msg: FrontendMsg;
     fromUser: boolean;
     fromServer?: boolean;
     profile?: Profile | null;
+    chat?: Chat;
+    publicKey?: Uint8Array | undefined;
+    privateKey?: Uint8Array | undefined;
 }): JSX.Element => {
     const { mutate: mutateDelete } = useDeleteMessage();
     const { session, user } = useAuth();
@@ -105,8 +118,8 @@ const Message = ({
         validDate
             ? msg.sent_at
             : !fromServer
-                ? JSON.parse(msg.sent_at)
-                : parseSupabaseDate(msg.sent_at)
+            ? JSON.parse(msg.sent_at)
+            : parseSupabaseDate(msg.sent_at)
     );
 
     const handleDeleteMsg = (token: string): void => {
@@ -117,7 +130,9 @@ const Message = ({
         }
     };
 
-    const endStart = {justifyContent: fromUser ? "flex-end" : "flex-start"} as const;
+    const endStart = {
+        justifyContent: fromUser ? "flex-end" : "flex-start",
+    } as const;
 
     return (
         <Box
@@ -180,7 +195,7 @@ const Message = ({
                                     ? chatTheme.fromMessageText
                                     : chatTheme.toMessageText
                             }
-                            sx={{wordBreak: "break-all", hyphens: "auto"}}
+                            sx={{ wordBreak: "break-all", hyphens: "auto" }}
                         >
                             {msg.text}
                         </Typography>
@@ -205,36 +220,40 @@ const Message = ({
                     session &&
                     fromServer &&
                     user &&
-                    user.id === msg.from_user_id && (
-                    <>
-                        <Box
-                            sx={{
-                                display: "flex",
-                            }}
-                        >
-                            <IconButton
-                                onClick={() =>
-                                    handleDeleteMsg(session.access_token)
-                                }
+                    user.id === msg.from_user_id &&
+                    chat &&
+                    (!chat.encrypted ||
+                        (chat.encrypted && !!publicKey && !!privateKey)) && (
+                        <>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                }}
                             >
-                                <DeleteIcon />
-                            </IconButton>
-                            <IconButton
-                                onClick={() => setOpenEditMessage(true)}
-                            >
-                                <EditIcon />
-                            </IconButton>
-                        </Box>
-                        {session && (
+                                <IconButton
+                                    onClick={() =>
+                                        handleDeleteMsg(session.access_token)
+                                    }
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                                <IconButton
+                                    onClick={() => setOpenEditMessage(true)}
+                                >
+                                    <EditIcon />
+                                </IconButton>
+                            </Box>
                             <EditMessageDialog
                                 open={openEditMessage}
                                 onClose={() => setOpenEditMessage(false)}
                                 token={session.access_token}
                                 msg={msg}
+                                chat={chat}
+                                publicKey={publicKey}
+                                privateKey={privateKey}
                             />
-                        )}
-                    </>
-                )}
+                        </>
+                    )}
             </Box>
         </Box>
     );

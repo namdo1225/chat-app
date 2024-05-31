@@ -2,6 +2,7 @@ import { ChatMsg } from "@/types/message";
 import Message from "./Message";
 import { ChatMemberProfile } from "@/types/chat_members";
 import { Profile } from "@/types/profile";
+import { Chat } from "@/types/chat";
 
 /**
  * Component to view all of a user's chats and
@@ -18,11 +19,17 @@ const ChatMsgWrapper = ({
     foundMember,
     userID,
     userProfile,
+    chat,
+    publicKey,
+    privateKey,
 }: {
     msg: ChatMsg;
     foundMember?: ChatMemberProfile | undefined;
     userID: string;
     userProfile?: Profile | null | undefined;
+    chat: Chat;
+    publicKey?: Uint8Array | undefined;
+    privateKey?: Uint8Array | undefined;
 }): JSX.Element => {
     const fromUser = msg.from_user_id === userID;
 
@@ -42,6 +49,9 @@ const ChatMsgWrapper = ({
                 }}
                 fromUser={msg.from_user_id === userID}
                 fromServer={true}
+                chat={chat}
+                publicKey={publicKey}
+                privateKey={privateKey}
             />
         </>
     );

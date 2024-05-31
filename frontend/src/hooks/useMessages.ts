@@ -146,6 +146,8 @@ export const useSendMessage = (): UseMutationResult<
         token: string;
         text: string;
         chat: Chat;
+        publicKey?: Uint8Array | undefined;
+        privateKey?: Uint8Array | undefined;
     },
     unknown
 > => {
@@ -154,56 +156,23 @@ export const useSendMessage = (): UseMutationResult<
             token,
             text,
             chat,
+            publicKey,
+            privateKey,
         }: {
             token: string;
             text: string;
             chat: Chat;
+            publicKey?: Uint8Array | undefined;
+            privateKey?: Uint8Array | undefined;
         }) => {
-            /*const obj = {
-                id: "string",
-                sent_at: "string",
-                text: "string",
-                chat_id: "string",
-                from_user_id: "string",
-            };*/
-
-            const privateKey = queryClient.getQueryData([
-                `CHATS_${chat.id}_PRIVATE_KEY`,
-            ]);
-
-            if (
-                chat.encrypted &&
-                chat.public_key &&
-                typeof privateKey === "string"
-            ) {
+            if (chat.encrypted && publicKey && privateKey) {
                 const nonce = tweetnacl.randomBytes(24);
                 const encryptedMessage = tweetnacl.box(
                     encode(text),
                     nonce,
-                    Uint8Array.from(
-                        chat.public_key.split(",").map((x) => parseInt(x, 10))
-                    ),
-                    Uint8Array.from(
-                        privateKey.split(",").map((x) => parseInt(x, 10))
-                    )
+                    publicKey,
+                    privateKey
                 );
-
-                /*console.log("NOW DECRYPTING:");
-                const decryptedCode = tweetnacl.box.open(
-                    encryptedMessage,
-                    nonce,
-                    Uint8Array.from(
-                        chat.public_key.split(",").map((x) => parseInt(x, 10))
-                    ),
-                    Uint8Array.from(
-                        privateKey.split(",").map((x) => parseInt(x, 10))
-                    )
-                );
-
-                if (decryptedCode) {
-                    const decryptedMessage = decode(decryptedCode);
-                    console.log("decryptedMessage:", decryptedMessage);
-                }*/
 
                 return sendMessage(
                     token,
@@ -213,7 +182,6 @@ export const useSendMessage = (): UseMutationResult<
             } else {
                 return sendMessage(token, text, chat.id);
             }
-            //sendMessage(token, text, chat.id);
         },
         onSuccess: () => {
             toast.success("Message sent successfully.");
@@ -232,6 +200,9 @@ export const useEditMessage = (): UseMutationResult<
         token: string;
         msgID: string;
         text: string;
+        chat: Chat;
+        publicKey?: Uint8Array | undefined;
+        privateKey?: Uint8Array | undefined;
     },
     unknown
 > => {
@@ -240,11 +211,35 @@ export const useEditMessage = (): UseMutationResult<
             token,
             msgID,
             text,
+            chat,
+            publicKey,
+            privateKey,
         }: {
             token: string;
             msgID: string;
             text: string;
-        }) => editMessage(token, msgID, text),
+            chat: Chat;
+            publicKey?: Uint8Array | undefined;
+            privateKey?: Uint8Array | undefined;
+        }) => {
+            if (chat.encrypted && publicKey && privateKey) {
+                const nonce = tweetnacl.randomBytes(24);
+                const encryptedMessage = tweetnacl.box(
+                    encode(text),
+                    nonce,
+                    publicKey,
+                    privateKey
+                );
+
+                return editMessage(
+                    token,
+                    msgID,
+                    `${nonce.toString()}.${encryptedMessage.toString()}`
+                );
+            } else {
+                return editMessage(token, msgID, text);
+            }
+        },
         onSuccess: () => {
             toast.success("Message edited successfully.");
         },
@@ -263,9 +258,7 @@ type EncryptionHook = {
  * @param {Chat} chat The chat.
  * @returns {EncryptionHook} The hook.
  */
-export const useEncryptionKey = (
-    chat: Chat
-): EncryptionHook => {
+export const useEncryptionKey = (chat: Chat): EncryptionHook => {
     const publicKey = chat.public_key
         ? strToUint8Array(chat.public_key)
         : undefined;
