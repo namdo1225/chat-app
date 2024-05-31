@@ -54,12 +54,7 @@ import {
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import SendIcon from "@mui/icons-material/Send";
-import {
-    deletePrivateKey,
-    setPrivateKey,
-    useMessages,
-    useSendMessage,
-} from "@/hooks/useMessages";
+import { useMessages, useSendMessage } from "@/hooks/useMessages";
 import ChatMsgWrapper from "./ChatMsgWrapper";
 import SearchIcon from "@mui/icons-material/Search";
 import AvatarWrapper from "../AvatarWrapper";
@@ -69,6 +64,7 @@ import { ChatMember } from "@/types/chat_members";
 import useAuth from "@/context/useAuth";
 import tweetnacl, { BoxKeyPair } from "tweetnacl";
 import HttpsIcon from "@mui/icons-material/Https";
+import { useEncryptionKey } from "@/hooks/useMessages";
 
 /**
  * Component to create a chat in a dialog.
@@ -951,7 +947,14 @@ const ChattingScreen = ({
 }): JSX.Element => {
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
-    const { finalData, infiniteMessages } = useMessages(token, chat);
+    const { privateKey, publicKey } = useEncryptionKey(chat);
+    const { finalData, infiniteMessages } = useMessages(
+        token,
+        chat,
+        10,
+        publicKey,
+        privateKey
+    );
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const { profile } = useAuth();
 
@@ -1092,6 +1095,8 @@ const Chatroom = ({
     const [searchStr, setSearchStr] = useState("");
     const { user } = useAuth();
     const { mutate } = useEditChat();
+    const { setNewKey, deleteKey } = useEncryptionKey(chat);
+
     const deleteMember = (userID: string): void => {
         try {
             mutate({
@@ -1105,9 +1110,8 @@ const Chatroom = ({
     };
 
     if (isLoading || !members) return <Loading message="Loading chat..." />;
-
     const handleSetKey = (): void => {
-        setPrivateKey(chat.id, tmpKey);
+        setNewKey(tmpKey);
         setTmpKey("");
     };
 
@@ -1152,16 +1156,18 @@ const Chatroom = ({
                             <MenuOpenIcon />
                         </IconButton>
                     </Tooltip>
-                    <Tooltip title="Show encryption options">
-                        <IconButton
-                            sx={{}}
-                            onClick={() => setHideEncrypt(!hideEncrypt)}
-                        >
-                            <HttpsIcon />
-                        </IconButton>
-                    </Tooltip>
+                    {chat.encrypted && (
+                        <Tooltip title="Show encryption options">
+                            <IconButton
+                                sx={{}}
+                                onClick={() => setHideEncrypt(!hideEncrypt)}
+                            >
+                                <HttpsIcon />
+                            </IconButton>
+                        </Tooltip>
+                    )}
                 </Box>
-                {!hideEncrypt && (
+                {!hideEncrypt && chat.encrypted && (
                     <Box
                         sx={{
                             display: "flex",
@@ -1186,7 +1192,7 @@ const Chatroom = ({
                             Set private key
                         </Button>
                         <Button
-                            onClick={() => deletePrivateKey(chat.id)}
+                            onClick={deleteKey}
                             variant="contained"
                             color="error"
                         >
@@ -1323,7 +1329,7 @@ const Chats = (): JSX.Element => {
             </Typography>
             <Tooltip title="Toggle chat sidebar">
                 <IconButton
-                    sx={{ position: "absolute", top: 65, left: 2 }}
+                    sx={{ position: "fixed", top: { xs: 50, sm: 75}, left: 2 }}
                     onClick={() => setOpenDrawer(true)}
                 >
                     <MenuOpenIcon />

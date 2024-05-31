@@ -6,7 +6,6 @@ import { AxiosResponse } from "axios";
 import tweetnacl from "tweetnacl";
 import { decode } from "@stablelib/utf8";
 import { strToUint8Array } from "@/utils/string";
-import { queryClient } from "@/config/queryClient";
 
 const api = "messages";
 
@@ -16,29 +15,30 @@ const api = "messages";
  * @param {Chat} chat The chat to retrieve messages.
  * @param {number} limit Message limit.
  * @param {string} beforeTimestamp Get messages sent before this timestamp.
+ * @param {Uint8Array | undefined} publicKey Chat's public key.
+ * @param {Uint8Array | undefined} privateKey Chat's private key.
  * @returns {ChatMsg[]} The chat members data.
  */
 const getMessages = async (
     token: string,
     chat: Chat,
     limit: number,
-    beforeTimestamp: string
+    beforeTimestamp: string,
+    publicKey?: Uint8Array | undefined,
+    privateKey?: Uint8Array | undefined
 ): Promise<ChatMsg[]> => {
     const request = await apiClient.get(
         `/${api}/${chat.id}?beforeTimestamp=${beforeTimestamp}&limit=${limit}`,
         createAuthHeader(token)
     );
     const msgs = ChatMsgsSchema.validateSync(request.data);
-    const key = queryClient.getQueryData([`CHATS_${chat.id}_PRIVATE_KEY`]);
-    const tmpPublicKey = chat.public_key;
-    if (chat.encrypted && tmpPublicKey && typeof key === "string") {
+
+    if (chat.encrypted && publicKey && privateKey) {
         const returnMsgs = msgs.map((msg) => {
             try {
                 const split = msg.text.split(".");
                 const nonce = strToUint8Array(split[0]);
                 const encryptedMessage = strToUint8Array(split[1]);
-                const publicKey = strToUint8Array(tmpPublicKey);
-                const privateKey = strToUint8Array(key);
 
                 const decryptedCode = tweetnacl.box.open(
                     encryptedMessage,
@@ -68,7 +68,14 @@ const getMessages = async (
         });
 
         return returnMsgs;
-    } else return msgs;
+    } else if (chat.encrypted && !privateKey)
+        return msgs.map((msg) => {
+            return {
+                ...msg,
+                text: "Encrypted messsage. Enter correct private key to decrypt.",
+            };
+        });
+    else return msgs;
 };
 
 /**

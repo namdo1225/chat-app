@@ -22,6 +22,7 @@ import tweetnacl from "tweetnacl";
 import { Chat } from "@/types/chat";
 import { encode } from "@stablelib/utf8";
 import { convertDateToUTC } from "@/utils/date";
+import { strToUint8Array } from "@/utils/string";
 
 type UseMessages = {
     infiniteMessages: UseInfiniteQueryResult<
@@ -43,9 +44,12 @@ type UseMessages = {
 export const useMessages = (
     token: string,
     chat: Chat,
-    limit: number = 10
+    limit: number = 10,
+    publicKey: Uint8Array | undefined,
+    privateKey: Uint8Array | undefined
 ): UseMessages => {
     const [currentMessages, setCurrentMessages] = useState<ChatMsg[]>([]);
+
     useEffect(() => {
         const listen = (): (() => Promise<"error" | "ok" | "timed out">) => {
             const msgListener = supabase
@@ -85,7 +89,9 @@ export const useMessages = (
                 limit,
                 timestamp.endsWith("Z")
                     ? timestamp
-                    : `${timestamp.slice(0, -6)}Z`
+                    : `${timestamp.slice(0, -6)}Z`,
+                publicKey,
+                privateKey
             );
         },
         getNextPageParam: (lastPage, _allPages) => {
@@ -245,12 +251,57 @@ export const useEditMessage = (): UseMutationResult<
     });
 };
 
-export const setPrivateKey = (chatID: string, privateKey: string): void => {
-    queryClient.setQueryData([`CHATS_${chatID}_PRIVATE_KEY`], privateKey);
+type EncryptionHook = {
+    privateKey: Uint8Array | undefined;
+    publicKey: Uint8Array | undefined;
+    deleteKey: () => void;
+    setNewKey: (key: string) => void;
 };
 
-export const deletePrivateKey = (chatID: string): void => {
-    queryClient.removeQueries({
-        queryKey: [`CHATS_${chatID}_PRIVATE_KEY`] as string[],
-    });
+/**
+ * Hook to deal with writing and reading a chat's public and private key.
+ * @param {Chat} chat The chat.
+ * @returns {EncryptionHook} The hook.
+ */
+export const useEncryptionKey = (
+    chat: Chat
+): EncryptionHook => {
+    const publicKey = chat.public_key
+        ? strToUint8Array(chat.public_key)
+        : undefined;
+
+    const retrievePrivateKey = (): Uint8Array | undefined => {
+        const key = queryClient.getQueryData([`CHATS_${chat.id}_PRIVATE_KEY`]);
+        return Array.isArray(key) ? Uint8Array.from(key) : undefined;
+    };
+
+    const [privateKey, setPrivateKey] = useState<Uint8Array | undefined>(
+        retrievePrivateKey()
+    );
+
+    const setNewKey = (key: string): void => {
+        const decodedKey = strToUint8Array(key);
+
+        queryClient.setQueryData(
+            [`CHATS_${chat.id}_PRIVATE_KEY`],
+            Array.from(decodedKey)
+        );
+
+        setPrivateKey(decodedKey);
+    };
+
+    const deleteKey = (): void => {
+        queryClient.removeQueries({
+            queryKey: [`CHATS_${chat.id}_PRIVATE_KEY`],
+        });
+
+        setPrivateKey(undefined);
+    };
+
+    return {
+        publicKey,
+        privateKey,
+        deleteKey,
+        setNewKey,
+    };
 };
