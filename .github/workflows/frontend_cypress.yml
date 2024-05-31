@@ -3,7 +3,7 @@ name: Frontend - Test with Cypress
 on:
   pull_request:
     branches: [ "main" ]
-    paths: ["backend/**", "frontend/**"]
+    paths: ["backend/src/**", "backend/supabase/**", "frontend/**"]
 
 jobs:
   test-frontend:
