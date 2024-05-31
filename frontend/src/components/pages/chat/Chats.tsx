@@ -957,8 +957,7 @@ const ChattingScreen = ({
     );
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
     const { profile } = useAuth();
-    const privateKey = !!queryClient.getQueryData([`CHATS_${chat.id}_PRIVATE_KEY`]);
-    
+
     const filteredMsgs = searchStr
         ? finalData.filter((msg) => msg.text.includes(searchStr))
         : finalData;
@@ -1058,7 +1057,9 @@ const ChattingScreen = ({
                     </Grid>
                     <Grid item xs="auto">
                         <Button
-                            disabled={!text.trim() || (chat.encrypted && !privateKey)}
+                            disabled={
+                                !text.trim() || (chat.encrypted && !privateKey)
+                            }
                             color="primary"
                             variant="contained"
                             endIcon={<SendIcon />}
@@ -1330,7 +1331,7 @@ const Chats = (): JSX.Element => {
             </Typography>
             <Tooltip title="Toggle chat sidebar">
                 <IconButton
-                    sx={{ position: "fixed", top: { xs: 50, sm: 75}, left: 2 }}
+                    sx={{ position: "fixed", top: { xs: 50, sm: 75 }, left: 2 }}
                     onClick={() => setOpenDrawer(true)}
                 >
                     <MenuOpenIcon />
