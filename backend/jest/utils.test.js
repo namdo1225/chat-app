@@ -1,4 +1,4 @@
-import { describe, test } from "@jest/globals";
+import { describe, test, expect, jest } from "@jest/globals";
 import { info } from "../src/utils/logger";
 
 describe("Utils Check Tests", () => {
