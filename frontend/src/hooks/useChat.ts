@@ -36,11 +36,15 @@ export const useChats = (
     const infiniteChats = useInfiniteQuery<Chat[], Error>({
         queryKey: CHATS,
         initialPageParam: 0,
-        queryFn: ({ pageParam }) => {
+        queryFn: async ({ pageParam }) => {
             const page = y.number().required().validateSync(pageParam);
-            return (
-                getChats(token, page, page + inclusiveLimit, getAllPublic) ?? []
+            const result = await getChats(
+                token,
+                page,
+                page + inclusiveLimit,
+                getAllPublic
             );
+            return result ?? [];
         },
         getNextPageParam: (lastPage, _allPages, lastPageParam) => {
             const page = y.number().required().validateSync(lastPageParam);

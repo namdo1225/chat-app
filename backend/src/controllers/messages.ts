@@ -39,9 +39,8 @@ router.get(
             .select("*")
             .eq("chat_id", chatID)
             .order("sent_at", { ascending: false })
-            .lt("sent_at", `${beforeTimestamp.slice(0, -6)}Z`)
+            .lt("sent_at", beforeTimestamp)
             .limit(limit);
-
         const formattedMessages = ChatMsgSchema.array().parse(messages);
 
         if (error) return response.status(500).json({ error });

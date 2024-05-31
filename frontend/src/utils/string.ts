@@ -11,5 +11,8 @@ export const camelCaseToWords = (str: string): string => {
 export const unknownError =
     "An unknown error occured while trying to process your request.";
 
-export const sbLocalStorageTokenKey =
-    "sb-onzyqnwywxomvmghummg-auth-token";
+export const sbLocalStorageTokenKey = "sb-onzyqnwywxomvmghummg-auth-token";
+
+export const strToUint8Array = (value: string): Uint8Array => {
+    return Uint8Array.from(value.split(",").map((x) => parseInt(x, 10)));
+};

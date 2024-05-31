@@ -12,7 +12,19 @@ export const sanitize = <T>(v: T): string | T => {
 export const setRequiredStr = (
     required_error: string = "This field has to be filled"
 ): ZodEffects<z.ZodString, string, string> =>
-    z.string({ required_error }).transform((v) => sanitize(v));
+    z
+        .string({ required_error })
+        .trim()
+        .transform((v) => sanitize(v));
+export const setMinStr = (
+    msg: string = "This field has to be filled"
+): ZodEffects<z.ZodString, string, string> =>
+    z
+        .string()
+        .trim()
+        .min(1, msg)
+        .transform((v) => sanitize(v));
+
 export const email = z
     .string()
     .email("This is not a valid email.")
@@ -30,7 +42,7 @@ export const password = z
     })
     .transform((v) => sanitize(v));
 
-export const optionalStr = setRequiredStr().optional();
+export const optionalStr = setRequiredStr().optional().nullable();
 export const posSize = z.coerce.number().optional();
 
 export const passwordRefine = (

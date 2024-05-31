@@ -1,5 +1,6 @@
 import { Profile } from "@/types/profile";
 import { SimpleDialogProps } from "@/types/prop";
+import { formatSupabaseDate } from "@/utils/date";
 import { Box, Button, Dialog, DialogTitle, Typography } from "@mui/material";
 
 interface UserProfileDialogProps extends SimpleDialogProps {
@@ -37,9 +38,9 @@ const UserProfileDialog = ({
                     {profile.first_name} {profile.last_name}
                 </Typography>
                 <Typography textAlign="center">
-                    Joined the website at:
+                    Joined the website at:{" "}
+                    {formatSupabaseDate(profile.created_at)}
                 </Typography>
-                <Typography textAlign="center">{profile.created_at}</Typography>
                 <Button
                     onClick={onClose}
                     variant="contained"

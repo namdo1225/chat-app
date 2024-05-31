@@ -17,6 +17,12 @@ import { ChatMsg, ChatMsgSchema, ChatMsgsSchema } from "@/types/message";
 import { useEffect, useState } from "react";
 import { supabase } from "@/config/supabase";
 import { AxiosResponse } from "axios";
+import { queryClient } from "@/config/queryClient";
+import tweetnacl from "tweetnacl";
+import { Chat } from "@/types/chat";
+import { encode } from "@stablelib/utf8";
+import { convertDateToUTC } from "@/utils/date";
+import { strToUint8Array } from "@/utils/string";
 
 type UseMessages = {
     infiniteMessages: UseInfiniteQueryResult<
@@ -30,17 +36,18 @@ type UseMessages = {
  * Hook to retrieve messages.
  *
  * @param {string} token User access token.
- * @param {string} chatID Chat's ID.
+ * @param {Chat} chat Chat's ID.
  * @param {number} limit Number of messages to get.
  * public chats or a user's chats.
  * @returns {UseMessages} The hook.
  */
 export const useMessages = (
     token: string,
-    chatID: string,
-    limit: number = 10
+    chat: Chat,
+    limit: number = 10,
+    publicKey: Uint8Array | undefined,
+    privateKey: Uint8Array | undefined
 ): UseMessages => {
-    const curTime = new Date().toISOString();
     const [currentMessages, setCurrentMessages] = useState<ChatMsg[]>([]);
 
     useEffect(() => {
@@ -53,11 +60,13 @@ export const useMessages = (
                         event: "INSERT",
                         schema: "public",
                         table: "messages",
-                        filter: `chat_id=eq.${chatID}`,
+                        filter: `chat_id=eq.${chat.id}`,
                     },
                     (payload) => {
                         const msg = ChatMsgSchema.validateSync(payload.new);
-                        setCurrentMessages(currentMessages.concat(msg));
+                        setCurrentMessages((originalMsg) =>
+                            [msg].concat(originalMsg)
+                        );
                     }
                 )
                 .subscribe();
@@ -70,11 +79,20 @@ export const useMessages = (
     }, []);
 
     const infiniteMessages = useInfiniteQuery<ChatMsg[], Error>({
-        queryKey: [`MSG_${chatID}_INFINITE`],
-        initialPageParam: curTime,
+        queryKey: [`MSG_${chat.id}_INFINITE`],
+        initialPageParam: convertDateToUTC(new Date()).toISOString(),
         queryFn: ({ pageParam }) => {
             const timestamp = y.string().required().validateSync(pageParam);
-            return getMessages(token, chatID, limit, timestamp);
+            return getMessages(
+                token,
+                chat,
+                limit,
+                timestamp.endsWith("Z")
+                    ? timestamp
+                    : `${timestamp.slice(0, -6)}Z`,
+                publicKey,
+                privateKey
+            );
         },
         getNextPageParam: (lastPage, _allPages) => {
             if (lastPage && lastPage.length > 0) {
@@ -84,6 +102,7 @@ export const useMessages = (
             return null;
         },
         enabled: !!token,
+        staleTime: 1,
     });
 
     return {
@@ -121,18 +140,14 @@ export const useDeleteMessage = (): UseMutationResult<
  * @returns {object} The hook.
  */
 export const useSendMessage = (): UseMutationResult<
-    {
-        id: string;
-        sent_at: string;
-        text: string;
-        chat_id: string;
-        from_user_id: string;
-    },
+    ChatMsg,
     Error,
     {
         token: string;
         text: string;
-        chatID: string;
+        chat: Chat;
+        publicKey?: Uint8Array | undefined;
+        privateKey?: Uint8Array | undefined;
     },
     unknown
 > => {
@@ -140,12 +155,34 @@ export const useSendMessage = (): UseMutationResult<
         mutationFn: ({
             token,
             text,
-            chatID,
+            chat,
+            publicKey,
+            privateKey,
         }: {
             token: string;
             text: string;
-            chatID: string;
-        }) => sendMessage(token, text, chatID),
+            chat: Chat;
+            publicKey?: Uint8Array | undefined;
+            privateKey?: Uint8Array | undefined;
+        }) => {
+            if (chat.encrypted && publicKey && privateKey) {
+                const nonce = tweetnacl.randomBytes(24);
+                const encryptedMessage = tweetnacl.box(
+                    encode(text),
+                    nonce,
+                    publicKey,
+                    privateKey
+                );
+
+                return sendMessage(
+                    token,
+                    `${nonce.toString()}.${encryptedMessage.toString()}`,
+                    chat.id
+                );
+            } else {
+                return sendMessage(token, text, chat.id);
+            }
+        },
         onSuccess: () => {
             toast.success("Message sent successfully.");
         },
@@ -163,6 +200,9 @@ export const useEditMessage = (): UseMutationResult<
         token: string;
         msgID: string;
         text: string;
+        chat: Chat;
+        publicKey?: Uint8Array | undefined;
+        privateKey?: Uint8Array | undefined;
     },
     unknown
 > => {
@@ -171,13 +211,90 @@ export const useEditMessage = (): UseMutationResult<
             token,
             msgID,
             text,
+            chat,
+            publicKey,
+            privateKey,
         }: {
             token: string;
             msgID: string;
             text: string;
-        }) => editMessage(token, msgID, text),
+            chat: Chat;
+            publicKey?: Uint8Array | undefined;
+            privateKey?: Uint8Array | undefined;
+        }) => {
+            if (chat.encrypted && publicKey && privateKey) {
+                const nonce = tweetnacl.randomBytes(24);
+                const encryptedMessage = tweetnacl.box(
+                    encode(text),
+                    nonce,
+                    publicKey,
+                    privateKey
+                );
+
+                return editMessage(
+                    token,
+                    msgID,
+                    `${nonce.toString()}.${encryptedMessage.toString()}`
+                );
+            } else {
+                return editMessage(token, msgID, text);
+            }
+        },
         onSuccess: () => {
             toast.success("Message edited successfully.");
         },
     });
+};
+
+type EncryptionHook = {
+    privateKey: Uint8Array | undefined;
+    publicKey: Uint8Array | undefined;
+    deleteKey: () => void;
+    setNewKey: (key: string) => void;
+};
+
+/**
+ * Hook to deal with writing and reading a chat's public and private key.
+ * @param {Chat} chat The chat.
+ * @returns {EncryptionHook} The hook.
+ */
+export const useEncryptionKey = (chat: Chat): EncryptionHook => {
+    const publicKey = chat.public_key
+        ? strToUint8Array(chat.public_key)
+        : undefined;
+
+    const retrievePrivateKey = (): Uint8Array | undefined => {
+        const key = queryClient.getQueryData([`CHATS_${chat.id}_PRIVATE_KEY`]);
+        return Array.isArray(key) ? Uint8Array.from(key) : undefined;
+    };
+
+    const [privateKey, setPrivateKey] = useState<Uint8Array | undefined>(
+        retrievePrivateKey()
+    );
+
+    const setNewKey = (key: string): void => {
+        const decodedKey = strToUint8Array(key);
+
+        queryClient.setQueryData(
+            [`CHATS_${chat.id}_PRIVATE_KEY`],
+            Array.from(decodedKey)
+        );
+
+        setPrivateKey(decodedKey);
+    };
+
+    const deleteKey = (): void => {
+        queryClient.removeQueries({
+            queryKey: [`CHATS_${chat.id}_PRIVATE_KEY`],
+        });
+
+        setPrivateKey(undefined);
+    };
+
+    return {
+        publicKey,
+        privateKey,
+        deleteKey,
+        setNewKey,
+    };
 };

@@ -144,6 +144,10 @@ const Discover = (): JSX.Element => {
                     />
                 )}
             </Paper>
+            <Typography textAlign="center" color="error" m={2}>
+                * Joining a public chat as a private user means that your user
+                ID can be retrieved.
+            </Typography>
         </Box>
     );
 };

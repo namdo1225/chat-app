@@ -14,7 +14,28 @@ const App = (): JSX.Element => {
     return (
         <PersistQueryClientProvider
             client={queryClient}
-            persistOptions={{ persister }}
+            persistOptions={{
+                persister,
+                dehydrateOptions: {
+                    shouldDehydrateQuery: (query) => {
+                        const queryIsReadyForPersistance =
+                            query.state.status === "success";
+                        if (queryIsReadyForPersistance) {
+                            const { queryKey } = query;
+                            const excludeFromPersisting = queryKey.find((q) => {
+                                if (typeof q === "string")
+                                    return (
+                                        q.includes("MSG") &&
+                                        q.includes("INFINITE")
+                                    );
+                                return true;
+                            });
+                            return !excludeFromPersisting;
+                        }
+                        return queryIsReadyForPersistance;
+                    },
+                },
+            }}
         >
             <BrowserRouter>
                 <Toaster />

@@ -2,25 +2,25 @@
  * Zod schemas for a message data.
 */
 
-import { setRequiredStr } from "./zod";
+import { setMinStr } from "./zod";
 import z from "zod";
 
 export const MsgEditSchema = z.object({
-    text: setRequiredStr(),
+    text: setMinStr(),
 });
 
 export const BaseMsgSchema = MsgEditSchema.extend({
-    id: setRequiredStr(),
-    sent_at: setRequiredStr(),
+    id: setMinStr(),
+    sent_at: setMinStr(),
 });
 
 export const ChatMsgSchema = BaseMsgSchema.extend({
-    chat_id: setRequiredStr(),
-    from_user_id: setRequiredStr(),
+    chat_id: setMinStr(),
+    from_user_id: setMinStr(),
 });
 
 export const HomeMsgSchema = BaseMsgSchema.extend({
-    chatter: setRequiredStr(),
+    chatter: setMinStr(),
 });
 
 export type HomeMsg = z.infer<typeof HomeMsgSchema>;

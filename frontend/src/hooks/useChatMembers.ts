@@ -32,7 +32,10 @@ export const useChatMembers = (
 ): ChatMembersQuery => {
     const chatMembers = useQuery<ChatMember[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}`],
-        queryFn: () => getChatMembers(token, chatID) ?? [],
+        queryFn: async () => {
+            const result = await getChatMembers(token, chatID);
+            return result ?? [];
+        },
         enabled: !!token && !chatMemberExist,
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
@@ -55,7 +58,10 @@ export const useChatMembersProfile = (
 ): ChatMemberProfilesQuery => {
     const chatMembers = useQuery<ChatMemberProfile[], Error>({
         queryKey: [`CHAT_MEMBERS_${chatID}_PROFILES`],
-        queryFn: () => getChatMembersProfile(token, chatID) ?? [],
+        queryFn: async () => {
+            const result = await getChatMembersProfile(token, chatID);
+            return result ?? [];
+        },
         enabled: !!token,
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
