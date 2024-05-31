@@ -12,7 +12,6 @@ import {
     passwordRefine,
     posSize,
     setMinStr,
-    setRequiredStr,
 } from "./zod";
 import { ProfileSchema } from "./profile";
 
