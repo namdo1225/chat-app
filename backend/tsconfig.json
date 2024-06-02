@@ -26,6 +26,6 @@
         "**/*.tsx",
         "./src"
     ],
-    "exclude": ["node_modules", "jest", "jest.config.ts"],
+    "exclude": ["node_modules"],
     "types": ["@types/jest"]
 }

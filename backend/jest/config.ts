@@ -1,0 +1,1 @@
+export const JEST_HCAPTCHA_TOKEN = "10000000-aaaa-bbbb-cccc-000000000001";
