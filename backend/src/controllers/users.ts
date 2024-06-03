@@ -21,23 +21,12 @@ import {
 } from "@/utils/middleware";
 import { cacheData } from "@/utils/cache";
 import redisClient from "@/utils/redis";
-import { NODE_ENV } from "@/utils/config";
+import { NODE_ENV, SUPABASE_DEFAULT_PIC } from "@/utils/config";
+import { randomUUID } from "crypto";
 
 const router = Router();
 
 router.get("/", paginationVerifier, async (request, response) => {
-    /*const data = await cacheData(
-        "ALL_PROFILES",
-        async () =>
-            await supabase
-                .from("profiles")
-                .select("*")
-                .is("public_profile", true)
-                .order('last_name')
-                .range(begin, end),
-        1800
-    );*/
-
     const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -79,7 +68,7 @@ router.post(
 
         const foundUser = (
             await supabase.auth.admin.listUsers()
-        ).data.users.filter((user) => user.email === email);
+        ).data.users.find((user) => user.email === email);
 
         const { data: newUser, error: newUserError } =
             await supabase.auth.admin.createUser({
@@ -92,8 +81,18 @@ router.post(
                 },
             });
 
+        // Do not let client knows that the user already exists.
         if (newUserError || !newUser.user)
-            return response.status(500).json({ error: newUserError });
+            return response
+                .status(201)
+                .json({
+                    first_name,
+                    last_name,
+                    user_id: randomUUID(),
+                    profile_photo: SUPABASE_DEFAULT_PIC,
+                    public_profile: false,
+                    created_at: `${new Date().toISOString().slice(0, -1)}+00`,
+                });
 
         const userData: {
             first_name: string;
@@ -102,7 +101,7 @@ router.post(
             profile_photo?: string;
         } = { first_name, last_name, user_id: newUser.user?.id };
 
-        if (request.file && userData.user_id && foundUser.length === 0) {
+        if (request.file && userData.user_id && !foundUser) {
             const photoData = request.fileData;
             const extension = request.fileExtension;
             const bucketPath = `${userData.user_id}.${extension}`;
@@ -124,14 +123,18 @@ router.post(
             }
         }
 
-        if (foundUser.length === 0) {
-            const { data: newProfile, error } = await supabase
+        if (newUser && !foundUser) {
+            const { error } = await supabase
                 .from("profiles")
-                .insert([userData])
-                .select();
+                .insert([userData]);
 
             if (error) return response.status(500).json({ error });
-            return response.status(201).json(newProfile);
+            return response.status(201).json({
+                ...userData,
+                profile_photo: userData.profile_photo ?? SUPABASE_DEFAULT_PIC,
+                public_profile: false,
+                created_at: newUser.user.created_at,
+            });
         }
         return response
             .status(400)

@@ -24,10 +24,9 @@ const requestLogger = (
     _response: Response,
     next: NextFunction
 ): void => {
-    info("Method:", request.method);
-    info("Path:  ", request.path);
-    info("Body:  ", request.body);
-    info("---");
+    info(
+        `Method: ${request.method}\nPath:  ${request.path}\nBody:  ${request.body}\n---`
+    );
     next();
 };
 
@@ -68,7 +67,7 @@ const errorHandler = (
     } else if (error.name === "MulterError") {
         response.status(400).json({ error: error.message });
     } else if (error.name === "ZodError") {
-        response.status(400).json(JSON.parse(error.message));
+        response.status(400).json({ error: error.message });
     } else next(error);
 };
 
@@ -176,23 +175,31 @@ const profileImgEditor = async (
                 .status(400)
                 .json({ error: "No extraction options provided." });
         else {
-            const left = Math.floor(x * PROFILE_WIDTH_HEIGHT);
-            const top = Math.floor(y * PROFILE_WIDTH_HEIGHT);
+            const imageHW = await sharp(file.buffer).metadata();
+            if (!imageHW.width || !imageHW.height)
+                response
+                    .status(400)
+                    .json({ error: "Image has no width or height." });
+            else {
+                const left = Math.floor(x * imageHW.width);
+                const top = Math.floor(y * imageHW.height);
 
-            const buffer = await sharp(file.buffer)
-                .extract({
-                    left,
-                    top,
-                    width: Math.floor(width * 200),
-                    height: Math.floor(height * 200),
-                })
-                .resize(PROFILE_WIDTH_HEIGHT, PROFILE_WIDTH_HEIGHT)
-                .toFormat("jpg")
-                .jpeg({ quality: 95, force: true })
-                .toBuffer();
-            request.fileData = createReadStream(buffer);
-            request.fileExtension = "jpg";
-            next();
+                const buffer = await sharp(file.buffer)
+                    .extract({
+                        left,
+                        top,
+                        width: Math.floor(width * imageHW.width),
+                        height: Math.floor(height * imageHW.height),
+                    })
+                    .resize(PROFILE_WIDTH_HEIGHT, PROFILE_WIDTH_HEIGHT)
+                    .toFormat("jpg")
+                    .jpeg({ quality: 95, force: true })
+                    .toBuffer();
+
+                request.fileData = createReadStream(buffer);
+                request.fileExtension = "jpg";
+                next();
+            }
         }
     } else next();
 };
@@ -295,15 +302,11 @@ const paginationVerifier = (
     response: Response,
     next: NextFunction
 ): void => {
-    if (
-        request.query.begin &&
-        request.query.end
-    ) {
+    if (request.query.begin && request.query.end) {
         request.begin = z.coerce.number().parse(request.query.begin);
         request.end = z.coerce.number().parse(request.query.end);
         next();
-    }
-    else
+    } else
         response.status(400).json({
             error: "Missing pagination (begin or end parameters are undefined).",
         });

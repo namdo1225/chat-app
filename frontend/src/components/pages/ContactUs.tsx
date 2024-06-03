@@ -17,6 +17,7 @@ import { sendEmail } from "@/services/contact";
 import axios from "axios";
 import Logo from "@/components/branding/Logo";
 import { unknownError } from "@/utils/string";
+import { HCAPTCHA_TOKEN } from "@/config/config";
 
 /**
  * Component for /contact page.
@@ -40,7 +41,7 @@ const ContactUs = (): JSX.Element => {
                 const response = await sendEmail(
                     values.email,
                     values.body,
-                    captchaToken
+                    HCAPTCHA_TOKEN ?? captchaToken
                 );
                 if (response.status === 200)
                     setMessage("Your message is successfully sent.");

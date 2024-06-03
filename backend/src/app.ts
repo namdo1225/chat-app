@@ -17,9 +17,11 @@ import contactRouter from "./controllers/contact";
 import friendsRouter from "./controllers/friends";
 import chatMembersRouter from "./controllers/chat_members";
 import messagesRouter from "./controllers/messages";
+import wipeRouter from "./controllers/wipe";
 
 import { slowDown } from "express-slow-down";
 import { rateLimit } from "express-rate-limit";
+import { NODE_ENV } from "./utils/config";
 
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 
@@ -45,6 +47,8 @@ app.use("/contact", rateLimiter, contactRouter);
 app.use("/friends", friendsRouter);
 app.use("/chat_members", chatMembersRouter);
 app.use("/messages", messagesRouter);
+
+if (NODE_ENV !== "production") app.use("/wipe", wipeRouter);
 
 app.use(unknownEndpoint);
 app.use(errorHandler);

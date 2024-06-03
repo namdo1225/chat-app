@@ -11,9 +11,7 @@ import {
     password,
     passwordRefine,
     posSize,
-    setMinStr,
 } from "./zod";
-import { ProfileSchema } from "./profile";
 
 const posAndSize = { x: posSize, y: posSize, width: posSize, height: posSize };
 
@@ -37,14 +35,3 @@ export const UserChangeSchema = z
         ...posAndSize,
     })
     .superRefine(passwordRefine);
-
-export const UserLoginSchema = z.object({
-    email,
-    password: setMinStr(),
-});
-
-export const UserSchema = ProfileSchema.extend({
-    id: z.number().min(1, { message: "This field has to be filled." }),
-});
-
-export type UserType = z.infer<typeof UserSchema>;
