@@ -12,7 +12,6 @@ import axios from "axios";
 import { HCAPTCHA_SECRET, PROFILE_WIDTH_HEIGHT } from "./config";
 import { z } from "zod";
 import { createReadStream } from "streamifier";
-import { User } from "@supabase/supabase-js";
 
 /**
  * Log a request to the API.
@@ -217,7 +216,7 @@ const chatExtractor = async (
     next: NextFunction
 ): Promise<void> => {
     const chatID = request.params.id;
-    const user = request.user as User;
+    const user = request.user;
 
     const sbRes = await supabase
         .from("chats")
@@ -249,7 +248,7 @@ const chatMemberExtractor = async (
     next: NextFunction
 ): Promise<void> => {
     const chatID = request.params.chatID;
-    const user = request.user as User;
+    const user = request.user;
 
     const { data: member, error: memberError } = await supabase
         .from("chat_members")

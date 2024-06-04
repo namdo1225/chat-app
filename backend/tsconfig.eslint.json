@@ -1,4 +1,7 @@
 {
+    "compilerOptions": {
+        "typeRoots": ["./src/types/index.d.ts", "./node_modules/@types"]
+    },
     "extends": "./tsconfig",
     "include": [
         "jest",
