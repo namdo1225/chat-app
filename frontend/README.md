@@ -1,6 +1,11 @@
 # Frontend for CA Chat App
 
 ## Tech Stack
-- React
-- Vite
-- React Router Dom
+
+-   MaterialUI
+-   React
+-   Supabase
+-   TailwindCSS
+-   TypeScript
+-   Vue.js
+-   Yup Type Validation Library

@@ -3,7 +3,7 @@ name: Backend - Lint Check
 on:
   pull_request:
     branches: [ "main" ]
-    paths: ["backend/src/**", "backend/package.json", "backend/tsconfig.json", "backend/package-lock.json", "backend/.eslintrc",  "backend/.eslintignore"]
+    paths: ["backend/src/**", "backend/package.json", "backend/tsconfig.json", "backend/tsconfig.eslint.json", "backend/package-lock.json", "backend/.eslintrc",  "backend/.eslintignore"]
 
 jobs:
   lint-backend:

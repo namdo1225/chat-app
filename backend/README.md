@@ -1,5 +1,11 @@
 # Backend for CA Chat App
 
 ## Tech Stack
-- Supabase
-- Express
+
+-   Express
+-   Node.js
+-   Redis
+-   Supabase
+-   TypeScript
+-   WebSocket
+-   Zod Type Validation Library

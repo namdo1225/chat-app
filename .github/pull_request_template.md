@@ -17,11 +17,12 @@ Please delete options that are not relevant.
 
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
 
-- [ ] Test A
-- [ ] Test B
+- [ ] Cypress e2e tests
+- [ ] Cypress (frontend) unit tests
+- [ ] Jest (backend) unit tests
 
 **Test Configuration**:
-* Firmware version: Node.js 20 <=
+* Firmware version: Node.js, version 20 <=
 * Hardware: GitHub Actions / ubuntu-latest
 * Toolchain: Jest, Cypress
 * SDK: JavaScript, TypeScript
