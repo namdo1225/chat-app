@@ -3,7 +3,7 @@ name: Frontend - Lint Check
 on:
   pull_request:
     branches: [ "main" ]
-    paths: ["frontend/**"]
+    paths: ["frontend/src/**", "frontend/package.json", "frontend/tsconfig.json", "frontend/package-lock.json", "frontend/.eslintrc.cjs",  "frontend/.eslintignore"]
 
 jobs:
   lint-frontend:
