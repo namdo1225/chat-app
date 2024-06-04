@@ -24,6 +24,7 @@ import Dropzone from "react-dropzone";
 import Logo from "@/components/branding/Logo";
 import ChatAvatarEditor from "../../ChatAvatarEditor";
 import { unknownError } from "@/utils/string";
+import { HCAPTCHA_TOKEN } from "@/config/config";
 
 const fields = [
     {
@@ -105,7 +106,7 @@ const Register = (): JSX.Element => {
                             files: finalFile,
                             ...rect,
                         }),
-                        captchaToken
+                        HCAPTCHA_TOKEN ?? captchaToken
                     );
                     if (response.status === 201) {
                         setRegisterError("");
@@ -117,7 +118,7 @@ const Register = (): JSX.Element => {
             } catch (e) {
                 if (axios.isAxiosError(e))
                     setRegisterError(
-                        e.response?.data ?? unknownError
+                        JSON.stringify(e.response?.data) ?? unknownError
                     );
                 console.error(e);
             }

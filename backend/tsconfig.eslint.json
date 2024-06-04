@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "typeRoots": ["./src/types/index.d.ts", "./node_modules/@types"]
+    },
+    "extends": "./tsconfig",
+    "include": [
+        "jest",
+        "jest.config.ts",
+        "src/types/*.ts",
+        "_static/types/**/*.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        "./src"
+    ],
+    "exclude": ["node_modules"]
+}

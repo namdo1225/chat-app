@@ -3,8 +3,7 @@ name: Frontend - Build with NodeJS
 on:
   pull_request:
     branches: [ "main" ]
-    paths: ["frontend/**"]
-
+    paths: ["frontend/src/**", "frontend/public/**", "frontend/package.json", "frontend/tsconfig.json", "frontend/postcss.config.js", "frontend/tailwind.config.js", "frontend/vite.config.ts", "frontend/package-lock.json", "frontend/.eslintrc.cjs",  "frontend/.eslintignore",  "frontend/index.html"]
 jobs:
   build-frontend:
     runs-on: ubuntu-latest

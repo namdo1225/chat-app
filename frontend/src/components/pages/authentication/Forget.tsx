@@ -18,6 +18,7 @@ import HCaptcha from "@hcaptcha/react-hcaptcha";
 import axios from "axios";
 import Logo from "@/components/branding/Logo";
 import { unknownError } from "@/utils/string";
+import { HCAPTCHA_TOKEN } from "@/config/config";
 
 const MSG_INTRO =
     "If your email exists within our system, an email has been sent to ";
@@ -45,9 +46,9 @@ const Forget = (): JSX.Element => {
                 if (!captchaToken)
                     throw new Error("Captcha needs to be filled out.");
                 if (submit === "reset")
-                    resetPassword(values.email, captchaToken);
+                    resetPassword(values.email, HCAPTCHA_TOKEN ?? captchaToken);
                 else if (submit === "verify")
-                    resendVerify(values.email, captchaToken);
+                    resendVerify(values.email, HCAPTCHA_TOKEN ?? captchaToken);
             } catch (e) {
                 setMessage(
                     axios.isAxiosError(e) ? e.response?.data : unknownError

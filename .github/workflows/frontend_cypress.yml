@@ -3,11 +3,12 @@ name: Frontend - Test with Cypress
 on:
   pull_request:
     branches: [ "main" ]
-    paths: ["backend/**", "frontend/**"]
+    paths: ["backend/src/**", "backend/supabase/**", "frontend/**", "backend/package.json", "backend/package-lock.json",]
 
 jobs:
   test-frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         node-version: [20.x]

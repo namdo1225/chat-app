@@ -95,4 +95,5 @@ export const HCaptchaSchema = z.object({
 export const EmailSchema = z.object({
     email,
     body: setRequiredStr("An email body is required."),
+    _fail: z.boolean().optional(),
 });

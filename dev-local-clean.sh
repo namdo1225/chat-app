@@ -1,3 +1,2 @@
-docker stop redis-dev-native
-docker rm redis-dev-native
+docker compose -f docker-compose.dev.local.yml down
 (cd backend && npx supabase stop)

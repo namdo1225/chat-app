@@ -1,2 +1,2 @@
-docker run -p 6379:6379 --name redis-dev-native -d redis
+docker compose -f docker-compose.dev.local.yml up -d
 (cd backend && npx supabase start)

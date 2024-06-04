@@ -9,3 +9,7 @@ export const BACKEND_URL = (
 export const MAX_FILE_SIZE = 50_000; //50KB
 export const VALID_IMAGE_TYPES = ["png", "jpg", "jpeg"];
 export const CAPTCHA_SITE_KEY = import.meta.env.VITE_CAPTCHA_SITE_KEY;
+export const HCAPTCHA_TOKEN =
+    NODE_ENV !== "production"
+        ? "10000000-aaaa-bbbb-cccc-000000000001"
+        : undefined;
