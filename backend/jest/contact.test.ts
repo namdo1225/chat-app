@@ -3,8 +3,16 @@ import { describe, test } from "@jest/globals";
 import request from "supertest";
 import app from "../src/app";
 import { JEST_HCAPTCHA_TOKEN } from "./config";
+import redisClient from "../src/utils/redis";
+import { server } from "../src/homeWS";
 
 describe("/contact route", () => {
+    afterAll(async () => {
+        await request(app).delete("/wipe").expect(200);
+        await redisClient.disconnect();
+        server.close();
+    });
+
     test("Expects 200 OK - Sends email successfully", async () => {
         const payload = { email: "xyz@sadfjak.com", body: "HEllo!" };
 

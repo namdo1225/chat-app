@@ -19,6 +19,12 @@ router.delete("/", async (_request, response) => {
     await supabase.from("messages").delete().neq("id", RANDOM_UUID);
     await supabase.storage.emptyBucket(PROFILE_IMAGE_BUCKET);
 
+    const { data } = await supabase.auth.admin.listUsers();
+
+    if (data) {
+        data.users.forEach((user) => supabase.auth.admin.deleteUser(user.id));
+    }
+
     return response.status(200).json({ message: "Done." });
 });
 

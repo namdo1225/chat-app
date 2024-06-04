@@ -83,16 +83,14 @@ router.post(
 
         // Do not let client knows that the user already exists.
         if (newUserError || !newUser.user)
-            return response
-                .status(201)
-                .json({
-                    first_name,
-                    last_name,
-                    user_id: randomUUID(),
-                    profile_photo: SUPABASE_DEFAULT_PIC,
-                    public_profile: false,
-                    created_at: `${new Date().toISOString().slice(0, -1)}+00`,
-                });
+            return response.status(201).json({
+                first_name,
+                last_name,
+                user_id: randomUUID(),
+                profile_photo: SUPABASE_DEFAULT_PIC,
+                public_profile: false,
+                created_at: `${new Date().toISOString().slice(0, -1)}+00`,
+            });
 
         const userData: {
             first_name: string;
@@ -112,6 +110,8 @@ router.post(
                     upsert: true,
                     duplex: "half",
                 });
+
+            console.log("ERROR:", error);
 
             if (error) return response.status(400).json(error);
             else {

@@ -37,7 +37,7 @@ const rateLimiter = rateLimit({
     limit: 10, // Limit each IP to 10 requests per windowMs.
 });
 
-app.use(requestLogger);
+if (NODE_ENV === "development") app.use(requestLogger);
 
 app.use("/logout", logoutRouter);
 app.use("/resend", slow, resendRouter);

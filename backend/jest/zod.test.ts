@@ -3,8 +3,16 @@ import { describe, test } from "@jest/globals";
 import request from "supertest";
 import app from "../src/app";
 import { JEST_HCAPTCHA_TOKEN } from "./config";
+import redisClient from "../src/utils/redis";
+import { server } from "../src/homeWS";
 
 describe("zod Error handling Check", () => {
+    afterAll(async () => {
+        await request(app).delete("/wipe").expect(200);
+        await redisClient.disconnect();
+        server.close();
+    });
+
     test("Expects 400 - Parsing error", async () => {
         const payload = { email: "xyz@sadfjak.com" };
 
