@@ -1,6 +1,6 @@
 module.exports = {
     root: true,
-    env: { browser: true, es2020: true, node: true, "cypress/globals": true },
+    env: { browser: true, es2020: true, node: true, },
     extends: [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
@@ -12,15 +12,13 @@ module.exports = {
     parserOptions: {
         project: ["./tsconfig.eslint.json"],
     },
-    plugins: ["cypress", "react-refresh", "@typescript-eslint", "@stylistic/js"],
+    plugins: [
+        "react-refresh",
+        "@typescript-eslint",
+        "@stylistic/js",
+        "eslint-plugin-cypress",
+    ],
     rules: {
-        "cypress/no-assigning-return-values": "error",
-        "cypress/no-unnecessary-waiting": "error",
-        "cypress/assertion-before-screenshot": "warn",
-        "cypress/no-force": "warn",
-        "cypress/no-async-tests": "error",
-        "cypress/no-async-before": "error",
-        "cypress/no-pause": "error",
         "react-refresh/only-export-components": [
             "warn",
             { allowConstantExport: true },
