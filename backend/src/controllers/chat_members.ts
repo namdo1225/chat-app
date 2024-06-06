@@ -63,39 +63,33 @@ router.post(
     async (request, response) => {
         const chatID = request.params.chatID;
 
+
         const { data: foundMembership, error: foundMembershipError } =
             await supabase
                 .from("chat_members")
                 .select()
                 .eq("chat_id", chatID)
                 .eq("user_id", request.user.id)
-                .eq("public", true)
                 .select();
 
         if (foundMembershipError)
             return response.status(500).json({ error: foundMembershipError });
 
-        if (foundMembership) {
-            ChatMemberOnlySchema.array().parse(foundMembership[0]);
-
+        if (foundMembership.length > 0)
             return response
                 .status(400)
                 .json({ error: "You already joined this chat group." });
-        }
 
-        const { data: chatMembers, error } = await supabase
+        const { error } = await supabase
             .from("chat_members")
             .insert([{ user_id: request.user.id, chat_id: chatID }])
             .eq("chat_id", chatID)
-            .eq("public", true)
-            .select();
+            .eq("public", true);
+
 
         if (error) return response.status(500).json({ error });
 
-        const formattedChatMembers =
-            ChatMemberOnlySchema.array().parse(chatMembers);
-
-        return response.status(201).json(formattedChatMembers[0]);
+        return response.status(201).json();
     }
 );
 

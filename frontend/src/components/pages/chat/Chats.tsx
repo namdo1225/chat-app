@@ -890,6 +890,7 @@ const ChatScroll = ({
                                 </IconButton>
                                 <IconButton
                                     sx={{ mx: 2 }}
+                                    data-cy="scroll-leave"
                                     onClick={() =>
                                         user?.id === chat.owner_id
                                             ? selectEditChat(chat)

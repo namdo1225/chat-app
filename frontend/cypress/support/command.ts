@@ -34,7 +34,9 @@ declare global {
             login(
                 email?: string,
                 password?: string
-            ): Chainable<JQuery<HTMLElement>>;
+            ): void;
+
+            logout(): void;
         }
     }
 }
@@ -46,7 +48,7 @@ Cypress.Commands.add("dataCy", (value) => {
 Cypress.Commands.add("login", (email, password) => {
     cy.visit("/login");
 
-    cy.dataCy("login-email").type(email ?? "test@example.com");
+    cy.dataCy("login-email").type(email ?? "test01@example.com");
     cy.dataCy("login-password").type(password ?? "password123");
 
     cy.get("form").submit();
@@ -55,4 +57,8 @@ Cypress.Commands.add("login", (email, password) => {
 
     cy.visit("/login");
     cy.url().should("eq", "http://localhost:5173/");
+});
+
+Cypress.Commands.add("logout", () => {
+    cy.visit("/login");
 });

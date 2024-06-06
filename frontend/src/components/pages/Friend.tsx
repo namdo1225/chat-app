@@ -307,12 +307,14 @@ const Friend = (): JSX.Element => {
                 <Box display="flex" flexWrap="wrap">
                     <Typography>Searching for new people?</Typography>
                     <Switch
+                        data-cy="fri-search"
                         checked={searchPublic}
                         onChange={() => setSearchPublic(!searchPublic)}
                     />
                 </Box>
                 <Box display="flex" flexDirection="column" gap={2}>
                     <TextField
+                        data-cy="fri-textfield"
                         placeholder={
                             searchPublic
                                 ? "Find new friends"

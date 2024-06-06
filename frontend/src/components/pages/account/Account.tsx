@@ -9,6 +9,7 @@ import {
     FormLabel,
     Checkbox,
     FormControlLabel,
+    Typography,
 } from "@mui/material";
 import { useState } from "react";
 import { supabase } from "@/config/supabase";
@@ -66,8 +67,13 @@ const DeleteAccountDialog = ({
     return (
         <Dialog onClose={onClose} open={open}>
             <Box sx={{ p: 3, display: "flex", flexDirection: "column" }}>
-                <DialogTitle>
-                    Type in your email to delete your account:
+                <DialogTitle textAlign="center" fontWeight="bold">
+                    Confirm Account Deletion
+                </DialogTitle>
+                <DialogTitle textAlign="center">
+                    Type in your email
+                    <Typography fontWeight="bold">{user?.email}</Typography> to
+                    delete your account:
                 </DialogTitle>
                 <TextField
                     data-cy="del-email"
@@ -77,6 +83,9 @@ const DeleteAccountDialog = ({
                     label="Email"
                     type="email"
                     name="email"
+                    onCut={(e) => e.preventDefault()}
+                    onCopy={(e) => e.preventDefault()}
+                    onPaste={(e) => e.preventDefault()}
                     value={email}
                     onChange={({ target }) => setEmail(target.value)}
                 />
