@@ -31,7 +31,10 @@ declare global {
         interface Chainable {
             dataCy(value: string): Chainable<JQuery<HTMLElement>>;
 
-            login(): Chainable<JQuery<HTMLElement>>;
+            login(
+                email?: string,
+                password?: string
+            ): Chainable<JQuery<HTMLElement>>;
         }
     }
 }
@@ -40,11 +43,11 @@ Cypress.Commands.add("dataCy", (value) => {
     return cy.get(`[data-cy=${value}]`);
 });
 
-Cypress.Commands.add("login", () => {
+Cypress.Commands.add("login", (email, password) => {
     cy.visit("/login");
 
-    cy.dataCy("login-email").type("test@example.com");
-    cy.dataCy("login-password").type("password123");
+    cy.dataCy("login-email").type(email ?? "test@example.com");
+    cy.dataCy("login-password").type(password ?? "password123");
 
     cy.get("form").submit();
 

@@ -70,6 +70,7 @@ const DeleteAccountDialog = ({
                     Type in your email to delete your account:
                 </DialogTitle>
                 <TextField
+                    data-cy="del-email"
                     color="secondary"
                     required
                     sx={{ my: 2 }}
@@ -80,6 +81,7 @@ const DeleteAccountDialog = ({
                     onChange={({ target }) => setEmail(target.value)}
                 />
                 <Button
+                    data-cy="del-button"
                     onClick={deleteAccount}
                     type="submit"
                     variant="contained"

@@ -148,7 +148,7 @@ const Register = (): JSX.Element => {
     return (
         <Paper sx={{ m: 2, p: 2 }}>
             <Box className="flex flex-col p-50 m-50">
-                <form className="flex flex-col" onSubmit={formik.handleSubmit}>
+                <form data-cy="reg-form" className="flex flex-col" onSubmit={formik.handleSubmit}>
                     <FormControl>
                         <FormLabel sx={{ mx: "auto", my: 2 }}>
                             Register to NaChat
@@ -161,6 +161,7 @@ const Register = (): JSX.Element => {
                         )}
                         {fields.map(({ name, label }) => (
                             <TextField
+                                data-cy={`reg-${name}`}
                                 required
                                 sx={{ my: 2 }}
                                 color="secondary"

@@ -26,6 +26,7 @@ import { CHAT_THEMES_KEY, ChatThemeKey, PALETTE_COLORS } from "@/types/theme";
 import { optionalStr } from "@/types/yup";
 import { camelCaseToWords } from "@/utils/string";
 import useAuth from "@/context/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const fields = [
     {
@@ -43,6 +44,7 @@ const fields = [
  * @returns {JSX.Element} The React component.
  */
 const Profile = (): JSX.Element => {
+    const navigate = useNavigate();
     const ref = useRef<HTMLInputElement>(null);
     const editorRef = useRef<AvatarEditor>(null);
     const { session, user, refreshToken, profile, chatTheme, handleChatTheme } =
@@ -55,8 +57,8 @@ const Profile = (): JSX.Element => {
         }
     };
 
-    const curFirstName = user?.user_metadata.first_name;
-    const curLastName = user?.user_metadata.last_name;
+    const curFirstName = profile?.first_name;
+    const curLastName = profile?.last_name;
 
     const formik = useFormik({
         initialValues: {
@@ -96,8 +98,9 @@ const Profile = (): JSX.Element => {
                     session.access_token
                 );
                 if (response.status === 201) {
-                    toast.success("You profile updated successfully.");
+                    toast.success("Your profile updated successfully.");
                     await refreshToken();
+                    navigate(0);
                 }
             } catch (e) {
                 if (axios.isAxiosError(e))
@@ -140,6 +143,7 @@ const Profile = (): JSX.Element => {
             <Paper sx={{ m: 2, p: 2 }}>
                 <Box>
                     <form
+                        data-cy="prof-form"
                         className="flex flex-col"
                         onSubmit={formik.handleSubmit}
                     >
@@ -162,6 +166,7 @@ const Profile = (): JSX.Element => {
                                 ({ name, label }) =>
                                     label !== "publicProfile" && (
                                         <TextField
+                                            data-cy={`prof-${name}`}
                                             required
                                             sx={{ my: 2 }}
                                             color="secondary"
@@ -258,6 +263,7 @@ const Profile = (): JSX.Element => {
                                     !formik.values.files
                                 }
                                 type="submit"
+                                data-cy="prof-submit"
                                 sx={{ my: 2 }}
                             >
                                 Submit
