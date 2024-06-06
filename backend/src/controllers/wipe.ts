@@ -9,10 +9,11 @@ import { NODE_ENV } from "@/utils/config";
 
 const router = Router();
 const RANDOM_UUID = "00000000-0000-0000-0000-000000000000";
+const TEST_USER_UUID = "90241aa1-9820-4499-bc05-1daff7c8043d";
 
 router.delete("/", async (_request, response) => {
     if (NODE_ENV === "production") response.status(404).json();
-    await supabase.from("profiles").delete().neq("id", RANDOM_UUID);
+    await supabase.from("profiles").delete().neq("user_id", TEST_USER_UUID);
     await supabase.from("chats").delete().neq("id", RANDOM_UUID);
     await supabase.from("chat_members").delete().neq("id", RANDOM_UUID);
     await supabase.from("friends").delete().neq("id", RANDOM_UUID);
@@ -22,7 +23,10 @@ router.delete("/", async (_request, response) => {
     const { data } = await supabase.auth.admin.listUsers();
 
     if (data) {
-        data.users.forEach((user) => supabase.auth.admin.deleteUser(user.id));
+        data.users.forEach(async (user) => {
+            if (user.id !== TEST_USER_UUID)
+                await supabase.auth.admin.deleteUser(user.id);
+        });
     }
 
     return response.status(200).json({ message: "Done." });

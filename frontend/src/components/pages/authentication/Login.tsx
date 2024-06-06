@@ -79,6 +79,7 @@ const Login = (): JSX.Element => {
                             </Alert>
                         )}
                         <TextField
+                            data-cy="login-email"
                             color="secondary"
                             required
                             sx={{ my: 2 }}
@@ -92,6 +93,7 @@ const Login = (): JSX.Element => {
                             helperText={formik.errors.email}
                         />
                         <TextField
+                            data-cy="login-password"
                             color="secondary"
                             required
                             sx={{ my: 2 }}

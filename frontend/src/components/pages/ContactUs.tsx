@@ -8,16 +8,15 @@ import {
     Alert,
 } from "@mui/material";
 import Notifications from "@mui/icons-material/Notifications";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { EmailSchema } from "@/types/yup";
 import { useFormik } from "formik";
 import Captcha from "@/components/Captcha";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { sendEmail } from "@/services/contact";
 import axios from "axios";
 import Logo from "@/components/branding/Logo";
 import { unknownError } from "@/utils/string";
-import { HCAPTCHA_TOKEN } from "@/config/config";
+import useCaptcha from "@/hooks/useCaptcha";
 
 /**
  * Component for /contact page.
@@ -25,8 +24,7 @@ import { HCAPTCHA_TOKEN } from "@/config/config";
  */
 const ContactUs = (): JSX.Element => {
     const [message, setMessage] = useState<string>("");
-    const [captchaToken, setCaptchaToken] = useState("");
-    const captcha = useRef<HCaptcha>(null);
+    const { captchaToken, setCaptchaToken, captchaRef } = useCaptcha();
 
     const formik = useFormik({
         initialValues: {
@@ -41,7 +39,7 @@ const ContactUs = (): JSX.Element => {
                 const response = await sendEmail(
                     values.email,
                     values.body,
-                    HCAPTCHA_TOKEN ?? captchaToken
+                    captchaToken
                 );
                 if (response.status === 200)
                     setMessage("Your message is successfully sent.");
@@ -51,7 +49,7 @@ const ContactUs = (): JSX.Element => {
                 console.error(e);
             }
             setCaptchaToken("");
-            if (captcha.current) captcha.current.resetCaptcha();
+            if (captchaRef.current) captchaRef.current.resetCaptcha();
         },
     });
 
@@ -97,7 +95,7 @@ const ContactUs = (): JSX.Element => {
                             helperText={formik.errors.body}
                         />
                         <Captcha
-                            captcha={captcha}
+                            captcha={captchaRef}
                             setCaptchaToken={setCaptchaToken}
                         />
                         <Button type="submit" sx={{ my: 2 }}>

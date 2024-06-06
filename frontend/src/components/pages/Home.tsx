@@ -1,8 +1,8 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import HomeChat from "@/components/pages/chat/HomeChat";
-import { useRef, useState } from "react";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
+import { useState } from "react";
 import Captcha from "../Captcha";
+import useCaptcha from "@/hooks/useCaptcha";
 
 /**
  * Component for /home page.
@@ -11,8 +11,7 @@ import Captcha from "../Captcha";
 const Home = (): JSX.Element => {
     const [tempChatter, setTempChatter] = useState("");
     const [chatter, setChatter] = useState("");
-    const [captcha, setCaptchaToken] = useState("");
-    const captchaRef = useRef<HCaptcha>(null);
+    const { captchaToken, setCaptchaToken, captchaRef } = useCaptcha();
 
     return (
         <Box
@@ -33,7 +32,7 @@ const Home = (): JSX.Element => {
                 interface, but you need to sign up in order to use the actual
                 chat application.
             </Typography>
-            {chatter && captcha ? (
+            {chatter && captchaToken ? (
                 <HomeChat chatter={chatter} />
             ) : (
                 <Box
@@ -57,7 +56,7 @@ const Home = (): JSX.Element => {
                         setCaptchaToken={setCaptchaToken}
                     />
                     <Button
-                        disabled={!captcha || !tempChatter}
+                        disabled={!captchaToken || !tempChatter}
                         color="primary"
                         variant="contained"
                         onClick={() => setChatter(tempChatter)}

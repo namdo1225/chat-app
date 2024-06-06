@@ -8,17 +8,16 @@ import {
     Alert,
 } from "@mui/material";
 import Notifications from "@mui/icons-material/Notifications";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useFormik } from "formik";
 import * as y from "yup";
 import { resendVerify, resetPassword } from "@/services/users";
 import { email } from "@/types/yup";
 import Captcha from "@/components/Captcha";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
 import axios from "axios";
 import Logo from "@/components/branding/Logo";
 import { unknownError } from "@/utils/string";
-import { HCAPTCHA_TOKEN } from "@/config/config";
+import useCaptcha from "@/hooks/useCaptcha";
 
 const MSG_INTRO =
     "If your email exists within our system, an email has been sent to ";
@@ -31,8 +30,7 @@ const ACTION_INTRO = "Please click on the link within the email to ";
 const Forget = (): JSX.Element => {
     const [message, setMessage] = useState<string>("");
     const [submit, setSubmit] = useState<string>("reset");
-    const [captchaToken, setCaptchaToken] = useState("");
-    const captcha = useRef<HCaptcha>(null);
+    const { captchaToken, setCaptchaToken, captchaRef } = useCaptcha();
 
     const formik = useFormik({
         initialValues: {
@@ -46,9 +44,9 @@ const Forget = (): JSX.Element => {
                 if (!captchaToken)
                     throw new Error("Captcha needs to be filled out.");
                 if (submit === "reset")
-                    resetPassword(values.email, HCAPTCHA_TOKEN ?? captchaToken);
+                    resetPassword(values.email, captchaToken);
                 else if (submit === "verify")
-                    resendVerify(values.email, HCAPTCHA_TOKEN ?? captchaToken);
+                    resendVerify(values.email, captchaToken);
             } catch (e) {
                 setMessage(
                     axios.isAxiosError(e) ? e.response?.data : unknownError
@@ -65,7 +63,7 @@ const Forget = (): JSX.Element => {
                     `${MSG_INTRO}${values.email}. ${ACTION_INTRO}verify your account.`
                 );
             setCaptchaToken("");
-            if (captcha.current) captcha.current.resetCaptcha();
+            if (captchaRef.current) captchaRef.current.resetCaptcha();
         },
     });
 
@@ -101,7 +99,7 @@ const Forget = (): JSX.Element => {
                             helperText={formik.errors.email}
                         />
                         <Captcha
-                            captcha={captcha}
+                            captcha={captchaRef}
                             setCaptchaToken={setCaptchaToken}
                         />
                         <Button

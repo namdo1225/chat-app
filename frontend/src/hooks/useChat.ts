@@ -30,7 +30,7 @@ type InfiniteChats = {
  */
 export const useChats = (
     token: string,
-    inclusiveLimit: number = 5,
+    inclusiveLimit: number = 10,
     getAllPublic: boolean = true
 ): InfiniteChats => {
     const infiniteChats = useInfiniteQuery<Chat[], Error>({

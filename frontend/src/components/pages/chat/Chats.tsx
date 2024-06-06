@@ -21,8 +21,9 @@ import {
     TableBody,
     Tooltip,
     Grid,
+    Menu,
 } from "@mui/material";
-import { Dispatch, Fragment, SetStateAction, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useRef, useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import AddIcon from "@mui/icons-material/Add";
 import { useFormik } from "formik";
@@ -65,6 +66,8 @@ import useAuth from "@/context/useAuth";
 import tweetnacl, { BoxKeyPair } from "tweetnacl";
 import HttpsIcon from "@mui/icons-material/Https";
 import { useEncryptionKey } from "@/hooks/useMessages";
+import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 
 /**
  * Component to create a chat in a dialog.
@@ -945,6 +948,9 @@ const ChattingScreen = ({
     token: string;
     searchStr: string;
 }): JSX.Element => {
+    const [emojiOpen, setEmojiOpen] = useState(false);
+    const anchorEmoji = useRef<HTMLButtonElement>(null);
+    const anchorInput = useRef<HTMLInputElement>(null);
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
     const { privateKey, publicKey } = useEncryptionKey(chat);
@@ -968,6 +974,18 @@ const ChattingScreen = ({
             setText("");
         } catch (e) {
             console.error(e);
+        }
+    };
+
+    const handleEmojiPick = (
+        emoji: EmojiClickData,
+        _event: MouseEvent
+    ): void => {
+        if (anchorInput.current && anchorInput.current.selectionStart) {
+            const cursor = anchorInput.current.selectionStart;
+            const tmpText =
+                text.slice(0, cursor) + emoji.emoji + text.slice(cursor);
+            setText(tmpText);
         }
     };
 
@@ -1050,13 +1068,29 @@ const ChattingScreen = ({
                 <Grid wrap="wrap" container spacing={2}>
                     <Grid item xs>
                         <TextField
+                            inputRef={anchorInput}
                             fullWidth
+                            multiline
+                            maxRows={4}
                             size="small"
                             placeholder="Type a message"
                             variant="outlined"
                             value={text}
                             onChange={({ target }) => setText(target.value)}
                         />
+                    </Grid>
+                    <Grid item xs="auto">
+                        <Tooltip title="Emoji selector">
+                            <IconButton
+                                ref={anchorEmoji}
+                                aria-label="emoji bar"
+                                aria-controls="emoji-bar"
+                                aria-haspopup="true"
+                                onClick={() => setEmojiOpen(!emojiOpen)}
+                            >
+                                <EmojiEmotionsIcon />
+                            </IconButton>
+                        </Tooltip>
                     </Grid>
                     <Grid item xs="auto">
                         <Button
@@ -1071,6 +1105,30 @@ const ChattingScreen = ({
                             Send
                         </Button>
                     </Grid>
+                    {anchorEmoji.current && (
+                        <Menu
+                            open={emojiOpen}
+                            onClose={() => setEmojiOpen(false)}
+                            disableScrollLock={true}
+                            id="emoji-bar"
+                            anchorEl={() =>
+                                anchorEmoji.current as HTMLButtonElement
+                            }
+                            anchorOrigin={{
+                                vertical: "top",
+                                horizontal: "center",
+                            }}
+                            transformOrigin={{
+                                vertical: "top",
+                                horizontal: "center",
+                            }}
+                        >
+                            <EmojiPicker
+                                open={emojiOpen}
+                                onEmojiClick={handleEmojiPick}
+                            />
+                        </Menu>
+                    )}
                 </Grid>
             </Box>
         </Box>
