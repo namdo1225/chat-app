@@ -65,3 +65,8 @@ jobs:
         install: false
         component: true
         working-directory: ./frontend
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: cypress-screenshots
+        path: cypress/screenshots
