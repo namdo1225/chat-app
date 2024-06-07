@@ -29,12 +29,12 @@ const BackToTop = (): JSX.Element => {
 
     return (
         <Box
-            className="bottom-5 right-5 md:bottom-10 md:right-10 cursor-pointer"
+            className="bottom-5 right-5 md:bottom-10 md:right-10 cursor-pointer rounded-xl"
             onClick={scrollToTop}
-            sx={{ position: "fixed", zIndex: (theme) => theme.zIndex.drawer + 5 }}
+            sx={{ bgcolor: "secondary.light", position: "fixed", zIndex: (theme) => theme.zIndex.drawer + 5 }}
         >
             <ArrowCircleUpIcon
-                className=" hover:text-[#6b54ff] bg-white rounded-xl"
+                className="hover:text-[#e5ffbb]"
                 sx={{ display: visible ? "block" : "none" }}
             />
         </Box>
