@@ -105,6 +105,7 @@ const UserList = ({
                                     <TableCell>
                                         <Tooltip title="Send friend request">
                                             <IconButton
+                                                data-cy="fri-send"
                                                 onClick={() =>
                                                     void handleAddFriend(
                                                         profile.user_id
@@ -210,6 +211,7 @@ const FriendList = ({
                                             profile.requestee === user?.id && (
                                                 <Tooltip title="Accept friend request">
                                                     <IconButton
+                                                        data-cy="fri-accept"
                                                         onClick={() =>
                                                             void handleVerifyFriend(
                                                                 profile.id
@@ -223,6 +225,7 @@ const FriendList = ({
                                             )}
                                         <Tooltip title="Remove friend">
                                             <IconButton
+                                                data-cy="fri-remove"
                                                 onClick={() =>
                                                     void handleRemoveFriend(
                                                         profile.id
@@ -337,6 +340,7 @@ const Friend = (): JSX.Element => {
                         <Box display="flex" flexWrap="wrap">
                             <Typography>Pending request:</Typography>
                             <Switch
+                                data-cy="fri-pending"
                                 checked={pending}
                                 onChange={() => setPending(!pending)}
                             />

@@ -238,6 +238,7 @@ const Navbar = (): JSX.Element => {
                             )}
                             <Tooltip title="Open settings">
                                 <IconButton
+                                    data-cy="nav-menu-user"
                                     ref={anchorUser}
                                     onClick={handleOpenUserMenu}
                                     sx={{ p: 0 }}

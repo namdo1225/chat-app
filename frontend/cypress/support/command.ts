@@ -60,5 +60,7 @@ Cypress.Commands.add("login", (email, password) => {
 });
 
 Cypress.Commands.add("logout", () => {
-    cy.visit("/login");
+    cy.dataCy("nav-menu-user").click();
+    cy.contains("Logout").click();
+    cy.contains("Logout").should("not.exist");
 });

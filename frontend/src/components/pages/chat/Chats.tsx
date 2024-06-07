@@ -181,6 +181,7 @@ const CreateChatDialog = ({
                             Create Chat
                         </DialogTitle>
                         <TextField
+                            data-cy="chat-create-name"
                             color="secondary"
                             required
                             sx={{ my: 2 }}
@@ -302,6 +303,7 @@ const CreateChatDialog = ({
                                                     <TableCell>
                                                         <Tooltip title="Add friend to group">
                                                             <IconButton
+                                                                data-cy="chat-create-add-fri"
                                                                 onClick={() =>
                                                                     addMember(
                                                                         profile.user_id
@@ -317,6 +319,7 @@ const CreateChatDialog = ({
                                                     <TableCell>
                                                         <Tooltip title="Remove friend from group">
                                                             <IconButton
+                                                                data-cy="chat-create-remove-fri"
                                                                 onClick={() =>
                                                                     removeMember(
                                                                         profile.user_id
@@ -337,6 +340,7 @@ const CreateChatDialog = ({
                         </InfiniteScroll>
                         <Button
                             type="submit"
+                            data-cy="chat-create-submit"
                             variant="contained"
                             color="info"
                             sx={{ my: 2 }}
@@ -618,6 +622,7 @@ const EditChatDialog = ({
                                                         !foundMember) && (
                                                         <Tooltip title="Add friend to group">
                                                             <IconButton
+                                                                data-cy="chat-edit-fri-add"
                                                                 onClick={() =>
                                                                     addMember(
                                                                         profile.user_id
@@ -633,6 +638,7 @@ const EditChatDialog = ({
                                                     (inAdd || foundMember) && (
                                                         <Tooltip title="Remove friend from group">
                                                             <IconButton
+                                                                data-cy="chat-edit-fri-remove"
                                                                 onClick={() =>
                                                                     removeMember(
                                                                         profile.user_id
@@ -679,6 +685,7 @@ const EditChatDialog = ({
                         Reset
                     </Button>
                     <Button
+                        data-cy="chat-edit-submit"
                         type="submit"
                         variant="contained"
                         color="info"
@@ -696,6 +703,7 @@ const EditChatDialog = ({
                     </Button>
                     <Button
                         onClick={() => void handleDelete()}
+                        data-cy="chat-edit-fri-del"
                         variant="contained"
                         color="error"
                         sx={{ my: 2 }}
@@ -789,16 +797,19 @@ const ChatDetailDialog = ({
  * @param {Chat} props.chatToMsg The chat currently selected.
  * @param {Dispatch<SetStateAction<Chat | null>>} props.setChatToMSg
  * Setter for selected chat.
+ * @param {() => void} props.setCloseScroll The chat currently selected.
  * @returns {JSX.Element} The React component.
  */
 const ChatScroll = ({
     token,
     chatToMsg,
     setChatToMSg,
+    setCloseScroll,
 }: {
     token: string;
     chatToMsg: Chat | null;
     setChatToMSg: Dispatch<SetStateAction<Chat | null>>;
+    setCloseScroll: () => void;
 }): JSX.Element => {
     const { user } = useAuth();
     const [openEditChat, setOpenEditChat] = useState(false);
@@ -827,6 +838,11 @@ const ChatScroll = ({
         setOpenViewChat(true);
     };
     const canSelect = !!selectedChat && !!user;
+
+    const handleSelectChat = (chat: Chat): void => {
+        setChatToMSg(chat);
+        setCloseScroll();
+    };
 
     return (
         <>
@@ -884,7 +900,8 @@ const ChatScroll = ({
                                 <IconButton
                                     sx={{ mx: 2 }}
                                     edge="start"
-                                    onClick={() => setChatToMSg(chat)}
+                                    onClick={() => handleSelectChat(chat)}
+                                    data-cy="scroll-select"
                                 >
                                     <VisibilityIcon />
                                 </IconButton>
@@ -1069,6 +1086,7 @@ const ChattingScreen = ({
                 <Grid wrap="wrap" container spacing={2}>
                     <Grid item xs>
                         <TextField
+                            data-cy="chatting-textfield"
                             inputRef={anchorInput}
                             fullWidth
                             multiline
@@ -1095,6 +1113,7 @@ const ChattingScreen = ({
                     </Grid>
                     <Grid item xs="auto">
                         <Button
+                            data-cy="chatting-submit"
                             disabled={
                                 !text.trim() || (chat.encrypted && !privateKey)
                             }
@@ -1393,6 +1412,7 @@ const Chats = (): JSX.Element => {
             </Typography>
             <Tooltip title="Toggle chat sidebar">
                 <IconButton
+                    data-cy="chat-sidebar"
                     sx={{ position: "fixed", top: { xs: 50, sm: 75 }, left: 2 }}
                     onClick={() => setOpenDrawer(true)}
                 >
@@ -1424,6 +1444,7 @@ const Chats = (): JSX.Element => {
                         chatToMsg={chatToMsg}
                         setChatToMSg={setChatToMSg}
                         token={session.access_token}
+                        setCloseScroll={() => setOpenDrawer(false)}
                     />
                     <Divider />
                     <Button

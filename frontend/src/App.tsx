@@ -27,8 +27,9 @@ const App = (): JSX.Element => {
                             const excludeFromPersisting = queryKey.find((q) => {
                                 if (typeof q === "string")
                                     return (
-                                        q.includes("MSG") &&
-                                        q.includes("INFINITE")
+                                        q.includes("MSG") ||
+                                        q.includes("INFINITE") ||
+                                        q.includes("MEMBERS")
                                     );
                                 return true;
                             });

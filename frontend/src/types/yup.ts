@@ -6,7 +6,7 @@ import { MAX_FILE_SIZE, VALID_IMAGE_TYPES } from "@/config/config";
 import * as y from "yup";
 import { InferType } from "yup";
 
-export const email = y.string().email().required("An email is required");
+export const email = y.string().email().required("An email is required").label("Email");
 export const setRequiredStr = (
     msg: string = "This field is required"
 ): y.StringSchema<string, y.AnyObject, undefined, ""> =>
@@ -17,7 +17,7 @@ export const requiredStr = y.string().required();
 export const password = setRequiredStr("A password is required").matches(
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*[\]{}()?"\\,><':;|_~`=+-])[a-zA-Z\d!@#$%^&*[\]{}()?"\\,><':;|_~`=+-]{8,64}$/,
     "Must contain 8-64 characters, 1 uppercase letter, 1 lowercase letter, 1 special sharacter, and 1 number"
-);
+).label("Password");
 export const files = y
     .mixed<File>()
     .test("is-file-too-big", "File exceeds 50KB", (file) => {

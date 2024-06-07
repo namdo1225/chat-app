@@ -25,7 +25,9 @@ const requestLogger = (
     next: NextFunction
 ): void => {
     info(
-        `Method: ${request.method}\nPath:  ${request.path}\nBody:  ${request.body}\n---`
+        `Method: ${request.method}\nPath:  ${
+            request.path
+        }\nBody:  ${JSON.stringify(request.body)}\n---`
     );
     next();
 };
