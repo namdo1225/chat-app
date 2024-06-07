@@ -24,3 +24,43 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 import "@testing-library/cypress/add-commands";
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace Cypress {
+        interface Chainable {
+            dataCy(value: string): Chainable<JQuery<HTMLElement>>;
+
+            login(
+                email?: string,
+                password?: string
+            ): void;
+
+            logout(): void;
+        }
+    }
+}
+
+Cypress.Commands.add("dataCy", (value) => {
+    return cy.get(`[data-cy=${value}]`);
+});
+
+Cypress.Commands.add("login", (email, password) => {
+    cy.visit("/login");
+
+    cy.dataCy("login-email").type(email ?? "test01@example.com");
+    cy.dataCy("login-password").type(password ?? "password123");
+
+    cy.get("form").submit();
+
+    cy.get("form").should("not.exist");
+
+    cy.visit("/login");
+    cy.url().should("eq", "http://localhost:5173/");
+});
+
+Cypress.Commands.add("logout", () => {
+    cy.dataCy("nav-menu-user").click();
+    cy.contains("Logout").click();
+    cy.contains("Logout").should("not.exist");
+});

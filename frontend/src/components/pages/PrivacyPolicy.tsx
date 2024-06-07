@@ -47,7 +47,10 @@ const PrivacyPolicy = (): JSX.Element => {
                 }}
             >
                 <h1>
-                    <a href="https://www.privacypolicytemplate.net/live.php?token=CnwrZobY1LF91YRPSKsBbYL8qUhyz0P6">
+                    <a
+                        className="font-bold"
+                        href="https://www.privacypolicytemplate.net/live.php?token=CnwrZobY1LF91YRPSKsBbYL8qUhyz0P6"
+                    >
                         Privacy Policy of CAChat
                     </a>
                 </h1>
@@ -80,7 +83,7 @@ const PrivacyPolicy = (): JSX.Element => {
                     in this Privacy Policy.
                 </p>
 
-                <h2>Information Collection and Use</h2>
+                <h2 className="font-bold">Information Collection and Use</h2>
 
                 <p>
                     For a better experience while using our Service, we may
@@ -90,7 +93,7 @@ const PrivacyPolicy = (): JSX.Element => {
                     we collect will be used to contact or identify you.
                 </p>
 
-                <h2>Log Data</h2>
+                <h2 className="font-bold">Log Data</h2>
 
                 <p>
                     We want to inform you that whenever you visit our Service,
@@ -102,7 +105,7 @@ const PrivacyPolicy = (): JSX.Element => {
                     statistics.
                 </p>
 
-                <h2>Cookies</h2>
+                <h2 className="font-bold">Cookies</h2>
 
                 <p>
                     Cookies are files with small amount of data that is commonly
@@ -120,7 +123,7 @@ const PrivacyPolicy = (): JSX.Element => {
                     Service.
                 </p>
 
-                <h2>Service Providers</h2>
+                <h2 className="font-bold">Service Providers</h2>
 
                 <p>
                     We may employ third-party companies and individuals due to
@@ -142,7 +145,7 @@ const PrivacyPolicy = (): JSX.Element => {
                     for any other purpose.
                 </p>
 
-                <h2>Security</h2>
+                <h2 className="font-bold">Security</h2>
 
                 <p>
                     We value your trust in providing us your Personal
@@ -153,7 +156,7 @@ const PrivacyPolicy = (): JSX.Element => {
                     cannot guarantee its absolute security.
                 </p>
 
-                <h2>Links to Other Sites</h2>
+                <h2 className="font-bold">Links to Other Sites</h2>
 
                 <p>
                     Our Service may contain links to other sites. If you click
@@ -165,7 +168,7 @@ const PrivacyPolicy = (): JSX.Element => {
                     or practices of any third-party sites or services.
                 </p>
 
-                <p>Children's Privacy</p>
+                <p className="font-bold">Children's Privacy</p>
 
                 <p>
                     Our Services do not address anyone under the age of 13. We
@@ -178,7 +181,7 @@ const PrivacyPolicy = (): JSX.Element => {
                     that we will be able to do necessary actions.
                 </p>
 
-                <h2>Changes to This Privacy Policy</h2>
+                <h2 className="font-bold">Changes to This Privacy Policy</h2>
 
                 <p>
                     We may update our Privacy Policy from time to time. Thus, we
@@ -196,11 +199,12 @@ const PrivacyPolicy = (): JSX.Element => {
                     .
                 </p>
 
-                <h2>Contact Us</h2>
+                <h2 className="font-bold">Contact Us</h2>
 
                 <p>
                     If you have any questions or suggestions about our Privacy
-                    Policy, do not hesitate to contact us.
+                    Policy, do not hesitate to contact me at
+                    namdo1204@gmail.com.
                 </p>
             </Box>
         </Box>

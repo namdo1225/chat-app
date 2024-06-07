@@ -222,20 +222,23 @@ const Navbar = (): JSX.Element => {
 
                     {user ? (
                         <Box sx={{ display: "flex", flexGrow: 0 }}>
-                            <Typography
-                                sx={{
-                                    mx: 2,
-                                    display: {
-                                        xs: "none",
-                                        sm: "block",
-                                    },
-                                }}
-                                color="white"
-                            >
-                                {`${user.user_metadata.first_name} ${user.user_metadata.last_name}`}
-                            </Typography>
+                            {profile && (
+                                <Typography
+                                    sx={{
+                                        mx: 2,
+                                        display: {
+                                            xs: "none",
+                                            sm: "block",
+                                        },
+                                    }}
+                                    color="white"
+                                >
+                                    {`${profile.first_name} ${profile.last_name}`}
+                                </Typography>
+                            )}
                             <Tooltip title="Open settings">
                                 <IconButton
+                                    data-cy="nav-menu-user"
                                     ref={anchorUser}
                                     onClick={handleOpenUserMenu}
                                     sx={{ p: 0 }}

@@ -46,12 +46,23 @@ jobs:
       env:
         DEV_ENV_FILE: ${{ secrets.FRONTEND_DEV_ENV }}
       run: echo $DEV_ENV_FILE | base64 --decode > .env
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm i --legacy-peer-deps
+    - name: Start frontend
+      working-directory: ./frontend
+      run: (npm run dev:native&)
+      env:
+        NODE_ENV: development-native
     - name: e2e Tests - Test frontend
       uses: cypress-io/github-action@v6
       with:
-        start: npm run dev:native
-        install-command: npm i --legacy-peer-deps
+        install: false
         working-directory: ./frontend
+        record: true
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
     - name: Component Tests - Test frontend
       uses: cypress-io/github-action@v6
       with:

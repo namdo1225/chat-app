@@ -14,7 +14,6 @@ import { RegistrationSchema } from "@/types/yup";
 import { useRef } from "react";
 import * as userService from "@/services/users";
 import { useNavigate } from "react-router-dom";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
 import Captcha from "@/components/Captcha";
 import { useState } from "react";
 import ErrorIcon from "@mui/icons-material/Error";
@@ -24,7 +23,7 @@ import Dropzone from "react-dropzone";
 import Logo from "@/components/branding/Logo";
 import ChatAvatarEditor from "../../ChatAvatarEditor";
 import { unknownError } from "@/utils/string";
-import { HCAPTCHA_TOKEN } from "@/config/config";
+import useCaptcha from "@/hooks/useCaptcha";
 
 const fields = [
     {
@@ -60,8 +59,7 @@ const Register = (): JSX.Element => {
     const ref = useRef<HTMLInputElement>(null);
     const editorRef = useRef<AvatarEditor>(null);
     const navigate = useNavigate();
-    const [captchaToken, setCaptchaToken] = useState("");
-    const captcha = useRef<HCaptcha>(null);
+    const { captchaToken, setCaptchaToken, captchaRef } = useCaptcha();
     const [registerError, setRegisterError] = useState<string>("");
 
     const clearUpload = (): void => {
@@ -106,7 +104,7 @@ const Register = (): JSX.Element => {
                             files: finalFile,
                             ...rect,
                         }),
-                        HCAPTCHA_TOKEN ?? captchaToken
+                        captchaToken
                     );
                     if (response.status === 201) {
                         setRegisterError("");
@@ -123,7 +121,7 @@ const Register = (): JSX.Element => {
                 console.error(e);
             }
             setCaptchaToken("");
-            if (captcha.current) captcha.current.resetCaptcha();
+            if (captchaRef.current) captchaRef.current.resetCaptcha();
         },
     });
 
@@ -150,7 +148,7 @@ const Register = (): JSX.Element => {
     return (
         <Paper sx={{ m: 2, p: 2 }}>
             <Box className="flex flex-col p-50 m-50">
-                <form className="flex flex-col" onSubmit={formik.handleSubmit}>
+                <form data-cy="reg-form" className="flex flex-col" onSubmit={formik.handleSubmit}>
                     <FormControl>
                         <FormLabel sx={{ mx: "auto", my: 2 }}>
                             Register to NaChat
@@ -163,6 +161,7 @@ const Register = (): JSX.Element => {
                         )}
                         {fields.map(({ name, label }) => (
                             <TextField
+                                data-cy={`reg-${name}`}
                                 required
                                 sx={{ my: 2 }}
                                 color="secondary"
@@ -247,7 +246,7 @@ const Register = (): JSX.Element => {
                             />
                         )}
                         <Captcha
-                            captcha={captcha}
+                            captcha={captchaRef}
                             setCaptchaToken={setCaptchaToken}
                         />
                         <Button

@@ -1,6 +1,6 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
-import { CAPTCHA_SITE_KEY } from "@/config/config";
+import { CAPTCHA_SITE_KEY, HCAPTCHA_TOKEN } from "@/config/config";
 import { Box, Typography } from "@mui/material";
 import useAuth from "@/context/useAuth";
 
@@ -10,7 +10,7 @@ import useAuth from "@/context/useAuth";
  * @param {Dispatch<SetStateAction<string>>} props.setCaptchaToken
  * Setter for captcha token.
  * @param {RefObject<HCaptcha>} props.captcha The captcha ref.
- * @returns The React component.
+ * @returns {JSX.Element} The React component.
  */
 const Captcha = ({
     setCaptchaToken,
@@ -20,6 +20,13 @@ const Captcha = ({
     captcha: RefObject<HCaptcha>;
 }): JSX.Element => {
     const { themeMode } = useAuth();
+
+    if (HCAPTCHA_TOKEN)
+        return (
+            <Typography color="error" textAlign="center">
+                DEV/TEST: Bypassing captcha
+            </Typography>
+        );
 
     return (
         <>

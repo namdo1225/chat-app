@@ -105,6 +105,7 @@ const UserList = ({
                                     <TableCell>
                                         <Tooltip title="Send friend request">
                                             <IconButton
+                                                data-cy="fri-send"
                                                 onClick={() =>
                                                     void handleAddFriend(
                                                         profile.user_id
@@ -210,6 +211,7 @@ const FriendList = ({
                                             profile.requestee === user?.id && (
                                                 <Tooltip title="Accept friend request">
                                                     <IconButton
+                                                        data-cy="fri-accept"
                                                         onClick={() =>
                                                             void handleVerifyFriend(
                                                                 profile.id
@@ -223,6 +225,7 @@ const FriendList = ({
                                             )}
                                         <Tooltip title="Remove friend">
                                             <IconButton
+                                                data-cy="fri-remove"
                                                 onClick={() =>
                                                     void handleRemoveFriend(
                                                         profile.id
@@ -307,12 +310,14 @@ const Friend = (): JSX.Element => {
                 <Box display="flex" flexWrap="wrap">
                     <Typography>Searching for new people?</Typography>
                     <Switch
+                        data-cy="fri-search"
                         checked={searchPublic}
                         onChange={() => setSearchPublic(!searchPublic)}
                     />
                 </Box>
                 <Box display="flex" flexDirection="column" gap={2}>
                     <TextField
+                        data-cy="fri-textfield"
                         placeholder={
                             searchPublic
                                 ? "Find new friends"
@@ -335,6 +340,7 @@ const Friend = (): JSX.Element => {
                         <Box display="flex" flexWrap="wrap">
                             <Typography>Pending request:</Typography>
                             <Switch
+                                data-cy="fri-pending"
                                 checked={pending}
                                 onChange={() => setPending(!pending)}
                             />

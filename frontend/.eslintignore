@@ -1,5 +1,3 @@
 build
 node_modules
 dist
-cypress
-cypress.config.ts

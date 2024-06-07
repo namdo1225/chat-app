@@ -5,6 +5,8 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { queryClient, persister } from "@/config/queryClient";
+import ScrollToTop from "./components/ScrollToTop";
+import BackToTop from "./components/BackToTop";
 
 /**
  * App component serving as the entry component for the web app.
@@ -25,8 +27,9 @@ const App = (): JSX.Element => {
                             const excludeFromPersisting = queryKey.find((q) => {
                                 if (typeof q === "string")
                                     return (
-                                        q.includes("MSG") &&
-                                        q.includes("INFINITE")
+                                        q.includes("MSG") ||
+                                        q.includes("INFINITE") ||
+                                        q.includes("MEMBERS")
                                     );
                                 return true;
                             });
@@ -38,11 +41,13 @@ const App = (): JSX.Element => {
             }}
         >
             <BrowserRouter>
+                <ScrollToTop />
                 <Toaster />
                 <AuthProvider>
                     <MainRoutes />
                 </AuthProvider>
             </BrowserRouter>
+            <BackToTop />
         </PersistQueryClientProvider>
     );
 };

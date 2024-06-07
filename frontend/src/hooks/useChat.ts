@@ -30,7 +30,7 @@ type InfiniteChats = {
  */
 export const useChats = (
     token: string,
-    inclusiveLimit: number = 5,
+    inclusiveLimit: number = 10,
     getAllPublic: boolean = true
 ): InfiniteChats => {
     const infiniteChats = useInfiniteQuery<Chat[], Error>({
@@ -83,6 +83,9 @@ export const useDeleteChat = (): UseMutationResult<
             queryClient.invalidateQueries({ queryKey: CHATS });
             toast.success("Chat deleted successfully.");
         },
+        onError: () => {
+            toast.error("Unable to delete the chat. Try again later.");
+        },
     });
 };
 
@@ -106,6 +109,9 @@ export const useCreateChat = (): UseMutationResult<
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: CHATS });
             toast.success("Chat created successfully.");
+        },
+        onError: () => {
+            toast.error("Unable to create the chat. Try again later.");
         },
     });
 };
@@ -138,6 +144,9 @@ export const useEditChat = (): UseMutationResult<
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: CHATS });
             toast.success("Chat edited successfully.");
+        },
+        onError: () => {
+            toast.error("Unable to edit the chat. Try again later.");
         },
     });
 };

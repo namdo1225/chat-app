@@ -12,4 +12,4 @@ export const CAPTCHA_SITE_KEY = import.meta.env.VITE_CAPTCHA_SITE_KEY;
 export const HCAPTCHA_TOKEN =
     NODE_ENV !== "production"
         ? "10000000-aaaa-bbbb-cccc-000000000001"
-        : undefined;
+        : "";

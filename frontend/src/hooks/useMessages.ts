@@ -130,7 +130,12 @@ export const useDeleteMessage = (): UseMutationResult<
         mutationFn: ({ token, msgID }: { token: string; msgID: string }) =>
             deleteMessage(token, msgID),
         onSuccess: () => {
-            toast.success("Message deleted successfully.");
+            toast.success(
+                "Message deleted successfully. Please refresh to see changes."
+            );
+        },
+        onError: () => {
+            toast.error("Message failed to delete. Try again later.");
         },
     });
 };
@@ -183,8 +188,8 @@ export const useSendMessage = (): UseMutationResult<
                 return sendMessage(token, text, chat.id);
             }
         },
-        onSuccess: () => {
-            toast.success("Message sent successfully.");
+        onError: () => {
+            toast.error("Message failed to send. Try again later.");
         },
     });
 };
@@ -243,6 +248,9 @@ export const useEditMessage = (): UseMutationResult<
         onSuccess: () => {
             toast.success("Message edited successfully.");
         },
+        onError: () => {
+            toast.error("Message failed to edit. Try again later.");
+        },
     });
 };
 
@@ -281,6 +289,9 @@ export const useEncryptionKey = (chat: Chat): EncryptionHook => {
         );
 
         setPrivateKey(decodedKey);
+        toast.success(
+            "Private key is set for this chat. Please refresh to see decrypted messages."
+        );
     };
 
     const deleteKey = (): void => {
@@ -289,6 +300,9 @@ export const useEncryptionKey = (chat: Chat): EncryptionHook => {
         });
 
         setPrivateKey(undefined);
+        toast.success(
+            "Private key is deleted for this chat. Please refresh to see encrypted messages."
+        );
     };
 
     return {

@@ -1,6 +1,6 @@
 import { Box, Container, Divider, Typography } from "@mui/material";
 import { routes, socialRoutes, supportRoutes } from "@/routes";
-import { Link } from "@mui/material";
+import { Link } from "react-router-dom";
 
 /**
  * Footer component for the website.
@@ -29,7 +29,7 @@ const Footer = (): JSX.Element => {
                 sx={{ marginTop: "auto", bgcolor: "footer.main", p: 2 }}
             >
                 <Box className="flex justify-evenly flex-wrap gap-10">
-                    <Link href="/">
+                    <Typography component={Link} to="/">
                         <Box
                             component="img"
                             sx={{
@@ -40,24 +40,27 @@ const Footer = (): JSX.Element => {
                             alt="CA Logo"
                             src="./logo.png"
                         />
-                    </Link>
+                    </Typography>
                     {[routes, supportRoutes, socialRoutes].map(
                         (route, index) => (
-                            <Box key={`footer-${index}`}>
+                            <Box className="flex flex-col flex-wrap" key={`footer-${index}`}>
                                 {route.map(({ path, name, link }) => (
-                                    <Typography key={name}>
-                                        <Link
-                                            {...style}
-                                            href={
-                                                path || link
+                                    <Typography
+                                        {...style}
+                                        className="hover:underline"
+                                        component={Link}
+                                        key={name}
+                                        to={
+                                            path || link
+                                                ? link
                                                     ? link
-                                                        ? link
-                                                        : path
+                                                    : path
+                                                    ? path
                                                     : "/"
-                                            }
-                                        >
-                                            {name}
-                                        </Link>
+                                                : "/"
+                                        }
+                                    >
+                                        {name}
                                     </Typography>
                                 ))}
                             </Box>

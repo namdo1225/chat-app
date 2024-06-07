@@ -21,8 +21,9 @@ import {
     TableBody,
     Tooltip,
     Grid,
+    Menu,
 } from "@mui/material";
-import { Dispatch, Fragment, SetStateAction, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useRef, useState } from "react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import AddIcon from "@mui/icons-material/Add";
 import { useFormik } from "formik";
@@ -65,6 +66,8 @@ import useAuth from "@/context/useAuth";
 import tweetnacl, { BoxKeyPair } from "tweetnacl";
 import HttpsIcon from "@mui/icons-material/Https";
 import { useEncryptionKey } from "@/hooks/useMessages";
+import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 
 /**
  * Component to create a chat in a dialog.
@@ -178,6 +181,7 @@ const CreateChatDialog = ({
                             Create Chat
                         </DialogTitle>
                         <TextField
+                            data-cy="chat-create-name"
                             color="secondary"
                             required
                             sx={{ my: 2 }}
@@ -299,6 +303,7 @@ const CreateChatDialog = ({
                                                     <TableCell>
                                                         <Tooltip title="Add friend to group">
                                                             <IconButton
+                                                                data-cy="chat-create-add-fri"
                                                                 onClick={() =>
                                                                     addMember(
                                                                         profile.user_id
@@ -314,6 +319,7 @@ const CreateChatDialog = ({
                                                     <TableCell>
                                                         <Tooltip title="Remove friend from group">
                                                             <IconButton
+                                                                data-cy="chat-create-remove-fri"
                                                                 onClick={() =>
                                                                     removeMember(
                                                                         profile.user_id
@@ -334,6 +340,7 @@ const CreateChatDialog = ({
                         </InfiniteScroll>
                         <Button
                             type="submit"
+                            data-cy="chat-create-submit"
                             variant="contained"
                             color="info"
                             sx={{ my: 2 }}
@@ -615,6 +622,7 @@ const EditChatDialog = ({
                                                         !foundMember) && (
                                                         <Tooltip title="Add friend to group">
                                                             <IconButton
+                                                                data-cy="chat-edit-fri-add"
                                                                 onClick={() =>
                                                                     addMember(
                                                                         profile.user_id
@@ -630,6 +638,7 @@ const EditChatDialog = ({
                                                     (inAdd || foundMember) && (
                                                         <Tooltip title="Remove friend from group">
                                                             <IconButton
+                                                                data-cy="chat-edit-fri-remove"
                                                                 onClick={() =>
                                                                     removeMember(
                                                                         profile.user_id
@@ -676,6 +685,7 @@ const EditChatDialog = ({
                         Reset
                     </Button>
                     <Button
+                        data-cy="chat-edit-submit"
                         type="submit"
                         variant="contained"
                         color="info"
@@ -693,6 +703,7 @@ const EditChatDialog = ({
                     </Button>
                     <Button
                         onClick={() => void handleDelete()}
+                        data-cy="chat-edit-fri-del"
                         variant="contained"
                         color="error"
                         sx={{ my: 2 }}
@@ -786,16 +797,19 @@ const ChatDetailDialog = ({
  * @param {Chat} props.chatToMsg The chat currently selected.
  * @param {Dispatch<SetStateAction<Chat | null>>} props.setChatToMSg
  * Setter for selected chat.
+ * @param {() => void} props.setCloseScroll The chat currently selected.
  * @returns {JSX.Element} The React component.
  */
 const ChatScroll = ({
     token,
     chatToMsg,
     setChatToMSg,
+    setCloseScroll,
 }: {
     token: string;
     chatToMsg: Chat | null;
     setChatToMSg: Dispatch<SetStateAction<Chat | null>>;
+    setCloseScroll: () => void;
 }): JSX.Element => {
     const { user } = useAuth();
     const [openEditChat, setOpenEditChat] = useState(false);
@@ -824,6 +838,11 @@ const ChatScroll = ({
         setOpenViewChat(true);
     };
     const canSelect = !!selectedChat && !!user;
+
+    const handleSelectChat = (chat: Chat): void => {
+        setChatToMSg(chat);
+        setCloseScroll();
+    };
 
     return (
         <>
@@ -881,12 +900,14 @@ const ChatScroll = ({
                                 <IconButton
                                     sx={{ mx: 2 }}
                                     edge="start"
-                                    onClick={() => setChatToMSg(chat)}
+                                    onClick={() => handleSelectChat(chat)}
+                                    data-cy="scroll-select"
                                 >
                                     <VisibilityIcon />
                                 </IconButton>
                                 <IconButton
                                     sx={{ mx: 2 }}
+                                    data-cy="scroll-leave"
                                     onClick={() =>
                                         user?.id === chat.owner_id
                                             ? selectEditChat(chat)
@@ -945,6 +966,9 @@ const ChattingScreen = ({
     token: string;
     searchStr: string;
 }): JSX.Element => {
+    const [emojiOpen, setEmojiOpen] = useState(false);
+    const anchorEmoji = useRef<HTMLButtonElement>(null);
+    const anchorInput = useRef<HTMLInputElement>(null);
     const [text, setText] = useState("");
     const { mutate } = useSendMessage();
     const { privateKey, publicKey } = useEncryptionKey(chat);
@@ -968,6 +992,18 @@ const ChattingScreen = ({
             setText("");
         } catch (e) {
             console.error(e);
+        }
+    };
+
+    const handleEmojiPick = (
+        emoji: EmojiClickData,
+        _event: MouseEvent
+    ): void => {
+        if (anchorInput.current && anchorInput.current.selectionStart) {
+            const cursor = anchorInput.current.selectionStart;
+            const tmpText =
+                text.slice(0, cursor) + emoji.emoji + text.slice(cursor);
+            setText(tmpText);
         }
     };
 
@@ -1050,7 +1086,11 @@ const ChattingScreen = ({
                 <Grid wrap="wrap" container spacing={2}>
                     <Grid item xs>
                         <TextField
+                            data-cy="chatting-textfield"
+                            inputRef={anchorInput}
                             fullWidth
+                            multiline
+                            maxRows={4}
                             size="small"
                             placeholder="Type a message"
                             variant="outlined"
@@ -1059,7 +1099,21 @@ const ChattingScreen = ({
                         />
                     </Grid>
                     <Grid item xs="auto">
+                        <Tooltip title="Emoji selector">
+                            <IconButton
+                                ref={anchorEmoji}
+                                aria-label="emoji bar"
+                                aria-controls="emoji-bar"
+                                aria-haspopup="true"
+                                onClick={() => setEmojiOpen(!emojiOpen)}
+                            >
+                                <EmojiEmotionsIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </Grid>
+                    <Grid item xs="auto">
                         <Button
+                            data-cy="chatting-submit"
                             disabled={
                                 !text.trim() || (chat.encrypted && !privateKey)
                             }
@@ -1071,6 +1125,30 @@ const ChattingScreen = ({
                             Send
                         </Button>
                     </Grid>
+                    {anchorEmoji.current && (
+                        <Menu
+                            open={emojiOpen}
+                            onClose={() => setEmojiOpen(false)}
+                            disableScrollLock={true}
+                            id="emoji-bar"
+                            anchorEl={() =>
+                                anchorEmoji.current as HTMLButtonElement
+                            }
+                            anchorOrigin={{
+                                vertical: "top",
+                                horizontal: "center",
+                            }}
+                            transformOrigin={{
+                                vertical: "top",
+                                horizontal: "center",
+                            }}
+                        >
+                            <EmojiPicker
+                                open={emojiOpen}
+                                onEmojiClick={handleEmojiPick}
+                            />
+                        </Menu>
+                    )}
                 </Grid>
             </Box>
         </Box>
@@ -1334,6 +1412,7 @@ const Chats = (): JSX.Element => {
             </Typography>
             <Tooltip title="Toggle chat sidebar">
                 <IconButton
+                    data-cy="chat-sidebar"
                     sx={{ position: "fixed", top: { xs: 50, sm: 75 }, left: 2 }}
                     onClick={() => setOpenDrawer(true)}
                 >
@@ -1365,6 +1444,7 @@ const Chats = (): JSX.Element => {
                         chatToMsg={chatToMsg}
                         setChatToMSg={setChatToMSg}
                         token={session.access_token}
+                        setCloseScroll={() => setOpenDrawer(false)}
                     />
                     <Divider />
                     <Button

@@ -15,6 +15,7 @@ import { Friend } from "@/types/friend";
 import { queryClient } from "@/config/queryClient";
 import * as y from "yup";
 import { AxiosResponse } from "axios";
+import toast from "react-hot-toast";
 
 const FRIENDS = ["FRIENDS"];
 
@@ -80,7 +81,15 @@ export const useAddFriend = (): UseMutationResult<
         mutationKey: FRIENDS,
         mutationFn: ({ id, token }: { id: string; token: string }) =>
             addFriend(id, token),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: FRIENDS }),
+        onSuccess: () => {
+            toast.success("Sent friend request successfully.");
+            queryClient.invalidateQueries({ queryKey: FRIENDS });
+        },
+        onError: () => {
+            toast.error(
+                "Unable to send the friend request. Make sure you haven't sent a request to this user yet."
+            );
+        },
     });
 };
 
@@ -101,7 +110,13 @@ export const useRemoveFriend = (): UseMutationResult<
         mutationKey: FRIENDS,
         mutationFn: ({ id, token }: { id: string; token: string }) =>
             removeFriend(id, token),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: FRIENDS }),
+        onSuccess: () => {
+            toast.success("Removed friend successfully.");
+            queryClient.invalidateQueries({ queryKey: FRIENDS });
+        },
+        onError: () => {
+            toast.error("Unable to send the remove friend. Try again later.");
+        },
     });
 };
 
@@ -122,6 +137,12 @@ export const useVerifyFriend = (): UseMutationResult<
         mutationKey: FRIENDS,
         mutationFn: ({ id, token }: { id: string; token: string }) =>
             verifyFriend(id, token),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: FRIENDS }),
+        onSuccess: () => {
+            toast.success("Accepted pending friend request.");
+            queryClient.invalidateQueries({ queryKey: FRIENDS });
+        },
+        onError: () => {
+            toast.error("Unable to send accept friend request. Try again later.");
+        },
     });
 };

@@ -1,11 +1,12 @@
 {
     "extends": "./tsconfig",
     "compilerOptions": {
+        "types": ["cypress", "node"],
         "typeRoots": ["./src/types/index.d.ts", "./node_modules/@types"]
     },
     "include": [
-        "jest",
-        "jest.config.ts",
+        "cypress.config.ts",
+        "cypress",
         "src/types/*.ts",
         "_static/types/**/*.ts",
         "**/*.ts",
