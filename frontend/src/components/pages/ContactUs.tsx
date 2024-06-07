@@ -98,7 +98,11 @@ const ContactUs = (): JSX.Element => {
                             captcha={captchaRef}
                             setCaptchaToken={setCaptchaToken}
                         />
-                        <Button type="submit" sx={{ my: 2 }}>
+                        <Button
+                            type="submit"
+                            sx={{ my: 2 }}
+                            disabled={!captchaToken}
+                        >
                             Submit
                         </Button>
                     </FormControl>
