@@ -38,15 +38,13 @@ describe("/friends manipulation - private profile friend", () => {
 
     it("Public profile: Send friend request and remove relationship", () => {
         cy.dataCy("fri-search").find("input").check();
-        cy.dataCy("fri-send").click();
+        cy.contains("Test03 Account03").parent().find("button").click();
         cy.contains("Sent friend request successfully.");
 
         cy.visit("/friends");
 
         cy.dataCy("fri-pending").find("input").check();
-        cy.contains("Test03 Account03");
-
-        cy.dataCy("fri-remove").click();
+        cy.contains("Test03 Account03").parent().find("button").click();
         cy.contains("Removed friend successfully.");
 
         cy.logout();

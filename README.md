@@ -46,11 +46,11 @@ Prerequisites:
 -   A [Resend](https://resend.com/) API key
 -   An [HCaptcha](https://www.hcaptcha.com/) sitekey and private key
 
-1. Clone the repository. The repository is separated into a frontend and backend folder.
-2. Of course, this uses a lot of env variables. Make sure that you have your own Supabase project and Resend service keys put in a .env file.
-3. If you look into my package.json files, you can see that I use different .env files depending on the environment. That means that you will have to create custom .env files based on specific environments. I will put a template for a standard env file in both projects.
-4. Install npm packages using: npm install.
-5. In the chat-app folder, you can use ./dev.sh to run the dev environment in Docker.
+1. Clone the repository. The repository is separated into a frontend and backend folder. Both folders are their own projects, so the following instructions might need to be done in both folders:
+2. Of course, this uses a lot of env variables. Make sure that you have your own Supabase project and Resend service keys put in a `.env` file.
+3. If you look into my package.json files, you can see that I use different `.env` files depending on the environment. That means that you will have to create custom `.env` files based on specific environments. I will put a template for a standard env file in both projects.
+4. Install npm packages using: `npm i --legacy-peer-deps`.
+5. In the chat-app folder, you can use `./dev.sh` to run the dev environment in Docker.
 6. Otherwise, you can manually go to chat-app/frontend and chat-app/backend on separate terminals to run: npm run dev:native.
 
 ### Docker

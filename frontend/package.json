@@ -14,8 +14,8 @@
         "cy:open-e2e": "npm run cy:open --e2e --browser chrome",
         "cy:open-unit": "npm run cy:open --component --browser chrome",
         "cy:run": "cypress run",
-        "cy:run-e2e": "npm cy:run --e2e",
-        "cy:run-unit": "npm cy:run --component",
+        "cy:run-e2e": "npm run cy:run --e2e",
+        "cy:run-unit": "npm run cy:run --component",
         "cy:e2e": "start-server-and-test dev:native http-get://localhost:5173 cy:open-e2e"
     },
     "dependencies": {

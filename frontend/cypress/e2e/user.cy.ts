@@ -41,8 +41,6 @@ describe("User manipulation", () => {
         cy.dataCy("del-email").type(email);
         cy.dataCy("del-email").trigger("change");
         cy.dataCy("del-button").click();
-        cy.dataCy("del-button").should("not.exist");
-
-        cy.contains("Login");
+        cy.contains("Successfully deleted your account. We're sorry to see you go!");
     });
 });
