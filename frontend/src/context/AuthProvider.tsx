@@ -62,6 +62,20 @@ const AuthProvider = ({ children }: { children: JSX.Element }): JSX.Element => {
         });
     };
 
+    const clearChatTheme = (): void => {
+        localStorage.removeItem("fromMessageBox");
+        localStorage.removeItem("toMessageBox");
+        localStorage.removeItem("fromMessageText");
+        localStorage.removeItem("toMessageText");
+
+        setChatTheme({
+            fromMessageBox: "secondary.main",
+            toMessageBox: "primary.main",
+            fromMessageText: undefined,
+            toMessageText: undefined,
+        });
+    };
+
     const [chatTheme, setChatTheme] = useState<ChatMessageTheme>({
         fromMessageBox: "secondary.main",
         toMessageBox: "info.main",
@@ -175,6 +189,7 @@ const AuthProvider = ({ children }: { children: JSX.Element }): JSX.Element => {
         themeMode,
         chatTheme,
         handleChatTheme,
+        clearChatTheme,
     };
 
     return (

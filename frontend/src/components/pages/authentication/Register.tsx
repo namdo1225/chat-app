@@ -150,7 +150,7 @@ const Register = (): JSX.Element => {
             <Box className="flex flex-col p-50 m-50">
                 <form data-cy="reg-form" className="flex flex-col" onSubmit={formik.handleSubmit}>
                     <FormControl>
-                        <FormLabel sx={{ mx: "auto", my: 2 }}>
+                        <FormLabel sx={{ textAlign: "center", my: 2 }}>
                             Register to NaChat
                         </FormLabel>
                         <Logo />
