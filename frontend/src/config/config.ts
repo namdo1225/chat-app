@@ -13,3 +13,10 @@ export const HCAPTCHA_TOKEN =
     NODE_ENV !== "production"
         ? "10000000-aaaa-bbbb-cccc-000000000001"
         : "";
+
+console.log(NODE_ENV);
+console.log(SUPABASE_URL);
+console.log(SUPABASE_ANON_KEY);
+console.log(BACKEND_URL);
+console.log(CAPTCHA_SITE_KEY);
+console.log(HCAPTCHA_TOKEN);
