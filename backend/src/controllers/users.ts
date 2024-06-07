@@ -21,7 +21,7 @@ import {
 } from "@/utils/middleware";
 import { cacheData } from "@/utils/cache";
 import redisClient from "@/utils/redis";
-import { NODE_ENV, SUPABASE_DEFAULT_PIC } from "@/utils/config";
+import { NODE_ENV, REDIRECT_URL, SUPABASE_DEFAULT_PIC } from "@/utils/config";
 import { randomUUID } from "crypto";
 
 const router = Router();
@@ -94,6 +94,15 @@ router.post(
                 profile_photo: SUPABASE_DEFAULT_PIC,
                 public_profile: false,
                 created_at: `${new Date().toISOString().slice(0, -1)}+00`,
+            });
+
+        if (NODE_ENV === "production")
+            await supabase.auth.resend({
+                type: "signup",
+                email,
+                options: {
+                    emailRedirectTo: REDIRECT_URL,
+                },
             });
 
         const userData: {
