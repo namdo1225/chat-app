@@ -103,6 +103,7 @@ const Forget = (): JSX.Element => {
                             setCaptchaToken={setCaptchaToken}
                         />
                         <Button
+                            disabled={!captchaToken}
                             onClick={() => setSubmit("reset")}
                             type="submit"
                             sx={{ my: 2 }}
@@ -110,6 +111,7 @@ const Forget = (): JSX.Element => {
                             Reset Password
                         </Button>
                         <Button
+                            disabled={!captchaToken}
                             onClick={() => setSubmit("verify")}
                             type="submit"
                             sx={{ my: 2 }}
