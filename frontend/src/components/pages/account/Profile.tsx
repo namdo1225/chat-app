@@ -47,8 +47,15 @@ const Profile = (): JSX.Element => {
     const navigate = useNavigate();
     const ref = useRef<HTMLInputElement>(null);
     const editorRef = useRef<AvatarEditor>(null);
-    const { session, user, refreshToken, profile, chatTheme, handleChatTheme } =
-        useAuth();
+    const {
+        session,
+        user,
+        refreshToken,
+        profile,
+        chatTheme,
+        handleChatTheme,
+        clearChatTheme,
+    } = useAuth();
 
     const clearUpload = (): void => {
         if (ref.current) {
@@ -147,7 +154,13 @@ const Profile = (): JSX.Element => {
                         className="flex flex-col"
                         onSubmit={formik.handleSubmit}
                     >
-                        <FormLabel sx={{ mx: "auto", mb: 4 }}>
+                        <FormLabel
+                            sx={{
+                                fontWeight: "bold",
+                                textAlign: "center",
+                                mb: 4,
+                            }}
+                        >
                             Edit Your Profile
                         </FormLabel>
                         <Box
@@ -281,9 +294,9 @@ const Profile = (): JSX.Element => {
                     gap: 5,
                 }}
             >
-                <Typography textAlign="center">
+                <FormLabel sx={{ fontWeight: "bold", textAlign: "center" }}>
                     Change Chat's Appearance
-                </Typography>
+                </FormLabel>
                 {CHAT_THEMES_KEY.map((key) => (
                     <Fragment key={key}>
                         <Typography textAlign="center">
@@ -337,6 +350,7 @@ const Profile = (): JSX.Element => {
                         fromUser={index % 2 === 0}
                     />
                 ))}
+                <Button onClick={clearChatTheme}>Reset Preferences</Button>
             </Paper>
         </Box>
     );

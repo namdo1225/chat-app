@@ -5,6 +5,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { HomeMsg, HomeMsgSchema } from "@/types/message";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { v4 as uuidv4 } from "uuid";
+import { BACKEND_URL } from "@/config/config";
 
 /**
  * Chat component in /home page.
@@ -16,7 +17,7 @@ import { v4 as uuidv4 } from "uuid";
 const HomeChat = ({ chatter }: { chatter: string }): JSX.Element => {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<HomeMsg[]>([]);
-    const [socketUrl] = useState("ws://localhost:8080/homechat");
+    const [socketUrl] = useState(`ws://${BACKEND_URL.replace(/(^\w+:|^)\/\//, '')}/homechat`);
     const [shouldConnect, setShouldConnect] = useState(true);
     const { sendMessage, lastMessage, readyState } = useWebSocket(
         socketUrl,

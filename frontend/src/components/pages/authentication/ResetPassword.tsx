@@ -62,10 +62,10 @@ const ResetPassword = (): JSX.Element => {
             <Box className="flex flex-col p-50 m-50">
                 <form className="flex flex-col" onSubmit={formik.handleSubmit}>
                     <FormControl>
-                        <FormLabel sx={{ mx: "auto", my: 2 }}>
+                        <FormLabel sx={{ textAlign: "center", my: 2 }}>
                             Reset Password
                         </FormLabel>
-                        <FormLabel sx={{ mx: "auto", my: 2 }}>
+                        <FormLabel sx={{ textAlign: "center", my: 2 }}>
                             Enter your new password.
                         </FormLabel>
                         <Logo />

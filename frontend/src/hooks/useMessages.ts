@@ -20,7 +20,7 @@ import { AxiosResponse } from "axios";
 import { queryClient } from "@/config/queryClient";
 import tweetnacl from "tweetnacl";
 import { Chat } from "@/types/chat";
-import { encode } from "@stablelib/utf8";
+import { decode, encode } from "@stablelib/utf8";
 import { convertDateToUTC } from "@/utils/date";
 import { strToUint8Array } from "@/utils/string";
 
@@ -63,7 +63,33 @@ export const useMessages = (
                         filter: `chat_id=eq.${chat.id}`,
                     },
                     (payload) => {
-                        const msg = ChatMsgSchema.validateSync(payload.new);
+                        let msg = ChatMsgSchema.validateSync(payload.new);
+                        if (chat.encrypted && publicKey && privateKey) {
+                            const split = msg.text.split(".");
+                            const nonce = strToUint8Array(split[0]);
+                            const encryptedMessage = strToUint8Array(split[1]);
+
+                            const decryptedCode = tweetnacl.box.open(
+                                encryptedMessage,
+                                nonce,
+                                publicKey,
+                                privateKey
+                            );
+
+                            if (decryptedCode) {
+                                const decryptedMessage = decode(decryptedCode);
+                                msg = {
+                                    ...msg,
+                                    text: decryptedMessage,
+                                };
+                            } else {
+                                msg = {
+                                    ...msg,
+                                    text: "Cannot decrypt message.",
+                                };
+                            }
+                        }
+
                         setCurrentMessages((originalMsg) =>
                             [msg].concat(originalMsg)
                         );

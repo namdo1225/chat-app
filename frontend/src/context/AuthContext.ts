@@ -18,6 +18,7 @@ export type CAAuth = {
     themeMode: string;
     chatTheme: ChatMessageTheme;
     handleChatTheme: () => void;
+    clearChatTheme: () => void;
 };
 
 export const AuthContext = createContext<CAAuth>({
@@ -40,4 +41,5 @@ export const AuthContext = createContext<CAAuth>({
         toMessageText: undefined,
     },
     handleChatTheme: () => {},
+    clearChatTheme: () => {},
 });

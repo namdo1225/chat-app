@@ -21,6 +21,7 @@ import { email, password } from "@/types/yup";
 import { EditProfileSchema } from "@/types/profile";
 import { AuthDialogProps } from "@/types/prop";
 import useAuth from "@/context/useAuth";
+import ClearIcon from "@mui/icons-material/Clear";
 
 /**
  * Component to delete a user account in a dialog.
@@ -33,7 +34,7 @@ const DeleteAccountDialog = ({
     token,
 }: AuthDialogProps): JSX.Element => {
     const [email, setEmail] = useState("");
-    const { user, setNull } = useAuth();
+    const { user, setNull, signOut } = useAuth();
 
     const handleClose = (): void => {
         setEmail("");
@@ -48,7 +49,7 @@ const DeleteAccountDialog = ({
                     token
                 );
                 if (response.status === 200) {
-                    supabase.auth.signOut();
+                    signOut();
                     setNull();
                     toast.success(
                         "Successfully deleted your account. We're sorry to see you go!"
@@ -196,10 +197,10 @@ const Account = (): JSX.Element => {
                         onSubmit={formikEmail.handleSubmit}
                     >
                         <FormControl>
-                            <FormLabel sx={{ mx: "auto", my: 2 }}>
+                            <FormLabel sx={{ textAlign: "center", my: 2 }}>
                                 Update your email
                             </FormLabel>
-                            <FormLabel sx={{ mx: "auto", my: 2 }}>
+                            <FormLabel sx={{ textAlign: "center", my: 2 }}>
                                 Instruction: We will send you a link to both of
                                 your email addresses for confirmation. Your
                                 email address will stay the same until you have
@@ -257,7 +258,7 @@ const Account = (): JSX.Element => {
                         onSubmit={formikPassword.handleSubmit}
                     >
                         <FormControl>
-                            <FormLabel sx={{ mx: "auto", my: 2 }}>
+                            <FormLabel sx={{ textAlign: "center", my: 2 }}>
                                 Update your password
                             </FormLabel>
                             <TextField
@@ -321,11 +322,15 @@ const Account = (): JSX.Element => {
             {session && (
                 <Paper sx={{ m: 2, p: 2 }}>
                     <Box className="flex flex-col p-50 m-50">
+                        <FormLabel sx={{ textAlign: "center", my: 2 }}>
+                            Delete your account
+                        </FormLabel>
                         <Button
                             onClick={handleClickOpen}
                             variant="contained"
                             color="error"
                             sx={{ my: 2 }}
+                            endIcon={<ClearIcon />}
                         >
                             Delete Account
                         </Button>

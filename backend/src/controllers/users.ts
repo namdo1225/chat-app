@@ -51,6 +51,10 @@ router.get("/:id", tokenExtractor, userExtractor, async (request, response) => {
         supabase.from("profiles").select("*").eq("user_id", request.params.id)
     );
 
+    if (data?.error) {
+        await redisClient.del(request.params.id);
+    }
+
     const profiles = ProfilesSchema.parse(data?.data);
     if (profiles && profiles.length === 1)
         return response.status(200).json(profiles[0]);

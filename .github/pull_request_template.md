@@ -24,7 +24,7 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 **Test Configuration**:
 * Firmware version: Node.js, version 20 <=
 * Hardware: GitHub Actions / ubuntu-latest
-* Toolchain: Jest, Cypress
+* Toolchain: Jest 29.7 <=, Cypress 13.10 <=
 * SDK: JavaScript, TypeScript
 
 # Checklist:

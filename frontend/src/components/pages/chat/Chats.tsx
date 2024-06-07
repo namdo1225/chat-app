@@ -66,7 +66,7 @@ import useAuth from "@/context/useAuth";
 import tweetnacl, { BoxKeyPair } from "tweetnacl";
 import HttpsIcon from "@mui/icons-material/Https";
 import { useEncryptionKey } from "@/hooks/useMessages";
-import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 
 /**
@@ -980,7 +980,7 @@ const ChattingScreen = ({
         privateKey
     );
     const { data: members, isLoading } = useChatMembersProfile(chat.id, token);
-    const { profile } = useAuth();
+    const { profile, themeMode } = useAuth();
 
     const filteredMsgs = searchStr
         ? finalData.filter((msg) => msg.text.includes(searchStr))
@@ -1144,6 +1144,7 @@ const ChattingScreen = ({
                             }}
                         >
                             <EmojiPicker
+                                theme={themeMode === "light" ? Theme.LIGHT : Theme.DARK}
                                 open={emojiOpen}
                                 onEmojiClick={handleEmojiPick}
                             />
