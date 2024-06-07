@@ -41,23 +41,21 @@ jobs:
     - name: Start backend
       working-directory: ./backend
       run: (npm run dev:native&)
-    - name: Check backend status
-      uses: jtalk/url-health-check-action@v4
-      with:
-        url: http://127.0.0.1:3001/health_check
-        follow-redirect: false
-        max-attempts: 3
-        retry-delay: 5s
     - name: Create frontend .env file
       working-directory: ./frontend
       env:
         DEV_ENV_FILE: ${{ secrets.FRONTEND_DEV_ENV }}
       run: echo $DEV_ENV_FILE | base64 --decode > .env
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm i --legacy-peer-deps
+    - name: Start frontend
+      working-directory: ./frontend
+      run: (npm run dev:native&)
     - name: e2e Tests - Test frontend
       uses: cypress-io/github-action@v6
       with:
-        start: npm run dev:native
-        install-command: npm i --legacy-peer-deps
+        install: false
         working-directory: ./frontend
         record: true
       env:
