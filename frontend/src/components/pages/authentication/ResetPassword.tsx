@@ -12,7 +12,7 @@ import {
     Alert,
 } from "@mui/material";
 import Notifications from "@mui/icons-material/Notifications";
-import { password } from "@/types/yup";
+import { password, setRequiredStr } from "@/types/yup";
 import * as y from "yup";
 import Logo from "@/components/branding/Logo";
 import Loading from "@/components/Loading";
@@ -28,9 +28,13 @@ const ResetPassword = (): JSX.Element => {
     const formik = useFormik({
         initialValues: {
             password: "",
+            passwordConfirm: "",
         },
         validationSchema: y.object().shape({
             password: password,
+            passwordConfirm: setRequiredStr(
+                "Please confirm your passowrd"
+            ).oneOf([y.ref("password")], "Your passwords do not match."),
         }),
         onSubmit: async (values) => {
             try {
@@ -87,7 +91,27 @@ const ResetPassword = (): JSX.Element => {
                             error={Boolean(formik.errors.password)}
                             helperText={formik.errors.password}
                         />
-                        <Button type="submit" sx={{ my: 2 }}>
+                        <TextField
+                            color="secondary"
+                            required
+                            sx={{ my: 2 }}
+                            label="Password Confirmation"
+                            type="password"
+                            name="passwordConfirm"
+                            value={formik.values.passwordConfirm}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={Boolean(formik.errors.passwordConfirm)}
+                            helperText={formik.errors.passwordConfirm}
+                        />
+                        <Button
+                            disabled={
+                                formik.values.password !==
+                                formik.values.passwordConfirm
+                            }
+                            type="submit"
+                            sx={{ my: 2 }}
+                        >
                             Reset Password
                         </Button>
                     </FormControl>
