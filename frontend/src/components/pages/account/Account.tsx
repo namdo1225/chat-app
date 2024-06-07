@@ -34,7 +34,7 @@ const DeleteAccountDialog = ({
     token,
 }: AuthDialogProps): JSX.Element => {
     const [email, setEmail] = useState("");
-    const { user, setNull } = useAuth();
+    const { user, setNull, signOut } = useAuth();
 
     const handleClose = (): void => {
         setEmail("");
@@ -49,7 +49,7 @@ const DeleteAccountDialog = ({
                     token
                 );
                 if (response.status === 200) {
-                    supabase.auth.signOut();
+                    signOut();
                     setNull();
                     toast.success(
                         "Successfully deleted your account. We're sorry to see you go!"
