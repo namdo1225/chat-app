@@ -28,6 +28,7 @@ const Logo = ({
                 backgroundColor: onNav ? "" : "primary.main",
                 borderRadius: onNav ? null : 20,
                 display,
+                my: onNav ? 0 : 2,
             }}
             alt="CA Logo"
             src="./logo.png"
