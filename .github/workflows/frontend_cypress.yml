@@ -52,6 +52,8 @@ jobs:
     - name: Start frontend
       working-directory: ./frontend
       run: (npm run dev:native&)
+      env:
+        NODE_ENV: development-native
     - name: e2e Tests - Test frontend
       uses: cypress-io/github-action@v6
       with:
