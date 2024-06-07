@@ -59,14 +59,13 @@ jobs:
         start: npm run dev:native
         install-command: npm i --legacy-peer-deps
         working-directory: ./frontend
+        record: true
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
     - name: Component Tests - Test frontend
       uses: cypress-io/github-action@v6
       with:
         install: false
         component: true
         working-directory: ./frontend
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: cypress-screenshots
-        path: cypress/screenshots
