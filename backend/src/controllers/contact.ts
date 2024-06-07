@@ -28,8 +28,6 @@ router.post("/", hcaptchaVerifier, async (request, response) => {
         </p>`,
     });
 
-    console.log("toEmail:", toEmail);
-
     if (error)
         return response.status(500).json({
             error: "Unknown error while trying to send contact email.",

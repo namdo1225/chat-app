@@ -17,7 +17,15 @@ import { BACKEND_URL } from "@/config/config";
 const HomeChat = ({ chatter }: { chatter: string }): JSX.Element => {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<HomeMsg[]>([]);
-    const [socketUrl] = useState(`ws://${BACKEND_URL.replace(/(^\w+:|^)\/\//, '')}/homechat`);
+    const [socketUrl] = useState(
+        `ws${
+            BACKEND_URL.includes("127.0.0.1") ||
+            BACKEND_URL.includes("localhost")
+                ? ""
+                : "s"
+        }://${BACKEND_URL.replace(/(^\w+:|^)\/\//, "")}/homechat`
+    );
+
     const [shouldConnect, setShouldConnect] = useState(true);
     const { sendMessage, lastMessage, readyState } = useWebSocket(
         socketUrl,
@@ -49,7 +57,7 @@ const HomeChat = ({ chatter }: { chatter: string }): JSX.Element => {
         };
 
         void recvMsg();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [lastMessage]);
 
     const handleClickSendMessage = (): void => {
