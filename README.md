@@ -61,11 +61,11 @@ Some facts:
 
 -   The Redis service is always behind Docker, regardless of whether the web application is running natively or in Docker. Use redis-dev as the URl if you're in the same container stack as the web application. Otherwise, use localhost.
 
-| Mode            | Can Use Docker? | Notes                                        |
-| --------------- | --------------- | -------------------------------------------- |
-| **Development** | Yes             |                                              |
-| **Production**  | No              | Front and Backend needs manual start         |
-| **Test**        | No              | Front and Backend needs manual start for e2e |
+| Mode            | Can Use Docker? | Notes                                                 |
+| --------------- | --------------- | ----------------------------------------------------- |
+| **Development** | Yes             |                                                       |
+| **Production**  | No              | Front and Backend needs manual start                  |
+| **Test**        | No              | Use `dev:native` to start front- and back-end for e2e |
 
 ## Why I am not using Next.js or other higher-level frameworks?
 

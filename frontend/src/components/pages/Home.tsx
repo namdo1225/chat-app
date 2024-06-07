@@ -3,6 +3,7 @@ import HomeChat from "@/components/pages/chat/HomeChat";
 import { useState } from "react";
 import Captcha from "../Captcha";
 import useCaptcha from "@/hooks/useCaptcha";
+import { BACKEND_URL, CAPTCHA_SITE_KEY, HCAPTCHA_TOKEN, NODE_ENV, SUPABASE_ANON_KEY, SUPABASE_URL } from "@/config/config";
 
 /**
  * Component for /home page.
@@ -26,6 +27,21 @@ const Home = (): JSX.Element => {
             <Typography textAlign="center" variant="h1" fontSize={32}>
                 Welcome to CaChat
             </Typography>
+            {NODE_ENV !== "production" && (
+                <>
+                    <Typography>DEV MODE - ENV VARIABLES:</Typography>
+                    <Typography>NODE_ENV: {NODE_ENV}</Typography>
+                    <Typography>SUPABASE_URL: {SUPABASE_URL}</Typography>
+                    <Typography>
+                        SUPABASE_ANON_KEY: {SUPABASE_ANON_KEY}
+                    </Typography>
+                    <Typography>BACKEND_URL: {BACKEND_URL}</Typography>
+                    <Typography>
+                        CAPTCHA_SITE_KEY: {CAPTCHA_SITE_KEY}
+                    </Typography>
+                    <Typography>HCAPTCHA_TOKEN: {HCAPTCHA_TOKEN}</Typography>
+                </>
+            )}
             <Typography textAlign="center" sx={{ m: 2 }}>
                 This is a simple chat application to demonstrate my programming
                 abilities. We have a demo setup here that demonstrates the user
