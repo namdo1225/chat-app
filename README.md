@@ -6,11 +6,12 @@ The website is available at: https://chat-app-go19.onrender.com
 
 ## Features
 
--   Friend system
 -   Make multiple chat groups with one or more users
+-   Friend system: Make friends and add them to private chat groups
 -   Appearance customization: Light/dark mode and ability to change message box/text's color
 -   Optional end-to-end encryption system to encrypt messages
--   Make chats and/or your user profile discoverable or private.
+-   Make chats and/or your user profile discoverable or private
+-   You can use emojis (express yourself!)
 
 ## Tech Stack
 
