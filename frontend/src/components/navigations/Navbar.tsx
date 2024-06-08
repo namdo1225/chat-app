@@ -169,7 +169,7 @@ const Navbar = (): JSX.Element => {
                         title="Toggle dark mode"
                     >
                         <Switch
-                            value={themeMode === "dark"}
+                            checked={themeMode === "dark"}
                             onChange={changeTheme}
                         />
                     </Tooltip>
