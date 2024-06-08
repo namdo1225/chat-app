@@ -999,10 +999,11 @@ const ChattingScreen = ({
         emoji: EmojiClickData,
         _event: MouseEvent
     ): void => {
-        if (anchorInput.current && anchorInput.current.selectionStart) {
-            const cursor = anchorInput.current.selectionStart;
-            const tmpText =
-                text.slice(0, cursor) + emoji.emoji + text.slice(cursor);
+        if (anchorInput.current) {
+            const cursor = anchorInput.current.selectionStart ?? 0;
+            const tmpText = text
+                ? text.slice(0, cursor) + emoji.emoji + text.slice(cursor)
+                : emoji.emoji;
             setText(tmpText);
         }
     };
@@ -1144,7 +1145,11 @@ const ChattingScreen = ({
                             }}
                         >
                             <EmojiPicker
-                                theme={themeMode === "light" ? Theme.LIGHT : Theme.DARK}
+                                theme={
+                                    themeMode === "light"
+                                        ? Theme.LIGHT
+                                        : Theme.DARK
+                                }
                                 open={emojiOpen}
                                 onEmojiClick={handleEmojiPick}
                             />
