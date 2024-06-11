@@ -24,7 +24,7 @@ const Home = (): JSX.Element => {
             }}
         >
             <Typography textAlign="center" variant="h1" fontSize={32}>
-                Welcome to CaChat
+                Welcome to CAChat
             </Typography>
             <Typography textAlign="center" sx={{ m: 2 }}>
                 This is a simple chat application to demonstrate my programming
