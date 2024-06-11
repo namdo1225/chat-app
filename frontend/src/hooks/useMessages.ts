@@ -127,7 +127,10 @@ export const useMessages = (
             }
             return null;
         },
-        enabled: !!token,
+        enabled:
+            !!token &&
+            ((chat.encrypted && !!publicKey && !!privateKey) ||
+                !chat.encrypted),
         staleTime: 1,
     });
 
