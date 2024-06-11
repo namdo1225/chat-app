@@ -75,4 +75,4 @@ This is meant to be a basic demonstration of everything I have learnt in full-st
 # Other Details
 
 - cron jobs are scheduled (via cron-job.org) to health check the backend "every 10 minutes, at 12:00 AM through 01:00 AM and 08:00 AM through 11:59 PM, Sunday through Friday." (UTC).
-`/ */10 0-1,8-23 * * 0-5`
+`/*/10 0-1,8-23 * * 0-5`
