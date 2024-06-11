@@ -151,7 +151,7 @@ const Register = (): JSX.Element => {
                 <form data-cy="reg-form" className="flex flex-col" onSubmit={formik.handleSubmit}>
                     <FormControl>
                         <FormLabel sx={{ textAlign: "center", my: 2 }}>
-                            Register to NaChat
+                            Register to CAChat
                         </FormLabel>
                         <Logo />
                         {registerError && (
