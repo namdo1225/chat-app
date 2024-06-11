@@ -64,7 +64,7 @@ const Login = (): JSX.Element => {
                 <form className="flex flex-col" onSubmit={formik.handleSubmit}>
                     <FormControl>
                         <FormLabel sx={{ mx: "auto", my: 2 }}>
-                            Login to NaChat
+                            Login to CAChat
                         </FormLabel>
                         <Logo />
                         {email && (
