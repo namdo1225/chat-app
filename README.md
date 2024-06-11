@@ -71,3 +71,8 @@ Some facts:
 ## Why I am not using Next.js or other higher-level frameworks?
 
 This is meant to be a basic demonstration of everything I have learnt in full-stack web development. Next.js provides useful routing and navigation utility, but I want to get into the lower level to see how it works. It is important these tools before moving on to more advanced technology.
+
+# Other Details
+
+- cron jobs are scheduled (via cron-job.org) to health check the backend "every 10 minutes, at 12:00 AM through 01:00 AM and 08:00 AM through 11:59 PM, Sunday through Friday." (UTC).
+`/ */10 0-1,8-23 * * 0-5`
