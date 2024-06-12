@@ -34,7 +34,7 @@ const PrivacyPolicy = (): JSX.Element => {
             </Typography>
             <Box
                 sx={{
-                    backgroundColor: "primary.light",
+                    backgroundColor: "primary.main",
                     p: 5,
                     m: 2,
                     borderRadius: 5,
