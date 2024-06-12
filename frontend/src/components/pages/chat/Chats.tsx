@@ -1184,7 +1184,7 @@ const Chatroom = ({
     const [searchStr, setSearchStr] = useState("");
     const { user } = useAuth();
     const { mutate } = useEditChat();
-    const { setNewKey, deleteKey } = useEncryptionKey(chat);
+    const { setNewKey, deleteKey, privateKey } = useEncryptionKey(chat);
 
     const deleteMember = (userID: string): void => {
         try {
@@ -1389,6 +1389,12 @@ const Chatroom = ({
                     )}
                 </Paper>
             </Box>
+            {chat.encrypted && !privateKey && (
+                <Typography textAlign="center" color="error" m={2}>
+                    * Messages for encrypted chats cannot be sent or retrieved
+                    until you have set a private key.
+                </Typography>
+            )}
         </Box>
     );
 };
