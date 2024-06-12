@@ -1,36 +1,54 @@
 name: Frontend - Build with NodeJS
 
 on:
-  pull_request:
-    branches: [ "main" ]
-    paths: ["frontend/src/**", "frontend/public/**", "frontend/package.json", "frontend/tsconfig.json", "frontend/postcss.config.js", "frontend/tailwind.config.js", "frontend/vite.config.ts", "frontend/package-lock.json", "frontend/.eslintrc.cjs",  "frontend/.eslintignore",  "frontend/index.html"]
+    pull_request:
+        branches: ["main"]
+        paths:
+            [
+                "frontend/src/**",
+                "frontend/public/**",
+                "frontend/package.json",
+                "frontend/tsconfig.json",
+                "frontend/postcss.config.js",
+                "frontend/tailwind.config.js",
+                "frontend/vite.config.ts",
+                "frontend/package-lock.json",
+                "frontend/.eslintrc.cjs",
+                "frontend/.eslintignore",
+                "frontend/index.html",
+            ]
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+    cancel-in-progress: true
+
 jobs:
-  build-frontend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: 'frontend'
-    strategy:
-      matrix:
-        node-version: [20.x]
-    steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }} for frontend
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: '**/package-lock.json'
-    - name: Install frontend dependencies
-      run: npm i --legacy-peer-deps
-    - name: Build frontend
-      run: npm run build --if-present
-    - name: Start frontend
-      run: (npm run preview&)
-    - name: Check frontend status
-      uses: jtalk/url-health-check-action@v4
-      with:
-        url: http://localhost:4173/
-        follow-redirect: false
-        max-attempts: 3
-        retry-delay: 5s
+    build-frontend:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: "frontend"
+        strategy:
+            matrix:
+                node-version: [20.x]
+        steps:
+            - uses: actions/checkout@v4
+            - name: Use Node.js ${{ matrix.node-version }} for frontend
+              uses: actions/setup-node@v3
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "npm"
+                  cache-dependency-path: "**/package-lock.json"
+            - name: Install frontend dependencies
+              run: npm i --legacy-peer-deps
+            - name: Build frontend
+              run: npm run build --if-present
+            - name: Start frontend
+              run: (npm run preview&)
+            - name: Check frontend status
+              uses: jtalk/url-health-check-action@v4
+              with:
+                  url: http://localhost:4173/
+                  follow-redirect: false
+                  max-attempts: 3
+                  retry-delay: 5s

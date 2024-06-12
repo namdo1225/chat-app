@@ -1,71 +1,82 @@
 name: Frontend - Test with Cypress
 
 on:
-  pull_request:
-    branches: [ "main" ]
-    paths: ["backend/src/**", "backend/supabase/**", "frontend/**", "backend/package.json", "backend/package-lock.json",]
+    pull_request:
+        branches: ["main"]
+        paths:
+            [
+                "backend/src/**",
+                "backend/supabase/**",
+                "frontend/**",
+                "backend/package.json",
+                "backend/package-lock.json",
+            ]
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+    cancel-in-progress: true
 
 jobs:
-  test-frontend:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        node-version: [20.x]
-    services:
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
-    steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }} for backend
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: 'backend/package-lock.json'
-    - name: Create backend .env file
-      working-directory: ./backend
-      env:
-        TEST_ENV_FILE: ${{ secrets.BACKEND_TEST_ENV }}
-      run: echo $TEST_ENV_FILE | base64 --decode > .env.test.local
-    - uses: supabase/setup-cli@v1
-      with:
-        version: latest
-    - run: supabase start
-      working-directory: ./backend
-    - name: Install backend dependencies
-      working-directory: ./backend
-      run: npm i --legacy-peer-deps
-    - name: Start backend
-      working-directory: ./backend
-      run: (npm run dev:native&)
-    - name: Create frontend .env file
-      working-directory: ./frontend
-      env:
-        DEV_ENV_FILE: ${{ secrets.FRONTEND_DEV_ENV }}
-      run: echo $DEV_ENV_FILE | base64 --decode > .env
-    - name: Install frontend dependencies
-      working-directory: ./frontend
-      run: npm i --legacy-peer-deps
-    - name: Start frontend
-      working-directory: ./frontend
-      run: (npm run dev:native&)
-      env:
-        NODE_ENV: development-native
-    - name: e2e Tests - Test frontend
-      uses: cypress-io/github-action@v6
-      with:
-        install: false
-        working-directory: ./frontend
-        record: true
-      env:
-        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-    - name: Component Tests - Test frontend
-      uses: cypress-io/github-action@v6
-      with:
-        install: false
-        component: true
-        working-directory: ./frontend
+    test-frontend:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        strategy:
+            matrix:
+                node-version: [20.x]
+        services:
+            redis:
+                image: redis
+                ports:
+                    - 6379:6379
+        steps:
+            - uses: actions/checkout@v4
+            - name: Use Node.js ${{ matrix.node-version }} for backend
+              uses: actions/setup-node@v3
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "npm"
+                  cache-dependency-path: "backend/package-lock.json"
+            - name: Create backend .env file
+              working-directory: ./backend
+              env:
+                  TEST_ENV_FILE: ${{ secrets.BACKEND_TEST_ENV }}
+              run: echo $TEST_ENV_FILE | base64 --decode > .env.test.local
+            - uses: supabase/setup-cli@v1
+              with:
+                  version: latest
+            - run: supabase start
+              working-directory: ./backend
+            - name: Install backend dependencies
+              working-directory: ./backend
+              run: npm i --legacy-peer-deps
+            - name: Start backend
+              working-directory: ./backend
+              run: (npm run dev:native&)
+            - name: Create frontend .env file
+              working-directory: ./frontend
+              env:
+                  DEV_ENV_FILE: ${{ secrets.FRONTEND_DEV_ENV }}
+              run: echo $DEV_ENV_FILE | base64 --decode > .env
+            - name: Install frontend dependencies
+              working-directory: ./frontend
+              run: npm i --legacy-peer-deps
+            - name: Start frontend
+              working-directory: ./frontend
+              run: (npm run dev:native&)
+              env:
+                  NODE_ENV: development-native
+            - name: e2e Tests - Test frontend
+              uses: cypress-io/github-action@v6
+              with:
+                  install: false
+                  working-directory: ./frontend
+                  record: true
+              env:
+                  CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+                  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+            - name: Component Tests - Test frontend
+              uses: cypress-io/github-action@v6
+              with:
+                  install: false
+                  component: true
+                  working-directory: ./frontend
