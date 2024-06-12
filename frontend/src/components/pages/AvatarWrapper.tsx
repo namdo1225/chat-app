@@ -13,6 +13,7 @@ const AvatarWrapper = ({ profile }: { profile: Profile }): JSX.Element => {
     return (
         <>
             <Avatar
+                className="cursor-pointer"
                 onClick={() => setOpenUserDialog(true)}
                 alt="User Avatar"
                 src={profile.profile_photo}

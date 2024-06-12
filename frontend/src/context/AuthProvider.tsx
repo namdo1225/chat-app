@@ -177,6 +177,12 @@ const AuthProvider = ({ children }: { children: JSX.Element }): JSX.Element => {
         return undefined;
     }, []);
 
+    useEffect(() => {
+        supabase.auth.onAuthStateChange((event, session): void => {
+            if (event == "TOKEN_REFRESHED") setSession(session);
+        });
+    }, []);
+
     const value: CAAuth = {
         session,
         user,
