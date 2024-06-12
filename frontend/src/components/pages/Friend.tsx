@@ -12,7 +12,6 @@ import {
     TableRow,
     TableCell,
     Tooltip,
-    Avatar,
 } from "@mui/material";
 import { useProfiles } from "@/hooks/useUser";
 import { useState } from "react";
@@ -29,8 +28,8 @@ import {
 import { User } from "@supabase/supabase-js";
 import { Friend as Friendtype } from "@/types/friend";
 import { Profile } from "@/types/profile";
-import UserProfileDialog from "@/components/UserProfileDialog";
 import useAuth from "@/context/useAuth";
+import AvatarWrapper from "./AvatarWrapper";
 
 /**
  * Component to list public users in a table.
@@ -56,7 +55,6 @@ const UserList = ({
         mutateAdd({ id, token });
     };
     const { infiniteProfiles } = useProfiles();
-    const [openUserDialog, setOpenUserDialog] = useState(false);
 
     return (
         <InfiniteScroll
@@ -93,13 +91,7 @@ const UserList = ({
                                             gap: 2,
                                         }}
                                     >
-                                        <Avatar
-                                            onClick={() =>
-                                                setOpenUserDialog(true)
-                                            }
-                                            alt="User Avatar"
-                                            src={profile.profile_photo}
-                                        />
+                                        <AvatarWrapper profile={profile} />
                                         {profile.first_name} {profile.last_name}
                                     </TableCell>
                                     <TableCell>
@@ -115,15 +107,6 @@ const UserList = ({
                                             />
                                         </Tooltip>
                                     </TableCell>
-                                    {openUserDialog && (
-                                        <UserProfileDialog
-                                            open={openUserDialog}
-                                            onClose={() =>
-                                                setOpenUserDialog(false)
-                                            }
-                                            profile={profile}
-                                        />
-                                    )}
                                 </TableRow>
                             )
                     )}
@@ -155,7 +138,6 @@ const FriendList = ({
     const { mutate: mutateRemove } = useRemoveFriend();
     const { mutate: mutateVerify } = useVerifyFriend();
     const { infiniteFriends } = useFriends(token);
-    const [openUserDialog, setOpenUserDialog] = useState(false);
 
     const handleRemoveFriend = (id: string): void => {
         mutateRemove({ id, token });
@@ -197,13 +179,7 @@ const FriendList = ({
                                             gap: 2,
                                         }}
                                     >
-                                        <Avatar
-                                            onClick={() =>
-                                                setOpenUserDialog(true)
-                                            }
-                                            alt="User Avatar"
-                                            src={profile.profile_photo}
-                                        />
+                                        <AvatarWrapper profile={profile} />
                                         {profile.first_name} {profile.last_name}
                                     </TableCell>
                                     <TableCell>
@@ -235,15 +211,6 @@ const FriendList = ({
                                             />
                                         </Tooltip>
                                     </TableCell>
-                                    {openUserDialog && (
-                                        <UserProfileDialog
-                                            open={openUserDialog}
-                                            onClose={() =>
-                                                setOpenUserDialog(false)
-                                            }
-                                            profile={profile}
-                                        />
-                                    )}
                                 </TableRow>
                             )
                     )}
