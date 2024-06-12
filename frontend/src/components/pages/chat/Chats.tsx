@@ -238,7 +238,7 @@ const CreateChatDialog = ({
                                         m: 2,
                                         border: 2,
                                         p: 1,
-                                        backgroundColor: "primary.light",
+                                        backgroundColor: "primary.main",
                                         overflow: "auto",
                                     }}
                                 >
