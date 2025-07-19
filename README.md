@@ -2,6 +2,8 @@
 
 To demonstrate what I have learned about full-stack web development, I have decided to create a simple chat app in TypeScript with React for the frontend and Node.js for the backend. It also uses library such as React Router, toast, etc.
 
+**If the server is down and you want to check it out, please email me at [namdo1204@gmail.com](mailto:namdo1204@gmail.com) so that I can take a look.**
+
 The website is available at: https://chat-app-go19.onrender.com
 
 Video Demo: https://youtu.be/i5-T1kOSDrs
