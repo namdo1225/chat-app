@@ -4,7 +4,7 @@
 
 **This project is not actively maintained.**
 
-To demonstrate what I have learned about full-stack web development, I have decided to create a simple chat app in TypeScript with React for the frontend and Node.js for the backend. It also uses library such as React Router, toast, etc.
+To demonstrate what I have learned about full-stack web development, I have decided to create a simple chat app in TypeScript with React for the frontend and Node.js for the backend. It also uses libraries such as React Router, toast, etc.
 
 The website is available at: https://chat-app-go19.onrender.com
 
@@ -76,7 +76,7 @@ Some facts:
 
 ## Why I am not using Next.js or other higher-level frameworks?
 
-This is meant to be a basic demonstration of everything I have learnt in full-stack web development. Next.js provides useful routing and navigation utility, but I want to get into the lower level to see how it works. It is important these tools before moving on to more advanced technology.
+This is meant to be a demonstration of everything I have learnt in full-stack web development. Next.js provides useful routing and navigation utility, but I want to get into lower-level libraries to see how these modules eventually work together. It is important to research these tools before moving on to more higher-level libraries and frameworks.
 
 # Other Details
 
